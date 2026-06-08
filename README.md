@@ -1,101 +1,215 @@
-# stock_good — 智能选股研究平台 Day 1-3 本地工程实现
+# stock_good — 智能选股研究平台
 
-工作目录：`C:\Users\blankxxc\Desktop\work_space\stock_good`
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 5 的本地闭环实现。
 
-本项目是“智能选股研究平台”，定位为可追溯数据、可复现实验、可回测模型、可解释 RAG 投研证据和风险解释工作台。它只输出横截面评分、排序、研究候选池、回测报告、风险解释和带引用的研究假设，不输出确定性交易指令。
+仓库地址：https://github.com/blankxxc/stock_good
 
-## Day 1 已落地内容
+## 项目定位
 
-- 后端：FastAPI `/health` 与 `/api/*` 模块路由占位。
-- 前端：Next.js App Router 页面骨架，含 Dashboard、Scores、Candidates、Backtests、Factors、Experiments、RAG、Data Quality、Lineage、Lakehouse、Spark Jobs、Realtime、Flink Jobs、Graph、Models、Simulation、Reports、Settings。
-- 数据契约：`data_contracts/*.schema.yaml` 共 17 个，带 source、license_id、data_version、schema_version、trace_id、time_semantic、backfill_allowed。
-- 元数据 migration：`warehouse_schema/migrations/0001_day1_metadata.sql` 与 Alembic `backend/app/db/alembic/versions/0001_day1_metadata.py`，覆盖 dataset_snapshot_manifest、schema_registry、spark_job_run、flink_job_run、rag_claim、export_manifest、backfill_request、ADR、risk register 等。
-- Spark：`spark/jobs/day1_spark_smoke.py`，优先使用 PySpark local；本项目 `.venv` 已安装 `pyspark==3.5.3`，并已安装 `C:\Users\blankxxc\hadoop\bin\winutils.exe` / `hadoop.dll`。当前 Windows 原生环境已验证 PySpark 可读取 sample CSV 并写出 Parquet。
-- Flink：`streaming/flink/day1_flink_job_graph.py`，生成 Flink 5 类实时任务的 job graph 证据。
-- Kafka/Redpanda：`streaming/kafka/topics.yaml`，覆盖 raw/clean/factor/feature/signal/alert topic。
-- Docker Compose：`deploy/docker/docker-compose.yml`，声明 postgres、redis、qdrant、redpanda、flink、spark、clickhouse、backend、worker、frontend、prometheus、grafana、backup。
-- 治理：ADR-001 至 ADR-004、`docs/risk_register.md`、Feature Store registry、许可证与审计边界。
+本项目不是自动荐股或实盘交易系统，而是研究型智能选股平台。系统输出的是：
 
-## Day 2 已落地内容
+- 横截面股票评分、排序和候选池；
+- 离线因子、特征矩阵、标签和模型诊断；
+- walk-forward 回测、风险归因、容量和交易成本分析；
+- RAG/知识证据、研究假设和实验记录；
+- 面向投研人员的 Web research console。
 
-- 数据源与许可证：`configs/data/source_license_registry.yaml`，覆盖 trading_calendar、stock_list、listing/ST/停牌/涨跌停、日频行情、复权因子、行业/指数/概念、基础财务、分钟/tick/盘口/逐笔、公告/新闻/宏观/资金流/北向资金等源；明确 `authorized`、`restricted`、`not_authorized`、`adapter_pending` 和展示/导出策略。
-- 本地批量接入：`scripts/run_day2_pipeline.py` 生成可复现 synthetic Day2 样例，落地 Bronze/ODS、Silver/DWD、Gold/DWS、ADS Parquet。
-- ODS：`data/bronze/synthetic_day2/*`，包含 11 张 raw 表：market_daily/minute/tick/trade/orderbook、financial_statement、announcement、news、macro、fund_flow、northbound。
-- DWD：`data/silver/*`，包含 `dwd_stock_daily_bar`、`dwd_stock_minute_bar`、`dwd_financial_statement`、`dwd_news_event`、`dwd_announcement_event`。
-- DWS/Gold：`data/gold/*`，包含日频因子、分钟因子、新闻情绪、市场环境、关系边、标签、训练样本、横截面信号、回测结果。
-- ADS：`data/ads/*`，包含 `ads_dashboard_summary`、`ads_score_latest`、`ads_backtest_summary`、`ads_data_quality_summary`。
-- 快照版本：`data/snapshots/dataset_snapshot_manifest_day2.json`，当前 30 个 snapshot，记录 row_count、content_hash、data_version、schema_version、source_version、upstream_snapshot_ids 和 immutable 标记。
-- DuckDB 研究路径：`lakehouse/duckdb/day2_research_queries.sql` 可直接查询本地 Parquet。
-- Spark 本地验证：`spark/jobs/bronze_to_silver_market_daily.py`、`bronze_to_silver_reference.py`、`silver_to_gold_base_panels.py` 均已跑通 PySpark local parquet 输出。
-- 湖仓格式 PoC：`spark/jobs/write_iceberg_table_poc.py` 已通过 `org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.11.0` 跑通真实 Iceberg Hadoop catalog 表；`scripts/check_iceberg_acceptance.py` 单独验收写入、读回、schema evolution、metadata files 与 snapshots，`write_iceberg_or_delta_poc.py` 保留为兼容入口。
-- ClickHouse ADS：`deploy/clickhouse/day2_ads_tables.sql` 与 `scripts/load_day2_clickhouse.py`，已把 ADS 摘要、最新评分、回测摘要装载进正在运行的 ClickHouse 容器。
-- 后端 API：`/api/licenses`、`/api/lakehouse`、`/api/data-quality` 返回 Day2 状态、数据版本、许可证计数、snapshot/table 摘要。
-- 前端页面：Dashboard、Lakehouse、Settings/Licenses 已升级为 Day2 说明与许可证状态展示。
+所有信号都必须经过样本外验证、模拟交易、风险约束和人工复核后，才可以作为进一步研究依据。项目不接券商实盘、不自动下单、不输出“必买/稳赚/目标价”等确定性投资建议。
 
-## Day 3 已落地内容
+## 当前完成度
 
-- 数据可信度框架：`quality/day3_data_trust.py` 与 `scripts/run_day3_data_trust.py`（入口兼容见下方命令）生成 Day3 quality、quarantine、leakage、lineage artifact。
-- synthetic mini market：`data/samples/synthetic_mini_market/day3_market_daily.parquet`，20 只股票 × 100 个交易日 = 2000 行，覆盖停牌、ST、涨停、跌停、退市、新上市、公告晚于收盘、未来成分股、未来复权因子、全样本标准化泄漏和 label 泄漏诱捕。
-- 数据质量报告：`reports/data_quality_report.json` 与 `reports/data_quality_report.html`，覆盖 schema、主键重复、缺失、价格、OHLC、成交量、交易日缺口、复权因子、行业、指数成分历史、ST/停牌/涨跌停、延迟、重复率、修正率、source license display/export gate。
-- quarantine：`data/quarantine/day3_synthetic_market`，异常样本记录 `reason`、`severity`、`source_row`、`detected_at`、`resolved_status`、`owner`、`resolution_note`。
-- 防泄漏检查：`reports/day3/leakage_report.json`，验证 `feature.available_time <= prediction_time`、`label_start_time > prediction_time`、公告/新闻/财报发布时间、行业/指数 as_of、scaler fit window、purged split/embargo；故意构造的泄漏样本已被拦截，`leakage_check_status=passed`。
-- 轻量血缘：`reports/lineage_report.json` 与 `reports/lineage_report.html`，连接 `source_table -> transform_job -> target_table -> snapshot/report`，并把 Spark job run_id 连接到输出 snapshot_id。
-- 后端 API：`/api/data-quality` 升级为 `day3_data_trust_ready`，`/api/lineage` 升级为 `day3_lineage_ready`。
-- 前端页面：`/data-quality`、`/lineage` 已升级为 Day3 artifact 展示说明。
+| 阶段 | 主题 | 当前状态 |
+| --- | --- | --- |
+| Day 1 | 全栈工程骨架、数据契约、元数据治理、Spark/Flink/Kafka/Compose 基础 | 已完成 |
+| Day 2 | 本地湖仓、批量接入、ODS/DWD/DWS/ADS、许可证治理、Iceberg PoC、ClickHouse ADS | 已完成 |
+| Day 3 | 数据质量、quarantine、防泄漏、point-in-time、血缘、数据可信度页面/API | 已完成 |
+| Day 4 | 74 个离线因子、Feature Store、点时间特征 join、Spark/Polars 一致性、因子页面/API | 已完成 |
+| Day 5 | 5d/10d 标签、LightGBM baseline、walk-forward、回测/风险/容量、实验记录器、Qlib-compatible recorder | 已完成 |
 
+最近本地验收结果：
 
-## 本地验证命令
+- Day4 acceptance: `status=ok`, `checks=15`, `failed=[]`, `factor_count=74`, `factor_rows=129796`, `feature_matrix_rows=1960`, `spark_consistency_status=passed`, `point_in_time_violations=0`。
+- Day5 acceptance: `status=ok`, `checks=19`, `failed=[]`, `label_rows=3620`, `prediction_rows=413`, `holding_rows=105`, `split_count=3`, `feature_count=72`, `lightgbm_status=trained`, `qlib_status=minimal_qlib_recorder_available`, `leakage_check_status=passed`。
+- 完整测试：`31 passed, 24 warnings`。
+- 前端路由：`route_count=21`。
+- Next.js production build：23 个静态页面生成成功。
+
+## 技术栈
+
+后端与研究计算：
+
+- Python 3.11
+- FastAPI / Uvicorn
+- Pandas / PyArrow / DuckDB
+- Polars
+- PySpark 3.5.3
+- SQLAlchemy / Alembic
+- pytest
+- pyqlib 0.9.7
+
+前端：
+
+- Next.js App Router
+- React
+- TypeScript
+
+数据与基础设施：
+
+- Parquet 本地湖仓
+- Iceberg Hadoop catalog PoC
+- ClickHouse ADS
+- PostgreSQL / Redis / Qdrant
+- Redpanda/Kafka topic manifest
+- Flink job graph manifest
+- Spark local jobs
+- Docker Compose
+- Prometheus / Grafana
+
+## 目录结构
+
+```text
+backend/                         FastAPI 后端、API 路由、Alembic migration
+configs/                         数据源、因子、模型等配置
+contracts/                       项目契约与治理约束
+data/                            Bronze/Silver/Gold/ADS/样例数据/隔离数据
+feature_store/                   Feature registry 与 point-in-time join
+factors/                         离线因子计算引擎
+frontend/                        Next.js research console
+lakehouse/                       DuckDB 查询、Iceberg/Delta PoC 相关入口
+models/                          Day5 研究闭环、标签、模型、回测、实验记录器
+quality/                         Day3 数据质量、防泄漏、血缘与可信度逻辑
+reports/                         验收报告、质量报告、回测报告、实验 artifacts
+scripts/                         一键验收、pipeline、ClickHouse 装载等脚本
+spark/                           Spark 本地批处理与因子物化任务
+streaming/                       Kafka topic 与 Flink job graph 设计
+warehouse_schema/                元数据仓库 SQL migration
+```
+
+## 核心功能
+
+### 1. 数据契约与治理
+
+- `data_contracts/*.schema.yaml` 覆盖行情、财务、公告、新闻、宏观、资金流、因子、标签、信号、回测、RAG claim 等数据契约。
+- 元数据 migration 覆盖 dataset snapshot、schema registry、Spark/Flink job run、RAG claim、export manifest、backfill request、ADR、risk register 等。
+- 数据源许可证 registry 明确 `authorized`、`restricted`、`not_authorized`、`adapter_pending` 等状态，并限制展示/导出边界。
+
+### 2. 本地湖仓与批量接入
+
+- Day2 pipeline 生成可复现 synthetic market 数据。
+- Bronze/ODS：raw market、minute、tick、trade、orderbook、financial、announcement、news、macro、fund flow、northbound。
+- Silver/DWD：清洗后的日频行情、分钟行情、财务、新闻事件、公告事件。
+- Gold/DWS：因子面板、标签、训练样本、横截面信号、回测结果。
+- ADS：dashboard summary、latest score、backtest summary、data quality summary。
+- Iceberg PoC 已验证写入、读回、schema evolution、metadata files 与 snapshots。
+
+### 3. 数据可信度、防泄漏与血缘
+
+- synthetic mini market 覆盖停牌、ST、涨跌停、退市、新上市、公告晚于收盘、未来成分股、未来复权因子、全样本归一化泄漏、label 泄漏诱捕等场景。
+- 数据质量报告覆盖 schema、主键重复、缺失、OHLC、成交量、交易日缺口、复权因子、行业、指数成分历史、延迟、重复率、修正率和 source license gate。
+- 防泄漏检查验证 `feature.available_time <= prediction_time`、`label_start_time > prediction_time`、公告/新闻/财报发布时间、行业/指数 as-of、scaler fit window、purged split/embargo。
+- 血缘报告连接 `source_table -> transform_job -> target_table -> snapshot/report`。
+
+### 4. 因子库与 Feature Store
+
+- 当前实现 74 个离线因子，覆盖价格收益、动量、反转、波动率、流动性、成交量、风险暴露等类别。
+- 因子长表：`data/gold/factor_daily_panel_long`。
+- 模型宽表：`data/gold/model_feature_matrix_wide`。
+- 风险暴露：`data/gold/risk_factor_exposure`。
+- 支持点时间 join，并验收 `point_in_time_violations=0`。
+- Spark 与 Polars 因子物化结果已做一致性校验，`spark_consistency_status=passed`。
+
+### 5. Day5 研究闭环
+
+- 生成 5d/10d 横截面收益标签。
+- 标签包含 prediction time、label start/end、交易可行性、停牌/ST/涨跌停/退市等约束。
+- LightGBM baseline 已训练完成。
+- walk-forward split 数量为 3。
+- 记录 IC、RankIC、ICIR、TopK return、quantile spread、long-short spread、turnover、cost-adjusted return、max drawdown、Sharpe、Calmar、hit rate、capacity 等指标。
+- 输出预测、持仓、净值曲线、风险报告、回测 HTML 和 experiment recorder artifact。
+- Qlib Python 包已安装，当前 recorder 状态为 `minimal_qlib_recorder_available`。注意：这表示 Qlib 包和最小 recorder 可用，不代表已下载官方 Qlib 股票数据集。
+
+## Web Research Console
+
+前端位于 `frontend/`，当前包含 21 条业务路由，覆盖：
+
+- `/dashboard`：研究总览与 Day5 dashboard summary
+- `/scores`：横截面评分与候选池
+- `/backtests`：回测与风险/容量结果
+- `/experiments`：实验记录器与 artifact manifest
+- `/factors`：Day4 因子库与 Feature Store
+- `/spark-jobs`：Spark 因子物化与一致性校验
+- `/data-quality`：Day3 数据质量与防泄漏摘要
+- `/lineage`：数据血缘
+- `/lakehouse`：Day2 湖仓与 snapshot
+- `/settings/licenses`：数据源许可证治理
+- `/rag`、`/graph`、`/models`、`/simulation`、`/reports`、`/realtime`、`/flink-jobs` 等后续扩展页面
+
+## 快速开始
+
+以下命令适用于 Windows Git Bash / MSYS 环境。
 
 ```bash
 cd /c/Users/blankxxc/Desktop/work_space/stock_good
-pytest tests/test_day1_scaffold.py -q
-python backend/app/db/run_day1_migration.py
-python -m alembic -c alembic.ini upgrade head
-# 无 PySpark 时会生成 fallback 证据；使用 .venv 可尝试真实 PySpark local 读取
-python spark/jobs/day1_spark_smoke.py
-.venv/Scripts/python.exe spark/jobs/day1_spark_smoke.py
-python streaming/flink/day1_flink_job_graph.py
-cd frontend && npm run validate:routes && npm run build
+
+# Python 依赖
+uv venv --python 3.11 .venv
+uv pip install --python ./.venv/Scripts/python.exe -e .
+
+# 前端依赖
+cd frontend
+npm install
+cd ..
 ```
 
-一键验收：
+如果只使用当前本机已有环境，可直接使用项目内 `.venv/Scripts/python.exe` 运行脚本。
 
-```bash
-python scripts/check_day1_acceptance.py
-.venv/Scripts/python.exe scripts/check_day2_acceptance.py
-.venv/Scripts/python.exe scripts/check_day3_acceptance.py
-```
+## 常用运行命令
 
-
-Day 2 常用命令：
+### 后端
 
 ```bash
 cd /c/Users/blankxxc/Desktop/work_space/stock_good
-.venv/Scripts/python.exe scripts/run_day2_pipeline.py
-.venv/Scripts/python.exe spark/jobs/bronze_to_silver_market_daily.py
-.venv/Scripts/python.exe spark/jobs/bronze_to_silver_reference.py
-.venv/Scripts/python.exe spark/jobs/silver_to_gold_base_panels.py
-.venv/Scripts/python.exe scripts/check_iceberg_acceptance.py
-.venv/Scripts/python.exe spark/jobs/write_iceberg_or_delta_poc.py  # 兼容入口，实际调用 Iceberg PoC
-.venv/Scripts/python.exe scripts/load_day2_clickhouse.py
+./.venv/Scripts/python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Day 3 常用命令：
+健康检查：
 
 ```bash
-cd /c/Users/blankxxc/Desktop/work_space/stock_good
-.venv/Scripts/python.exe scripts/run_day3_data_trust.py
-.venv/Scripts/python.exe scripts/check_day3_acceptance.py
-```
-
-启动后端：
-
-```bash
-uvicorn backend.app.main:app --host 127.0.0.1 --port 8000
 curl http://127.0.0.1:8000/health
 ```
 
-Docker Compose（当前已验证 Docker Desktop / WSL2 / Linux engine 可用）：
+核心 API：
+
+```text
+/api/factors
+/api/features
+/api/spark-jobs
+/api/dashboard
+/api/scores
+/api/backtests
+/api/experiments
+/api/data-quality
+/api/lineage
+/api/lakehouse
+/api/licenses
+```
+
+### 前端
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good/frontend
+npm run validate:routes
+npm run build
+npm run dev
+```
+
+默认本地访问地址：
+
+```text
+http://127.0.0.1:3000/
+```
+
+### Docker Compose
 
 ```bash
 cd /c/Users/blankxxc/Desktop/work_space/stock_good
@@ -103,12 +217,105 @@ docker compose -f deploy/docker/docker-compose.yml up -d --build
 docker compose -f deploy/docker/docker-compose.yml ps
 ```
 
-当前实测状态：`docker desktop status` 为 `running`，`docker info` 可连接 Linux engine；Compose 栈已成功启动 postgres、redis、qdrant、redpanda、flink、spark、clickhouse、backend、worker、frontend、prometheus、grafana、backup。核心访问地址：前端 `http://127.0.0.1:3000/`，许可证页 `http://127.0.0.1:3000/settings/licenses`，后端健康检查 `http://127.0.0.1:8000/health`，Day2 许可证 API `http://127.0.0.1:8000/api/licenses`，Lakehouse API `http://127.0.0.1:8000/api/lakehouse`，Spark UI `http://127.0.0.1:8080/`，Flink UI `http://127.0.0.1:8081/`，Prometheus `http://127.0.0.1:9090/`，Grafana `http://127.0.0.1:3001/login`。
+Compose 栈声明了 postgres、redis、qdrant、redpanda、flink、spark、clickhouse、backend、worker、frontend、prometheus、grafana、backup 等服务。Windows 本地运行时需要 Docker Desktop / WSL2 Linux engine 正常可用。
 
-## 关键边界
+## 一键验收命令
 
-- Spark 用于离线批处理、湖仓 ETL、批量因子、标签和训练样本。
-- Flink 用于事件时间实时流、watermark、window、late data、实时因子和质量告警。
-- 所有正式输出必须绑定 run_id、data_version、factor_version、label_version、model_version、config_hash。
-- RAG 必须 claim 级引用；没有 citation 的输出必须标记为证据不足。
-- 不接券商实盘，不自动下单，不生成“稳赚/必买/目标价”等话术。
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+
+./.venv/Scripts/python.exe scripts/check_day1_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day2_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day3_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day4_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day5_acceptance.py
+```
+
+完整测试：
+
+```bash
+./.venv/Scripts/python.exe -m pytest tests -q
+```
+
+前端验证：
+
+```bash
+cd frontend
+npm run validate:routes
+npm run build
+```
+
+## Day2 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/run_day2_pipeline.py
+./.venv/Scripts/python.exe spark/jobs/bronze_to_silver_market_daily.py
+./.venv/Scripts/python.exe spark/jobs/bronze_to_silver_reference.py
+./.venv/Scripts/python.exe spark/jobs/silver_to_gold_base_panels.py
+./.venv/Scripts/python.exe scripts/check_iceberg_acceptance.py
+./.venv/Scripts/python.exe spark/jobs/write_iceberg_or_delta_poc.py
+./.venv/Scripts/python.exe scripts/load_day2_clickhouse.py
+```
+
+## Day3 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/run_day3_data_trust.py
+./.venv/Scripts/python.exe scripts/check_day3_acceptance.py
+```
+
+## Day4 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day4_acceptance.py
+```
+
+Day4 验收会重新生成/检查因子 store、特征矩阵、Spark consistency artifact、后端 API 和前端页面文案。
+
+## Day5 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day5_acceptance.py
+```
+
+Day5 验收会重新运行研究闭环并检查标签、模型、预测、持仓、回测、风险报告、实验记录器、API 和前端页面文案。
+
+## 关键产物
+
+| 产物 | 路径 |
+| --- | --- |
+| Day4 因子长表 | `data/gold/factor_daily_panel_long` |
+| Day4 模型特征矩阵 | `data/gold/model_feature_matrix_wide` |
+| Day4 风险暴露 | `data/gold/risk_factor_exposure` |
+| Day4 因子报告 | `reports/day4/day4_factor_report.html` |
+| Day5 标签 | `data/gold/label_cross_sectional_return` |
+| Day5 模型信号 | `data/gold/model_signal_cross_sectional` |
+| Day5 回测 Gold 表 | `data/gold/portfolio_backtest_result` |
+| Day5 风险 Gold 表 | `data/gold/portfolio_risk_report` |
+| Day5 预测 | `reports/day5/predictions.parquet` |
+| Day5 持仓 | `reports/day5/holdings.parquet` |
+| Day5 净值曲线 | `reports/day5/equity_curve.csv` |
+| Day5 风险报告 | `reports/day5/risk_report.parquet` |
+| Day5 回测 HTML | `reports/day5/backtest_report.html` |
+| Day5 实验记录器 | `reports/day5/experiment_recorder/day5_lightgbm_walk_forward_v001` |
+
+## 研究与合规边界
+
+- 系统只生成研究信号，不生成投资建议。
+- 所有特征必须满足 point-in-time 约束，不能使用未来信息。
+- 历史回测必须考虑停牌、ST、涨跌停、退市、流动性、交易成本、滑点、容量和行业/风格暴露。
+- RAG 输出必须有 claim 级引用；没有证据的内容必须标记为假设或证据不足。
+- 数据源必须绑定 license_id 和 display/export policy。
+- 禁止把单次回测、单一年份、单个随机种子或明星模型结果当成收益承诺。
+
+## 后续建议
+
+1. 接入真实授权数据源，并把 Day2 synthetic pipeline 替换为正式 adapter。
+2. 准备官方 Qlib 数据目录，跑完整 Qlib workflow，而不只使用 minimal recorder。
+3. 扩展模型路线：XGBoost/CatBoost/LambdaRank、MASTER、StockMixer、HIST、Temporal Relational Stock Ranking。
+4. 增强 RAG claim-level evidence、factor card、experiment card 和 failure case 记忆库。
+5. 把 Web research console 从静态说明页升级为可筛选、可钻取、可下载的交互式研究工作台。
