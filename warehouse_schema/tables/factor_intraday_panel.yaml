@@ -1,0 +1,13 @@
+{
+  "table": "factor_intraday_panel",
+  "columns": [
+    "event_time",
+    "trade_date",
+    "symbol",
+    "factor_name",
+    "factor_value",
+    "window",
+    "factor_version"
+  ],
+  "day1_status": "contract_stub"
+}

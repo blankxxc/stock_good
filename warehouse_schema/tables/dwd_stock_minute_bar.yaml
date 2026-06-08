@@ -1,0 +1,16 @@
+{
+  "table": "dwd_stock_minute_bar",
+  "columns": [
+    "event_time",
+    "trade_date",
+    "symbol",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "amount",
+    "vwap"
+  ],
+  "day1_status": "contract_stub"
+}

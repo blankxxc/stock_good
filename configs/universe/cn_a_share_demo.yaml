@@ -1,0 +1,7 @@
+universe_id: cn_a_share_demo_day1
+maturity: L1-demo
+symbols: [000001.SZ, 000002.SZ]
+filters:
+  exclude_st: true
+  exclude_paused: true
+  require_tradable_flag: true

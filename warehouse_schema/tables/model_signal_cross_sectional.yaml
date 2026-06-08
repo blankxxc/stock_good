@@ -1,0 +1,15 @@
+{
+  "table": "model_signal_cross_sectional",
+  "columns": [
+    "signal_time",
+    "trade_date",
+    "symbol",
+    "model_name",
+    "model_version",
+    "horizon",
+    "score",
+    "rank",
+    "percentile"
+  ],
+  "day1_status": "contract_stub"
+}

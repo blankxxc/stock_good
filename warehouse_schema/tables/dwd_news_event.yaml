@@ -1,0 +1,14 @@
+{
+  "table": "dwd_news_event",
+  "columns": [
+    "event_id",
+    "event_time",
+    "source",
+    "title",
+    "related_symbols",
+    "event_type",
+    "sentiment",
+    "confidence"
+  ],
+  "day1_status": "contract_stub"
+}

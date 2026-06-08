@@ -1,0 +1,27 @@
+[project]
+name = "stock-good"
+version = "0.1.0"
+description = "Day 2 local lakehouse, batch ingestion, and research-console slice for an intelligent stock-selection platform."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "pyyaml",
+    "pytest",
+    "pyspark==3.5.3",
+    "sqlalchemy>=2.0.50",
+    "alembic>=1.18.4",
+    "httpx>=0.28.1",
+    "httpx2>=2.3.0",
+    "duckdb>=1.4.0",
+    "pandas>=2.3.0",
+    "pyarrow>=18.0.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100

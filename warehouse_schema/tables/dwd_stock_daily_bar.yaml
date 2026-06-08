@@ -1,0 +1,19 @@
+{
+  "table": "dwd_stock_daily_bar",
+  "columns": [
+    "trade_date",
+    "symbol",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "amount",
+    "adj_factor",
+    "paused",
+    "limit_up",
+    "limit_down",
+    "st_flag"
+  ],
+  "day1_status": "contract_stub"
+}

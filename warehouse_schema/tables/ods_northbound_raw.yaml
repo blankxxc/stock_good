@@ -1,0 +1,10 @@
+{
+  "table": "ods_northbound_raw",
+  "columns": [
+    "trade_date",
+    "symbol",
+    "holding_amount",
+    "net_buy_amount"
+  ],
+  "day1_status": "contract_stub"
+}

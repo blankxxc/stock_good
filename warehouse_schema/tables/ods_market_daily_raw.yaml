@@ -1,0 +1,14 @@
+{
+  "table": "ods_market_daily_raw",
+  "columns": [
+    "trade_date",
+    "symbol",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume",
+    "amount"
+  ],
+  "day1_status": "contract_stub"
+}

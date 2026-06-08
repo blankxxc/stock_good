@@ -1,0 +1,11 @@
+{
+  "table": "ods_announcement_raw",
+  "columns": [
+    "event_id",
+    "publish_time",
+    "symbol",
+    "announcement_type",
+    "title"
+  ],
+  "day1_status": "contract_stub"
+}

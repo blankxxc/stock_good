@@ -1,0 +1,11 @@
+label_version: day1-label-contract-v0
+prediction_task: cross_sectional_return_prediction
+horizons: [5d, 10d]
+label_fields:
+  - label_start_time
+  - label_end_time
+  - forward_return
+  - excess_return
+  - industry_neutral_return
+  - cs_zscore_label
+  - quantile_label

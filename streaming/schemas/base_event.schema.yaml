@@ -1,0 +1,15 @@
+schema_version: v0.1.0
+required_fields:
+  event_time: exchange event timestamp
+  ingest_time: platform receive timestamp
+  source: provider/source id
+  symbol: stock/index/future symbol
+  exchange: market exchange
+  trade_date: exchange trading date
+  payload: raw or normalized message payload
+  trace_id: end-to-end trace id
+  schema_version: message schema version
+quality_rules:
+  - event_time must be <= ingest_time unless explicitly whitelisted for delayed imports.
+  - duplicate idempotent keys must be ignored or upserted.
+  - late data must be routed to correction/quarantine path.

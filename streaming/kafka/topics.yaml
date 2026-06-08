@@ -1,0 +1,38 @@
+schema_version: v0.1.0
+day1_status: topic_contract_ready
+idempotent_key: symbol + event_time + factor_name + window
+required_message_fields:
+  - event_time
+  - ingest_time
+  - source
+  - symbol
+  - exchange
+  - trade_date
+  - payload
+  - trace_id
+  - schema_version
+topics:
+  raw.market.tick: {layer: raw, description: 原始 tick / 快照行情}
+  raw.market.trade: {layer: raw, description: 原始逐笔成交}
+  raw.market.orderbook: {layer: raw, description: 原始盘口/委托队列}
+  raw.market.minute: {layer: raw, description: 原始分钟行情}
+  raw.index.realtime: {layer: raw, description: 指数实时行情}
+  raw.futures.realtime: {layer: raw, description: 股指期货/商品/利率实时行情}
+  raw.news: {layer: raw, description: 新闻快讯}
+  raw.announcement: {layer: raw, description: 上市公司公告}
+  raw.social.sentiment: {layer: raw, description: 舆情/论坛，可选}
+  raw.macro.event: {layer: raw, description: 宏观/政策/利率/汇率/商品事件}
+  raw.dim.update: {layer: raw, description: 股票基础信息、行业、概念、指数成分维表变更}
+  clean.market.tick: {layer: clean, description: 清洗后的 tick}
+  clean.market.minute: {layer: clean, description: 清洗后的分钟行情}
+  clean.news.event: {layer: clean, description: 抽取实体后的新闻事件}
+  clean.announcement.event: {layer: clean, description: 抽取事件类型后的公告}
+  factor.realtime.price_volume: {layer: factor, description: 实时价量因子}
+  factor.realtime.microstructure: {layer: factor, description: 盘口/微观结构因子}
+  factor.realtime.market_regime: {layer: factor, description: 市场环境因子}
+  factor.realtime.news_sentiment: {layer: factor, description: 新闻情绪/事件因子}
+  factor.realtime.relation: {layer: factor, description: 股票联动/关系传播因子}
+  feature.online.snapshot: {layer: feature, description: 在线特征快照}
+  signal.cross_sectional.realtime: {layer: signal, description: 实时横截面模型打分}
+  alert.data_quality: {layer: alert, description: 数据质量告警}
+  alert.risk: {layer: alert, description: 风险和异常信号告警}

@@ -1,0 +1,6 @@
+factor_policy_version: v0.1.0
+minimum_requirements:
+  - no future data leakage
+  - available_time must be <= prediction_time
+  - data_version and factor_version required
+  - single-factor report required before promotion

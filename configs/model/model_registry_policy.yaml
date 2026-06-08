@@ -1,0 +1,10 @@
+model_registry_policy_version: v0.1.0
+baseline_models: [linear, lightgbm, qlib]
+advanced_model_adapters: [MASTER, StockMixer, HIST, Temporal_Relational_Stock_Ranking]
+outputs:
+  - score
+  - rank
+  - percentile
+forbidden_outputs:
+  - deterministic buy/sell/hold instruction
+  - guaranteed return statement

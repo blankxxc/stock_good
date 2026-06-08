@@ -1,0 +1,167 @@
+table: model_training_sample
+layer: ADS
+schema_version: v0.1.0
+description: Day 1 contract stub with point-in-time metadata and license governance.
+primary_key: [trade_date, symbol, horizon, feature_vector_id]
+unique_key: [trade_date, symbol, horizon, feature_vector_id]
+fields:
+  - name: trade_date
+    type: date
+    primary_key: true
+    unique_key: true
+    nullable: false
+    time_semantic: "trade_date"
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: symbol
+    type: string
+    primary_key: true
+    unique_key: true
+    nullable: false
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: horizon
+    type: string
+    primary_key: true
+    unique_key: true
+    nullable: false
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: feature_vector_id
+    type: string
+    primary_key: true
+    unique_key: true
+    nullable: false
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: label
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: universe
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: sample_weight
+    type: decimal
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: null
+    unit: "raw"
+    range: ">=0 when numeric unless explicitly signed"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: split
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: leakage_check_status
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: ingest_time
+    type: timestamp
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: "ingest_time"
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: available_time
+    type: timestamp
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: "available_time"
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: source
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: false
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: license_id
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: false
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: data_version
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: false
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: schema_version
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: false
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true
+  - name: trace_id
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: false
+    time_semantic: null
+    unit: "raw"
+    range: "domain controlled"
+    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
+    backfill_allowed: true

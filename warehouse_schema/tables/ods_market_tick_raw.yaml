@@ -1,0 +1,12 @@
+{
+  "table": "ods_market_tick_raw",
+  "columns": [
+    "event_time",
+    "trade_date",
+    "symbol",
+    "last_price",
+    "volume",
+    "amount"
+  ],
+  "day1_status": "contract_stub"
+}

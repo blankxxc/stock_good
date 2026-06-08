@@ -1,0 +1,13 @@
+{
+  "table": "ods_orderbook_raw",
+  "columns": [
+    "event_time",
+    "trade_date",
+    "symbol",
+    "bid_price_1",
+    "bid_volume_1",
+    "ask_price_1",
+    "ask_volume_1"
+  ],
+  "day1_status": "contract_stub"
+}

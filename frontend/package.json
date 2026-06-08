@@ -1,0 +1,20 @@
+{
+  "name": "stock-good-frontend",
+  "version": "0.1.0-day3",
+  "private": true,
+  "scripts": {
+    "validate:routes": "node scripts/validate_routes.mjs",
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "build": "next build"
+  },
+  "dependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "typescript": "latest"
+  },
+  "devDependencies": {}
+}

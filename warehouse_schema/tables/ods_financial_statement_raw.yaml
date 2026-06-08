@@ -1,0 +1,12 @@
+{
+  "table": "ods_financial_statement_raw",
+  "columns": [
+    "symbol",
+    "report_period",
+    "announce_time",
+    "statement_type",
+    "item_name",
+    "item_value"
+  ],
+  "day1_status": "contract_stub"
+}

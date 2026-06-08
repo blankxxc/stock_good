@@ -1,0 +1,8 @@
+default_path_format: parquet
+layers: [raw, bronze, silver, gold, ads, quarantine, snapshots]
+spark_path: spark/jobs
+lakehouse_candidates:
+  - iceberg
+  - hudi
+  - delta
+fallback: parquet + DuckDB/Polars until Spark table format PoC passes

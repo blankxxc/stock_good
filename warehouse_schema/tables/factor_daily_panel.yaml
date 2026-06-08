@@ -1,0 +1,12 @@
+{
+  "table": "factor_daily_panel",
+  "columns": [
+    "trade_date",
+    "symbol",
+    "factor_name",
+    "factor_value",
+    "factor_version",
+    "compute_time"
+  ],
+  "day1_status": "contract_stub"
+}

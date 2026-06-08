@@ -1,0 +1,10 @@
+{
+  "table": "ods_fund_flow_raw",
+  "columns": [
+    "trade_date",
+    "symbol",
+    "main_net_inflow",
+    "retail_net_inflow"
+  ],
+  "day1_status": "contract_stub"
+}

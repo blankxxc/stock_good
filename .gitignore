@@ -1,0 +1,105 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Jupyter / notebooks
+.ipynb_checkpoints/
+
+# Node / Next.js frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.turbo/
+frontend/coverage/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Logs and runtime state
+logs/
+*.log
+*.pid
+*.seed
+*.tmp
+*.temp
+
+# Local databases / caches
+*.sqlite
+*.sqlite3
+*.db
+.duckdb/
+*.duckdb
+*.duckdb.wal
+
+# Docker / compose local state
+.docker/
+docker-data/
+volumes/
+
+# Generated lakehouse and research data artifacts
+# Keep code/config under lakehouse/, configs/, spark/, backend/, frontend/ tracked;
+# regenerate these outputs via scripts/run_day2_pipeline.py or scripts/run_day3_data_trust.py.
+data/bronze/
+data/silver/
+data/gold/
+data/ads/
+data/samples/
+data/quarantine/
+data/snapshots/*.json
+lakehouse/delta/
+lakehouse/iceberg/
+lakehouse/hudi/
+lakehouse/warehouse/
+
+# Generated reports; keep markdown summaries trackable.
+reports/**/*.json
+reports/**/*.html
+!reports/**/*.md
+
+# Large model/vector artifacts
+models/artifacts/
+models/checkpoints/
+vectorstore/
+*.parquet
+*.feather
+*.arrow
+*.onnx
+*.pt
+*.pth
+*.ckpt
+*.safetensors

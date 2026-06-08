@@ -1,0 +1,29 @@
+registry_version: v0.1.0
+maturity: L1-contract-stub
+research_boundary: research_signals_only_not_investment_advice
+feature_views:
+  - name: daily_price_volume_basic
+    entity: symbol
+    timestamp_field: trade_date
+    available_time_field: available_time
+    source_table: factor_daily_panel
+    materialization_job: spark/jobs/materialize_factor_daily.py
+    point_in_time_join: feature_store/point_in_time_join/daily_join.sql
+    features:
+      - ret_1d
+      - ret_5d
+      - volatility_20d
+      - turnover_20d
+  - name: realtime_price_volume_snapshot
+    entity: symbol
+    timestamp_field: event_time
+    available_time_field: ingest_time
+    source_topic: factor.realtime.price_volume
+    online_store: redis
+    features:
+      - intraday_return_1m
+      - vwap_deviation_5m
+      - volume_shock_5m
+quality_gates:
+  - no feature can be used when available_time > prediction_time
+  - all official outputs must carry data_version, factor_version, model_version, config_hash

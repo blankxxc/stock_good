@@ -1,0 +1,11 @@
+{
+  "table": "ods_macro_raw",
+  "columns": [
+    "event_id",
+    "event_time",
+    "source",
+    "event_type",
+    "value"
+  ],
+  "day1_status": "contract_stub"
+}

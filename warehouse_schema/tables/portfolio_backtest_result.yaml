@@ -1,0 +1,16 @@
+{
+  "table": "portfolio_backtest_result",
+  "columns": [
+    "experiment_id",
+    "trade_date",
+    "portfolio_id",
+    "nav",
+    "daily_return",
+    "turnover",
+    "cost",
+    "slippage",
+    "tracking_error",
+    "information_ratio"
+  ],
+  "day1_status": "contract_stub"
+}

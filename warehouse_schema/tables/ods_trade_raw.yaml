@@ -1,0 +1,12 @@
+{
+  "table": "ods_trade_raw",
+  "columns": [
+    "event_time",
+    "trade_date",
+    "symbol",
+    "price",
+    "volume",
+    "side"
+  ],
+  "day1_status": "contract_stub"
+}

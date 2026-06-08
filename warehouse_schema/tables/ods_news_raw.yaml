@@ -1,0 +1,12 @@
+{
+  "table": "ods_news_raw",
+  "columns": [
+    "event_id",
+    "event_time",
+    "publish_time",
+    "source",
+    "title",
+    "content_hash"
+  ],
+  "day1_status": "contract_stub"
+}
