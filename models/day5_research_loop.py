@@ -578,15 +578,18 @@ def _write_recorder(config: dict[str, Any], metrics: dict[str, Any], model_metad
     (RECORDER_DIR / "resolved_config.yaml").write_text(yaml.safe_dump(resolved, allow_unicode=True, sort_keys=False), encoding="utf-8")
     _write_json(RECORDER_DIR / "metrics.json", metrics)
     _write_json(RECORDER_DIR / "model_metadata.json", model_metadata)
+    blocked_reason_path = RECORDER_DIR / "qlib_blocked_reason.md"
     try:
         import qlib  # noqa: F401
 
         qlib_status = "minimal_qlib_recorder_available"
         blocked_reason = ""
+        if blocked_reason_path.exists():
+            blocked_reason_path.unlink()
     except Exception as exc:
         qlib_status = "qlib_workflow_blocked_minimal_recorder_used"
         blocked_reason = f"Qlib package is not installed in the local venv: {type(exc).__name__}: {exc}. Day5 uses a file-based recorder with the same run_id/config_hash/version fields."
-        (RECORDER_DIR / "qlib_blocked_reason.md").write_text(blocked_reason, encoding="utf-8")
+        blocked_reason_path.write_text(blocked_reason, encoding="utf-8")
     manifest = {
         "run_id": RUN_ID,
         "experiment_id": EXPERIMENT_ID,
