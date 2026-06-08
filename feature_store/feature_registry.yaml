@@ -1,29 +1,1717 @@
-registry_version: v0.1.0
-maturity: L1-contract-stub
+schema_version: v0.4.0
+registry_name: day4_offline_feature_registry
+feature_set_version: feature_set_day4_v001
 research_boundary: research_signals_only_not_investment_advice
-feature_views:
-  - name: daily_price_volume_basic
-    entity: symbol
-    timestamp_field: trade_date
-    available_time_field: available_time
-    source_table: factor_daily_panel
-    materialization_job: spark/jobs/materialize_factor_daily.py
-    point_in_time_join: feature_store/point_in_time_join/daily_join.sql
-    features:
-      - ret_1d
-      - ret_5d
-      - volatility_20d
-      - turnover_20d
-  - name: realtime_price_volume_snapshot
-    entity: symbol
-    timestamp_field: event_time
-    available_time_field: ingest_time
-    source_topic: factor.realtime.price_volume
-    online_store: redis
-    features:
-      - intraday_return_1m
-      - vwap_deviation_5m
-      - volume_shock_5m
-quality_gates:
-  - no feature can be used when available_time > prediction_time
-  - all official outputs must carry data_version, factor_version, model_version, config_hash
+grain: symbol + trade_date + prediction_time
+generated_at: '2026-06-08T14:32:43+00:00'
+features:
+- feature_name: return_1d
+  feature_group: price_return
+  owner: research-platform
+  description: Recent realized return captures short/medium horizon price pressure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/return_1d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: return_5d
+  feature_group: price_return
+  owner: research-platform
+  description: Recent realized return captures short/medium horizon price pressure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/return_5d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 5d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: return_10d
+  feature_group: price_return
+  owner: research-platform
+  description: Recent realized return captures short/medium horizon price pressure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/return_10d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 10d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: return_20d
+  feature_group: price_return
+  owner: research-platform
+  description: Recent realized return captures short/medium horizon price pressure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/return_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: return_60d
+  feature_group: price_return
+  owner: research-platform
+  description: Recent realized return captures short/medium horizon price pressure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/return_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: return_120d
+  feature_group: price_return
+  owner: research-platform
+  description: Recent realized return captures short/medium horizon price pressure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/return_120d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 120d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: momentum_20d
+  feature_group: momentum
+  owner: research-platform
+  description: Medium-term winners may keep relative strength before reversal dominates.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/momentum_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: momentum_60d
+  feature_group: momentum
+  owner: research-platform
+  description: Medium-term winners may keep relative strength before reversal dominates.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/momentum_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: momentum_120d
+  feature_group: momentum
+  owner: research-platform
+  description: Medium-term winners may keep relative strength before reversal dominates.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/momentum_120d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 120d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: reversal_1d
+  feature_group: reversal
+  owner: research-platform
+  description: Short-term overreaction may mean-revert after costs and tradability
+    checks.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/reversal_1d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: reversal_5d
+  feature_group: reversal
+  owner: research-platform
+  description: Short-term overreaction may mean-revert after costs and tradability
+    checks.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/reversal_5d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 5d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: reversal_10d
+  feature_group: reversal
+  owner: research-platform
+  description: Short-term overreaction may mean-revert after costs and tradability
+    checks.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/reversal_10d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 10d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volatility_5d
+  feature_group: volatility
+  owner: research-platform
+  description: Higher realized volatility proxies uncertainty and risk premium.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volatility_5d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 5d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volatility_10d
+  feature_group: volatility
+  owner: research-platform
+  description: Higher realized volatility proxies uncertainty and risk premium.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volatility_10d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 10d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volatility_20d
+  feature_group: volatility
+  owner: research-platform
+  description: Higher realized volatility proxies uncertainty and risk premium.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volatility_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volatility_60d
+  feature_group: volatility
+  owner: research-platform
+  description: Higher realized volatility proxies uncertainty and risk premium.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volatility_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volatility_120d
+  feature_group: volatility
+  owner: research-platform
+  description: Higher realized volatility proxies uncertainty and risk premium.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volatility_120d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 120d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: downside_volatility_20d
+  feature_group: volatility
+  owner: research-platform
+  description: Downside-only volatility captures asymmetric risk.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/downside_volatility_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: high_low_volatility_20d
+  feature_group: volatility
+  owner: research-platform
+  description: Intraday range captures realized uncertainty beyond close-to-close
+    return.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/high_low_volatility_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: skew_20d
+  feature_group: volatility
+  owner: research-platform
+  description: Return skewness describes lottery/crash asymmetry.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/skew_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: kurtosis_20d
+  feature_group: volatility
+  owner: research-platform
+  description: Fat tails indicate instability and tail-risk exposure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/kurtosis_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: downside_volatility_60d
+  feature_group: volatility
+  owner: research-platform
+  description: Downside-only volatility captures asymmetric risk.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/downside_volatility_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: high_low_volatility_60d
+  feature_group: volatility
+  owner: research-platform
+  description: Intraday range captures realized uncertainty beyond close-to-close
+    return.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/high_low_volatility_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: skew_60d
+  feature_group: volatility
+  owner: research-platform
+  description: Return skewness describes lottery/crash asymmetry.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/skew_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: kurtosis_60d
+  feature_group: volatility
+  owner: research-platform
+  description: Fat tails indicate instability and tail-risk exposure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/kurtosis_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: turnover_proxy_5d
+  feature_group: liquidity
+  owner: research-platform
+  description: Turnover proxy captures abnormal trading intensity.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/turnover_proxy_5d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 5d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: amount_mean_5d
+  feature_group: liquidity
+  owner: research-platform
+  description: Higher traded amount improves capacity and lowers implementation risk.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/amount_mean_5d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 5d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volume_mean_5d
+  feature_group: liquidity
+  owner: research-platform
+  description: Volume depth proxies tradability.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volume_mean_5d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 5d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: turnover_proxy_20d
+  feature_group: liquidity
+  owner: research-platform
+  description: Turnover proxy captures abnormal trading intensity.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/turnover_proxy_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: amount_mean_20d
+  feature_group: liquidity
+  owner: research-platform
+  description: Higher traded amount improves capacity and lowers implementation risk.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/amount_mean_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volume_mean_20d
+  feature_group: liquidity
+  owner: research-platform
+  description: Volume depth proxies tradability.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volume_mean_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: turnover_proxy_60d
+  feature_group: liquidity
+  owner: research-platform
+  description: Turnover proxy captures abnormal trading intensity.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/turnover_proxy_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: amount_mean_60d
+  feature_group: liquidity
+  owner: research-platform
+  description: Higher traded amount improves capacity and lowers implementation risk.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/amount_mean_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volume_mean_60d
+  feature_group: liquidity
+  owner: research-platform
+  description: Volume depth proxies tradability.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volume_mean_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: amihud_20d
+  feature_group: liquidity
+  owner: research-platform
+  description: Amihud illiquidity penalizes high price impact names.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/amihud_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: zero_trade_ratio_20d
+  feature_group: liquidity
+  owner: research-platform
+  description: Zero-volume days flag illiquidity and stale prices.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/zero_trade_ratio_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: amount_percentile_20d
+  feature_group: liquidity
+  owner: research-platform
+  description: Amount percentile normalizes liquidity relative to own recent history.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/amount_percentile_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: amihud_60d
+  feature_group: liquidity
+  owner: research-platform
+  description: Amihud illiquidity penalizes high price impact names.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/amihud_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: zero_trade_ratio_60d
+  feature_group: liquidity
+  owner: research-platform
+  description: Zero-volume days flag illiquidity and stale prices.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/zero_trade_ratio_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: amount_percentile_60d
+  feature_group: liquidity
+  owner: research-platform
+  description: Amount percentile normalizes liquidity relative to own recent history.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/amount_percentile_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: liquidity_zscore_20d
+  feature_group: liquidity
+  owner: research-platform
+  description: Cross-sectional liquidity helps identify capacity-friendly candidates.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/liquidity_zscore_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: vwap_deviation
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Close vs daily VWAP proxy captures intraday pressure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/vwap_deviation
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: close_to_high
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Close near high indicates buying pressure; near low indicates weakness.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/close_to_high
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: close_to_low
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Close position in range captures intraday strength.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/close_to_low
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: intraday_return
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Open-to-close return proxies same-day demand.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/intraday_return
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: overnight_gap
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Overnight information arrival can predict continuation or reversal.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/overnight_gap
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: high_low_range
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Single-day range captures volatility and liquidity stress.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/high_low_range
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: close_position_in_range
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Range position measures close auction strength.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/close_position_in_range
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volume_shock_5d
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Volume shock flags unusual attention or liquidity events.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volume_shock_5d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 5d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: volume_shock_20d
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Volume shock flags unusual attention or liquidity events.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/volume_shock_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: price_volume_corr_20d
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Price-volume correlation captures confirmation/divergence.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/price_volume_corr_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: price_volume_corr_60d
+  feature_group: price_volume_structure
+  owner: research-platform
+  description: Price-volume correlation captures confirmation/divergence.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/price_volume_corr_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: ma5_gap
+  feature_group: moving_average_gap
+  owner: research-platform
+  description: Distance from moving average measures trend extension.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/ma5_gap
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 5d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: ma10_gap
+  feature_group: moving_average_gap
+  owner: research-platform
+  description: Distance from moving average measures trend extension.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/ma10_gap
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 10d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: ma20_gap
+  feature_group: moving_average_gap
+  owner: research-platform
+  description: Distance from moving average measures trend extension.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/ma20_gap
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: ma60_gap
+  feature_group: moving_average_gap
+  owner: research-platform
+  description: Distance from moving average measures trend extension.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/ma60_gap
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: ma120_gap
+  feature_group: moving_average_gap
+  owner: research-platform
+  description: Distance from moving average measures trend extension.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/ma120_gap
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 120d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: size_log_amount
+  feature_group: style_proxy
+  owner: research-platform
+  description: Size proxy helps control liquidity and capacity exposure.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/size_log_amount
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: market_cap_proxy
+  feature_group: style_proxy
+  owner: research-platform
+  description: Synthetic market-cap proxy for style/risk control when shares outstanding
+    are unavailable.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/market_cap_proxy
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: float_market_cap_proxy
+  feature_group: style_proxy
+  owner: research-platform
+  description: Synthetic float-cap proxy for capacity screens.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/float_market_cap_proxy
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: beta_20d
+  feature_group: style_proxy
+  owner: research-platform
+  description: Beta controls market exposure in cross-sectional ranking.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/beta_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: beta_60d
+  feature_group: style_proxy
+  owner: research-platform
+  description: Beta controls market exposure in cross-sectional ranking.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/beta_60d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 60d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: value_proxy
+  feature_group: style_proxy
+  owner: research-platform
+  description: Lower price proxy stands in for value until PE/PB/PS fields are licensed.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/value_proxy
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: high
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: quality_proxy
+  feature_group: style_proxy
+  owner: research-platform
+  description: Quality proxy uses price stability/close strength until accounting
+    fields are available.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/quality_proxy
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: high
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: growth_proxy_20d
+  feature_group: style_proxy
+  owner: research-platform
+  description: Growth proxy uses medium-term improvement until revenue/profit growth
+    fields are available.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/growth_proxy_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: high
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: low_volatility_proxy
+  feature_group: style_proxy
+  owner: research-platform
+  description: Low-volatility style proxy helps risk-balanced candidate selection.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/low_volatility_proxy
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: liquidity_proxy
+  feature_group: style_proxy
+  owner: research-platform
+  description: Higher liquidity / lower Amihud improves implementability.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/liquidity_proxy
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: industry_return_1d
+  feature_group: industry_neutral
+  owner: research-platform
+  description: Industry return captures same-industry common movement.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/industry_return_1d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 1d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: industry_neutral_return_20d
+  feature_group: industry_neutral
+  owner: research-platform
+  description: Industry neutralization reduces sector crowding.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/industry_neutral_return_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: industry_rank_return_20d
+  feature_group: industry_neutral
+  owner: research-platform
+  description: Industry rank compares names within a fair peer group.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/industry_rank_return_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: cs_zscore_return_20d
+  feature_group: cross_sectional
+  owner: research-platform
+  description: Cross-sectional standardized momentum is model-friendly.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/cs_zscore_return_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: cs_rank_return_20d
+  feature_group: cross_sectional
+  owner: research-platform
+  description: Rank transformation is robust to outliers.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/cs_rank_return_20d
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: medium
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: cs_zscore_liquidity
+  feature_group: cross_sectional
+  owner: research-platform
+  description: Liquidity z-score supports risk/capacity screens.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/cs_zscore_liquidity
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: industry_zscore_liquidity
+  feature_group: industry_neutral
+  owner: research-platform
+  description: Industry-neutral liquidity compares peers rather than sectors.
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/industry_zscore_liquidity
+  input_datasets:
+  - data/samples/synthetic_mini_market
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by Day3 leakage checks
+  lookback_window: 20d
+  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+  standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
+  neutralize_policy: industry_neutral_variant_when_available
+  factor_version: factor_v004
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_day4_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time

@@ -7,13 +7,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.services.day2_catalog import data_quality_payload, lakehouse_payload, license_payload, lineage_payload
+from backend.app.services.day4_catalog import factor_payload, feature_payload, spark_jobs_payload
+from backend.app.services.day5_catalog import backtests_payload, dashboard_day5_payload, experiments_payload, scores_payload
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day3",
+    version="0.1.0-day5",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -35,7 +37,7 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day3",
+        "version": "0.1.0-day5",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
@@ -44,7 +46,12 @@ def health() -> dict[str, Any]:
             "lakehouse": "day2_parquet_duckdb_snapshot_ready",
             "data_quality": "day3_quality_quarantine_leakage_ready",
             "lineage": "day3_source_job_snapshot_report_ready",
-            "spark": "day2_bronze_to_silver_smoke_ready",
+            "spark": "day4_factor_materialization_consistency_ready",
+            "factor_store": "day4_offline_factor_store_ready",
+            "labels": "day5_cross_sectional_labels_ready",
+            "scores": "day5_lightgbm_scores_ready",
+            "backtests": "day5_tradable_backtest_risk_capacity_ready",
+            "experiments": "day5_experiment_recorder_ready",
             "flink": "job_graph_stub_ready",
             "redpanda_kafka": "topic_contract_ready",
             "clickhouse": "day2_ads_loader_ready",
@@ -56,6 +63,7 @@ def health() -> dict[str, Any]:
 
 ROUTE_MODULES = {
     "auth": "认证、RBAC 与 action-level permission 占位",
+    "dashboard": "研究平台 dashboard、最新 run、模型版本、质量状态和核心指标",
     "overview": "研究平台总览、数据 cutoff、模型版本和质量状态",
     "data-quality": "数据质量、缺失、异常、quarantine 与延迟摘要",
     "lineage": "ODS/DWD/DWS/ADS、Spark/Flink job 到结果快照的血缘",
@@ -67,6 +75,7 @@ ROUTE_MODULES = {
     "features": "Feature Store、feature view、point-in-time join 和 materialization job",
     "graph": "行业/概念/供应链/共现/价格相关关系图",
     "models": "Qlib、LightGBM、MASTER、StockMixer、HIST、TRSR 适配器",
+    "scores": "横截面模型分数、rank、percentile、置信度和研究边界",
     "experiments": "MLflow/Qlib Recorder 实验记录",
     "backtests": "TopK、long-short、risk/cost/capacity 回测报告",
     "rag": "claim 级证据、as-of 检索、引用和评测",
@@ -79,6 +88,8 @@ ROUTE_MODULES = {
 
 
 def route_payload(module: str) -> dict[str, Any]:
+    if module in {"dashboard", "overview"}:
+        return dashboard_day5_payload(RESEARCH_BOUNDARY)
     if module == "licenses":
         return license_payload(RESEARCH_BOUNDARY)
     if module == "lakehouse":
@@ -87,6 +98,21 @@ def route_payload(module: str) -> dict[str, Any]:
         return data_quality_payload(RESEARCH_BOUNDARY)
     if module == "lineage":
         return lineage_payload(RESEARCH_BOUNDARY)
+    if module == "factors":
+        return factor_payload(RESEARCH_BOUNDARY)
+    if module == "features":
+        return feature_payload(RESEARCH_BOUNDARY)
+    if module == "spark-jobs":
+        return spark_jobs_payload(RESEARCH_BOUNDARY)
+    if module == "scores":
+        return scores_payload(RESEARCH_BOUNDARY)
+    if module == "backtests":
+        return backtests_payload(RESEARCH_BOUNDARY)
+    if module == "experiments":
+        return experiments_payload(RESEARCH_BOUNDARY)
+    if module == "models":
+        payload = experiments_payload(RESEARCH_BOUNDARY)
+        return {**payload, "module": "models", "description": ROUTE_MODULES[module]}
     return {
         "module": module,
         "status": "day2_contract_ready" if module in {"overview", "spark-jobs", "reports"} else "day1_placeholder_ready",

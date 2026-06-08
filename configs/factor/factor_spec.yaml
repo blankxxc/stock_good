@@ -1,0 +1,2919 @@
+schema_version: v0.4.0
+factor_version: factor_v004
+feature_set_version: feature_set_day4_v001
+research_boundary: research_signals_only_not_investment_advice
+generated_at: '2026-06-08T14:32:43+00:00'
+factors:
+  return_1d:
+    category: price_return
+    economic_hypothesis: Recent realized return captures short/medium horizon price
+      pressure.
+    formula: close / close.shift(1) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  return_5d:
+    category: price_return
+    economic_hypothesis: Recent realized return captures short/medium horizon price
+      pressure.
+    formula: close / close.shift(5) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 5d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  return_10d:
+    category: price_return
+    economic_hypothesis: Recent realized return captures short/medium horizon price
+      pressure.
+    formula: close / close.shift(10) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 10d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  return_20d:
+    category: price_return
+    economic_hypothesis: Recent realized return captures short/medium horizon price
+      pressure.
+    formula: close / close.shift(20) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  return_60d:
+    category: price_return
+    economic_hypothesis: Recent realized return captures short/medium horizon price
+      pressure.
+    formula: close / close.shift(60) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  return_120d:
+    category: price_return
+    economic_hypothesis: Recent realized return captures short/medium horizon price
+      pressure.
+    formula: close / close.shift(120) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 120d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  momentum_20d:
+    category: momentum
+    economic_hypothesis: Medium-term winners may keep relative strength before reversal
+      dominates.
+    formula: close / close.shift(20) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  momentum_60d:
+    category: momentum
+    economic_hypothesis: Medium-term winners may keep relative strength before reversal
+      dominates.
+    formula: close / close.shift(60) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  momentum_120d:
+    category: momentum
+    economic_hypothesis: Medium-term winners may keep relative strength before reversal
+      dominates.
+    formula: close / close.shift(120) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 120d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  reversal_1d:
+    category: reversal
+    economic_hypothesis: Short-term overreaction may mean-revert after costs and tradability
+      checks.
+    formula: -return_1d
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  reversal_5d:
+    category: reversal
+    economic_hypothesis: Short-term overreaction may mean-revert after costs and tradability
+      checks.
+    formula: -return_5d
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 5d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  reversal_10d:
+    category: reversal
+    economic_hypothesis: Short-term overreaction may mean-revert after costs and tradability
+      checks.
+    formula: -return_10d
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 10d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volatility_5d:
+    category: volatility
+    economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
+    formula: rolling_std(return_1d, 5)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 5d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volatility_10d:
+    category: volatility
+    economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
+    formula: rolling_std(return_1d, 10)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 10d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volatility_20d:
+    category: volatility
+    economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
+    formula: rolling_std(return_1d, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volatility_60d:
+    category: volatility
+    economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
+    formula: rolling_std(return_1d, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volatility_120d:
+    category: volatility
+    economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
+    formula: rolling_std(return_1d, 120)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 120d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  downside_volatility_20d:
+    category: volatility
+    economic_hypothesis: Downside-only volatility captures asymmetric risk.
+    formula: rolling_std(min(return_1d, 0), 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  high_low_volatility_20d:
+    category: volatility
+    economic_hypothesis: Intraday range captures realized uncertainty beyond close-to-close
+      return.
+    formula: rolling_mean((high-low)/close, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  skew_20d:
+    category: volatility
+    economic_hypothesis: Return skewness describes lottery/crash asymmetry.
+    formula: rolling_skew(return_1d, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  kurtosis_20d:
+    category: volatility
+    economic_hypothesis: Fat tails indicate instability and tail-risk exposure.
+    formula: rolling_kurt(return_1d, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  downside_volatility_60d:
+    category: volatility
+    economic_hypothesis: Downside-only volatility captures asymmetric risk.
+    formula: rolling_std(min(return_1d, 0), 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  high_low_volatility_60d:
+    category: volatility
+    economic_hypothesis: Intraday range captures realized uncertainty beyond close-to-close
+      return.
+    formula: rolling_mean((high-low)/close, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  skew_60d:
+    category: volatility
+    economic_hypothesis: Return skewness describes lottery/crash asymmetry.
+    formula: rolling_skew(return_1d, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  kurtosis_60d:
+    category: volatility
+    economic_hypothesis: Fat tails indicate instability and tail-risk exposure.
+    formula: rolling_kurt(return_1d, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  turnover_proxy_5d:
+    category: liquidity
+    economic_hypothesis: Turnover proxy captures abnormal trading intensity.
+    formula: volume / rolling_mean(volume, 5)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 5d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  amount_mean_5d:
+    category: liquidity
+    economic_hypothesis: Higher traded amount improves capacity and lowers implementation
+      risk.
+    formula: rolling_mean(amount, 5)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 5d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volume_mean_5d:
+    category: liquidity
+    economic_hypothesis: Volume depth proxies tradability.
+    formula: rolling_mean(volume, 5)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 5d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  turnover_proxy_20d:
+    category: liquidity
+    economic_hypothesis: Turnover proxy captures abnormal trading intensity.
+    formula: volume / rolling_mean(volume, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  amount_mean_20d:
+    category: liquidity
+    economic_hypothesis: Higher traded amount improves capacity and lowers implementation
+      risk.
+    formula: rolling_mean(amount, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volume_mean_20d:
+    category: liquidity
+    economic_hypothesis: Volume depth proxies tradability.
+    formula: rolling_mean(volume, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  turnover_proxy_60d:
+    category: liquidity
+    economic_hypothesis: Turnover proxy captures abnormal trading intensity.
+    formula: volume / rolling_mean(volume, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  amount_mean_60d:
+    category: liquidity
+    economic_hypothesis: Higher traded amount improves capacity and lowers implementation
+      risk.
+    formula: rolling_mean(amount, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volume_mean_60d:
+    category: liquidity
+    economic_hypothesis: Volume depth proxies tradability.
+    formula: rolling_mean(volume, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  amihud_20d:
+    category: liquidity
+    economic_hypothesis: Amihud illiquidity penalizes high price impact names.
+    formula: rolling_mean(abs(return_1d)/(amount+eps), 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  zero_trade_ratio_20d:
+    category: liquidity
+    economic_hypothesis: Zero-volume days flag illiquidity and stale prices.
+    formula: rolling_mean(volume<=0, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  amount_percentile_20d:
+    category: liquidity
+    economic_hypothesis: Amount percentile normalizes liquidity relative to own recent
+      history.
+    formula: rolling_percentile_rank(amount, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  amihud_60d:
+    category: liquidity
+    economic_hypothesis: Amihud illiquidity penalizes high price impact names.
+    formula: rolling_mean(abs(return_1d)/(amount+eps), 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  zero_trade_ratio_60d:
+    category: liquidity
+    economic_hypothesis: Zero-volume days flag illiquidity and stale prices.
+    formula: rolling_mean(volume<=0, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  amount_percentile_60d:
+    category: liquidity
+    economic_hypothesis: Amount percentile normalizes liquidity relative to own recent
+      history.
+    formula: rolling_percentile_rank(amount, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  liquidity_zscore_20d:
+    category: liquidity
+    economic_hypothesis: Cross-sectional liquidity helps identify capacity-friendly
+      candidates.
+    formula: cross_sectional_zscore(log1p(amount_mean_20d))
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  vwap_deviation:
+    category: price_volume_structure
+    economic_hypothesis: Close vs daily VWAP proxy captures intraday pressure.
+    formula: close / (amount/volume) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  close_to_high:
+    category: price_volume_structure
+    economic_hypothesis: Close near high indicates buying pressure; near low indicates
+      weakness.
+    formula: (high-close)/(high-low)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  close_to_low:
+    category: price_volume_structure
+    economic_hypothesis: Close position in range captures intraday strength.
+    formula: (close-low)/(high-low)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  intraday_return:
+    category: price_volume_structure
+    economic_hypothesis: Open-to-close return proxies same-day demand.
+    formula: close/open - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  overnight_gap:
+    category: price_volume_structure
+    economic_hypothesis: Overnight information arrival can predict continuation or
+      reversal.
+    formula: open/previous_close - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  high_low_range:
+    category: price_volume_structure
+    economic_hypothesis: Single-day range captures volatility and liquidity stress.
+    formula: (high-low)/close
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  close_position_in_range:
+    category: price_volume_structure
+    economic_hypothesis: Range position measures close auction strength.
+    formula: (close-low)/(high-low)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volume_shock_5d:
+    category: price_volume_structure
+    economic_hypothesis: Volume shock flags unusual attention or liquidity events.
+    formula: volume/rolling_mean(volume,5) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 5d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  volume_shock_20d:
+    category: price_volume_structure
+    economic_hypothesis: Volume shock flags unusual attention or liquidity events.
+    formula: volume/rolling_mean(volume,20) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  price_volume_corr_20d:
+    category: price_volume_structure
+    economic_hypothesis: Price-volume correlation captures confirmation/divergence.
+    formula: rolling_corr(return_1d, volume_pct_change, 20)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  price_volume_corr_60d:
+    category: price_volume_structure
+    economic_hypothesis: Price-volume correlation captures confirmation/divergence.
+    formula: rolling_corr(return_1d, volume_pct_change, 60)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  ma5_gap:
+    category: moving_average_gap
+    economic_hypothesis: Distance from moving average measures trend extension.
+    formula: close/rolling_mean(close,5) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 5d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  ma10_gap:
+    category: moving_average_gap
+    economic_hypothesis: Distance from moving average measures trend extension.
+    formula: close/rolling_mean(close,10) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 10d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  ma20_gap:
+    category: moving_average_gap
+    economic_hypothesis: Distance from moving average measures trend extension.
+    formula: close/rolling_mean(close,20) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  ma60_gap:
+    category: moving_average_gap
+    economic_hypothesis: Distance from moving average measures trend extension.
+    formula: close/rolling_mean(close,60) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  ma120_gap:
+    category: moving_average_gap
+    economic_hypothesis: Distance from moving average measures trend extension.
+    formula: close/rolling_mean(close,120) - 1
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 120d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  size_log_amount:
+    category: style_proxy
+    economic_hypothesis: Size proxy helps control liquidity and capacity exposure.
+    formula: log1p(amount_mean_20d)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  market_cap_proxy:
+    category: style_proxy
+    economic_hypothesis: Synthetic market-cap proxy for style/risk control when shares
+      outstanding are unavailable.
+    formula: close * volume_mean_20d
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  float_market_cap_proxy:
+    category: style_proxy
+    economic_hypothesis: Synthetic float-cap proxy for capacity screens.
+    formula: 0.8 * market_cap_proxy
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  beta_20d:
+    category: style_proxy
+    economic_hypothesis: Beta controls market exposure in cross-sectional ranking.
+    formula: rolling_cov(return_1d, market_return)/rolling_var(market_return), 20
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  beta_60d:
+    category: style_proxy
+    economic_hypothesis: Beta controls market exposure in cross-sectional ranking.
+    formula: rolling_cov(return_1d, market_return)/rolling_var(market_return), 60
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 60d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  value_proxy:
+    category: style_proxy
+    economic_hypothesis: Lower price proxy stands in for value until PE/PB/PS fields
+      are licensed.
+    formula: -cross_sectional_zscore(close)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  quality_proxy:
+    category: style_proxy
+    economic_hypothesis: Quality proxy uses price stability/close strength until accounting
+      fields are available.
+    formula: close_position_in_range - high_low_range
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  growth_proxy_20d:
+    category: style_proxy
+    economic_hypothesis: Growth proxy uses medium-term improvement until revenue/profit
+      growth fields are available.
+    formula: return_20d
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  low_volatility_proxy:
+    category: style_proxy
+    economic_hypothesis: Low-volatility style proxy helps risk-balanced candidate
+      selection.
+    formula: -volatility_20d
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  liquidity_proxy:
+    category: style_proxy
+    economic_hypothesis: Higher liquidity / lower Amihud improves implementability.
+    formula: -amihud_20d
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  industry_return_1d:
+    category: industry_neutral
+    economic_hypothesis: Industry return captures same-industry common movement.
+    formula: mean(return_1d) within industry and date
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 1d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  industry_neutral_return_20d:
+    category: industry_neutral
+    economic_hypothesis: Industry neutralization reduces sector crowding.
+    formula: return_20d - industry_mean(return_20d)
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  industry_rank_return_20d:
+    category: industry_neutral
+    economic_hypothesis: Industry rank compares names within a fair peer group.
+    formula: rank_pct(return_20d) within industry and date
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  cs_zscore_return_20d:
+    category: cross_sectional
+    economic_hypothesis: Cross-sectional standardized momentum is model-friendly.
+    formula: zscore(return_20d) within trade_date
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  cs_rank_return_20d:
+    category: cross_sectional
+    economic_hypothesis: Rank transformation is robust to outliers.
+    formula: rank_pct(return_20d) within trade_date
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  cs_zscore_liquidity:
+    category: cross_sectional
+    economic_hypothesis: Liquidity z-score supports risk/capacity screens.
+    formula: zscore(log1p(amount_mean_20d)) within trade_date
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
+  industry_zscore_liquidity:
+    category: industry_neutral
+    economic_hypothesis: Industry-neutral liquidity compares peers rather than sectors.
+    formula: zscore(log1p(amount_mean_20d)) within industry and date
+    input_tables:
+    - data/samples/synthetic_mini_market
+    - data/quarantine/day3_synthetic_market
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: source prediction_time from Day3 synthetic mini market; factor
+      value never uses future rows
+    universe: eligible_universe and non-delist clean synthetic mini market rows
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
+    standardization: cross_sectional_zscore_or_rank_at_trade_date_only
+    neutralization: industry_neutral_variant_when_available
+    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    rebalancing_frequency: daily_after_close
+    expected_decay: 20d
+    known_risks:
+    - synthetic_data_only
+    - short_local_history
+    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - not_investment_advice
+    owner: research-platform
+    version: factor_v004
