@@ -27,7 +27,7 @@
 - 快照版本：`data/snapshots/dataset_snapshot_manifest_day2.json`，当前 30 个 snapshot，记录 row_count、content_hash、data_version、schema_version、source_version、upstream_snapshot_ids 和 immutable 标记。
 - DuckDB 研究路径：`lakehouse/duckdb/day2_research_queries.sql` 可直接查询本地 Parquet。
 - Spark 本地验证：`spark/jobs/bronze_to_silver_market_daily.py`、`bronze_to_silver_reference.py`、`silver_to_gold_base_panels.py` 均已跑通 PySpark local parquet 输出。
-- 湖仓格式 PoC：`spark/jobs/write_iceberg_or_delta_poc.py` 明确记录 Delta connector 未内置时的 `blocked_with_fallback`，并生成可读回的 Parquet schema-evolution fallback manifest。
+- 湖仓格式 PoC：`spark/jobs/write_iceberg_table_poc.py` 已通过 `org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.11.0` 跑通真实 Iceberg Hadoop catalog 表；`scripts/check_iceberg_acceptance.py` 单独验收写入、读回、schema evolution、metadata files 与 snapshots，`write_iceberg_or_delta_poc.py` 保留为兼容入口。
 - ClickHouse ADS：`deploy/clickhouse/day2_ads_tables.sql` 与 `scripts/load_day2_clickhouse.py`，已把 ADS 摘要、最新评分、回测摘要装载进正在运行的 ClickHouse 容器。
 - 后端 API：`/api/licenses`、`/api/lakehouse`、`/api/data-quality` 返回 Day2 状态、数据版本、许可证计数、snapshot/table 摘要。
 - 前端页面：Dashboard、Lakehouse、Settings/Licenses 已升级为 Day2 说明与许可证状态展示。
@@ -75,7 +75,8 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 .venv/Scripts/python.exe spark/jobs/bronze_to_silver_market_daily.py
 .venv/Scripts/python.exe spark/jobs/bronze_to_silver_reference.py
 .venv/Scripts/python.exe spark/jobs/silver_to_gold_base_panels.py
-.venv/Scripts/python.exe spark/jobs/write_iceberg_or_delta_poc.py
+.venv/Scripts/python.exe scripts/check_iceberg_acceptance.py
+.venv/Scripts/python.exe spark/jobs/write_iceberg_or_delta_poc.py  # 兼容入口，实际调用 Iceberg PoC
 .venv/Scripts/python.exe scripts/load_day2_clickhouse.py
 ```
 

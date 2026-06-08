@@ -28,8 +28,8 @@ checks = [
     run([str(PROJECT_PYTHON), "spark/jobs/bronze_to_silver_market_daily.py"]),
     run([str(PROJECT_PYTHON), "spark/jobs/bronze_to_silver_reference.py"]),
     run([str(PROJECT_PYTHON), "spark/jobs/silver_to_gold_base_panels.py"]),
-    run([str(PROJECT_PYTHON), "spark/jobs/write_iceberg_or_delta_poc.py"]),
-    run([str(PROJECT_PYTHON), "-m", "pytest", "tests/test_day1_scaffold.py", "tests/test_day2_batch_lakehouse.py", "-q"]),
+    run([str(PROJECT_PYTHON), "scripts/check_iceberg_acceptance.py"]),
+    run([str(PROJECT_PYTHON), "-m", "pytest", "tests/test_day1_scaffold.py", "tests/test_day2_batch_lakehouse.py", "tests/test_iceberg_table_format.py", "-q"]),
     run(["npm", "run", "build"], cwd=ROOT / "frontend"),
     run([DOCKER_CMD, "compose", "-f", "deploy/docker/docker-compose.yml", "config", "--quiet"]),
 ]

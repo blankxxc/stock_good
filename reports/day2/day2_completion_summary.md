@@ -24,9 +24,10 @@ Day 2 已完成，并已通过本地验收、前端构建、PySpark local 验证
   - `spark/jobs/bronze_to_silver_market_daily.py`
   - `spark/jobs/bronze_to_silver_reference.py`
   - `spark/jobs/silver_to_gold_base_panels.py`
-- Delta/Iceberg/Hudi PoC 边界：`spark/jobs/write_iceberg_or_delta_poc.py`
-  - 当前本地环境未内置 Delta connector，状态按计划记录为 `blocked_with_fallback`。
-  - fallback Parquet schema-evolution read-back 成功，row_count=12。
+- Iceberg 表格式 PoC：`spark/jobs/write_iceberg_table_poc.py`
+  - 已接入 Spark Iceberg runtime connector：`org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.11.0`。
+  - `scripts/check_iceberg_acceptance.py` 单独验收真实 Iceberg 表写入、读回、schema evolution、metadata files 与 snapshots。
+  - `spark/jobs/write_iceberg_or_delta_poc.py` 保留为兼容入口，实际调用 Iceberg PoC。
 - ClickHouse ADS：
   - DDL：`deploy/clickhouse/day2_ads_tables.sql`
   - Loader：`scripts/load_day2_clickhouse.py`
@@ -60,8 +61,9 @@ status = ok
 - `spark/jobs/bronze_to_silver_market_daily.py`：通过，row_count=12。
 - `spark/jobs/bronze_to_silver_reference.py`：通过，row_count=4。
 - `spark/jobs/silver_to_gold_base_panels.py`：通过，row_count=12。
-- `spark/jobs/write_iceberg_or_delta_poc.py`：通过，fallback read-back row_count=12。
-- `pytest tests/test_day1_scaffold.py tests/test_day2_batch_lakehouse.py -q`：14 passed。
+- `scripts/check_iceberg_acceptance.py`：通过，真实 Iceberg read-back row_count=12，snapshots=1，metadata_file_count=10。
+- `spark/jobs/write_iceberg_or_delta_poc.py`：兼容入口通过，实际调用 Iceberg PoC。
+- `pytest tests/test_day1_scaffold.py tests/test_day2_batch_lakehouse.py tests/test_iceberg_table_format.py -q`：15 passed。
 - `npm run build`：Next.js production build 成功，23 个静态页面生成。
 - `docker compose config --quiet`：通过。
 - `scripts/load_day2_clickhouse.py`：通过。
@@ -129,5 +131,5 @@ HTTP/API 烟测结果：
 
 - Day2 使用 synthetic/local sample 数据，不伪造任何外部供应商授权。
 - 受限/未授权源只进入 registry 和 schema/adapter contract，不进入可展示数据。
-- Delta connector 当前未安装，因此 PoC 按计划以 `blocked_with_fallback` 记录，并用 Parquet fallback 证明 schema-evolution/read-back 路径。
+- Iceberg connector 已通过 `spark.jars.packages` 解析并缓存到本机 Ivy：`org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:1.11.0`；单独验收报告为 `reports/day2/iceberg_table_format_acceptance.json`。
 - 当前输出仍是研究平台数据、信号、排序和回测样例，不构成投资建议。

@@ -157,7 +157,9 @@ def test_day2_spark_and_lakehouse_poc_artifacts_exist():
         "spark/jobs/bronze_to_silver_market_daily.py",
         "spark/jobs/bronze_to_silver_reference.py",
         "spark/jobs/silver_to_gold_base_panels.py",
+        "spark/jobs/write_iceberg_table_poc.py",
         "spark/jobs/write_iceberg_or_delta_poc.py",
+        "scripts/check_iceberg_acceptance.py",
     ]
     missing_jobs = [path for path in required_jobs if not (PROJECT_ROOT / path).is_file()]
     assert missing_jobs == []
@@ -168,16 +170,16 @@ def test_day2_spark_and_lakehouse_poc_artifacts_exist():
     assert spark_report["output_format"] == "parquet"
     assert spark_report["row_count"] >= 6
 
-    lakehouse_report = _read_json("lakehouse/delta/day2_delta_poc_manifest.json")
-    assert lakehouse_report["status"] in {"ok", "blocked_with_fallback"}
-    if lakehouse_report["status"] == "ok":
-        assert lakehouse_report["table_format"] == "delta"
-        assert lakehouse_report["read_back_row_count"] > 0
-        assert lakehouse_report["schema_evolution_checked"] is True
-    else:
-        assert lakehouse_report["blocked_reason"]
-        assert lakehouse_report["fallback_parquet_manifest"]["status"] == "ok"
-        assert lakehouse_report["fallback_parquet_manifest"]["read_back_row_count"] > 0
+    lakehouse_report = _read_json("reports/day2/iceberg_table_format_acceptance.json")
+    assert lakehouse_report["status"] == "ok"
+    assert lakehouse_report["table_format"] == "iceberg"
+    assert lakehouse_report["runtime"] == "pyspark-local"
+    assert "org.apache.iceberg:iceberg-spark-runtime-3.5_2.12" in lakehouse_report["connector_package"]
+    assert lakehouse_report["fallback_used"] is False
+    assert lakehouse_report["read_back_row_count"] == lakehouse_report["row_count"]
+    assert lakehouse_report["schema_evolution_checked"] is True
+    assert lakehouse_report["snapshots_count"] >= 1
+    assert lakehouse_report["metadata_file_count"] >= 1
 
 
 def test_backend_license_api_exposes_day2_source_statuses():
