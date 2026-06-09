@@ -15,13 +15,14 @@ from backend.app.services.day8_catalog import relation_graph_payload
 from backend.app.services.day9_catalog import advanced_models_payload
 from backend.app.services.day10_catalog import rag_payload
 from backend.app.services.day11_catalog import site_payload
+from backend.app.services.day12_catalog import admin_payload, audit_payload, licenses_day12_payload, reports_payload, simulation_payload
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day11",
+    version="0.1.0-day12",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -43,7 +44,7 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day11",
+        "version": "0.1.0-day12",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
@@ -70,7 +71,11 @@ def health() -> dict[str, Any]:
             "hist_trsr_adapter": "day8_hist_trsr_relation_inputs_ready",
             "advanced_models": "day9_research_candidate_adapters_ready",
             "rag": "day10_claim_evidence_rag_ready",
-            "audit": "metadata_table_ready",
+            "simulation": "day12_paper_simulation_governance_ready",
+            "rbac": "day12_rbac_duties_ready",
+            "reports": "day12_report_export_manifest_ready",
+            "license_policy": "day12_license_policy_engine_ready",
+            "audit": "day12_append_only_audit_ready",
         },
     }
 
@@ -109,7 +114,15 @@ def route_payload(module: str) -> dict[str, Any]:
     if module in {"dashboard", "overview"}:
         return dashboard_day5_payload(RESEARCH_BOUNDARY)
     if module == "licenses":
-        return license_payload(RESEARCH_BOUNDARY)
+        return licenses_day12_payload(RESEARCH_BOUNDARY)
+    if module == "admin":
+        return admin_payload(RESEARCH_BOUNDARY)
+    if module == "audit":
+        return audit_payload(RESEARCH_BOUNDARY)
+    if module == "reports":
+        return reports_payload(RESEARCH_BOUNDARY)
+    if module == "simulation":
+        return simulation_payload(RESEARCH_BOUNDARY)
     if module == "lakehouse":
         return lakehouse_payload(RESEARCH_BOUNDARY)
     if module == "data-quality":

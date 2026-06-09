@@ -1,6 +1,6 @@
 # stock_good — 智能选股研究平台
 
-stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 11 的本地闭环实现。
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 12 的本地闭环实现。
 
 仓库地址：https://github.com/blankxxc/stock_good
 
@@ -31,6 +31,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 | Day 9 | MASTER、StockMixer、HIST、TRSR 高级模型 adapter、小样本训练/推理、统一对比报告、模型页面/API | 已完成 L1 research candidate |
 | Day 10 | claim 级 RAG 证据系统、as_of/present/retrospective 检索、引用卡片、许可证门禁、RAG 页面/API | 已完成 L1/L2 claim evidence RAG |
 | Day 11 | 官网层、Research Console 全页面产品化、统一视觉系统、artifact-backed 主卡片、Spark/Lakehouse/Realtime 状态展示 | 已完成 Day11 site productized |
+| Day 12 | paper trading research simulation、组合风控、RBAC/职责分离、append-only 审计、license policy、报告状态机和 export manifest | 已完成 Day12 simulation governance |
 
 最近本地验收结果：
 
@@ -42,9 +43,18 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - Day9 acceptance: `status=ok`, `checks=16`, `failed=[]`, `model_count=4`, `prediction_rows=1620`, `approval_status=research_candidate_only_not_approved`, `leakage_check_status=passed`。
 - Day10 acceptance: `status=ok`, `checks=18`, `failed=[]`, `document_count=11`, `claim_count=11`, `eval_status=ok`, `time_leakage_rate=0.0`, `license_gate_status=passed`。
 - Day11 acceptance: `status=ok`, `checks=16`, `failed=[]`, `public_route_count=7`, `console_route_count=20`, `artifact_backed_pages=20`, `visual_system=professional_research_saas_light`。
-- 完整测试：`52 passed, 24 warnings`。
+- Day12 acceptance: `status=ok`, `checks=25`, `failed=[]`, `simulation_order_count=8`, `simulation_position_count=8`, `risk_status=passed`, `role_count=6`, `license_source_count=3`, `export_manifest_status=generated`, `append_only_audit=true`。
+- 完整测试：`55 passed, 24 warnings`。
 - 前端路由：`route_count=28`。
 - Next.js production build：30 个静态页面生成成功。
+
+最新 Day12 本地验收快照（2026-06-09 18:32 +0800）：
+
+- Day12：`scripts/check_day12_acceptance.py` 返回 `status=ok`、`checks=25`、`failed=[]`、`simulation_order_count=8`、`simulation_position_count=8`、`risk_status=passed`、`role_count=6`、`license_source_count=3`、`export_manifest_status=generated`、`forbidden_wording_gate=passed`、`append_only_audit=true`。
+- Day12 focused tests：`tests/test_day12_simulation_governance.py` 共 `3 passed`；兼容性回归覆盖 Day2 licenses API/page。
+- 完整测试：`55 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day12。
+- API smoke：`/health`、`/api/simulation`、`/api/reports`、`/api/licenses`、`/api/admin`、`/api/audit`、`/api/site`、`/api/rag`、`/api/dashboard` 均返回 200；其中 `/health.version=0.1.0-day12`，`/api/simulation=day12_paper_simulation_ready`，`/api/reports=day12_report_export_ready`，`/api/licenses` 保持 Day2 `status=day2_license_registry_ready` 并新增 `day12_policy_status=day12_license_policy_ready`。
+- 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=28`；`npm run build` 编译成功并生成 30 个静态页面。
 
 最新 Day10/Day11 复验与 GitHub 上传快照（2026-06-09 18:02 +0800）：
 
@@ -105,6 +115,7 @@ lakehouse/                       DuckDB 查询、Iceberg/Delta PoC 相关入口
 models/                          Day5 研究闭环、Day7 事件/市场环境因子与 ablation、Day9 高级模型 adapter
 quality/                         Day3 数据质量、防泄漏、血缘与可信度逻辑
 rag/                             Day10 claim 级 RAG schema、eval sets、证据检索与回答约束
+simulation/                      Day12 paper trading simulation、风控、RBAC/license/report governance
 reports/                         验收报告、质量报告、回测报告、实验 artifacts
 scripts/                         一键验收、pipeline、ClickHouse 装载等脚本
 spark/                           Spark 本地批处理与因子物化任务
@@ -209,6 +220,15 @@ warehouse_schema/                元数据仓库 SQL migration
 - `layout.tsx` 增加官网导航、Research Console 侧栏和固定研究边界提示；`globals.css` 升级为专业、克制、浅色研究 SaaS 风格。
 - `/spark-jobs`、`/lakehouse`、`/realtime`、`/flink-jobs` 均在导航、页面和 API smoke 中可见；页面不使用主流程纯静态假数据。
 
+### 12. Day12 模拟盘、治理与报告导出
+
+- `simulation/day12_governance.py` 生成 paper trading research simulation，不接券商实盘接口，所有订单显式 `simulated=true` 和 `broker_route=none_disabled`。
+- 输出 `simulation_account`、`simulation_order`、`simulation_position`、`simulation_nav` 与 `simulation_risk`，覆盖单票权重、行业权重、turnover、ST/停牌/涨跌停、流动性、max_drawdown、style exposure、tracking error、TopK concentration 等风控 gate。
+- 实现 RBAC 与职责分离：admin、researcher、reviewer、viewer、compliance、data_owner；viewer 不能看未发布候选池、不能导出完整数据、不能运行实验；报告提交者不能审批自己的报告。
+- 实现 Day12 license policy：保留 Day2 `/api/licenses` 兼容字段，同时新增 `day12_policy_status`、`license_registry`、`license_gate_results`、snippet/export/share/redaction 规则。
+- 实现报告状态机与导出门禁：draft → review → approved → exportable → exported → revoked；导出前检查 data_quality、leakage、license_gate、RAG citation 和 forbidden_wording。
+- 生成 `export_manifest`，包含 run/data/factor/model/label/RAG source version、watermark、disclaimer、file_hash 和 audit_id；审计日志为 append-only。
+
 ## Web Research Console
 
 前端位于 `frontend/`，当前包含 28 条路由：7 条官网层路由 + 20 条 Research Console 业务路由 + 首页，覆盖：
@@ -286,6 +306,10 @@ curl http://127.0.0.1:8000/health
 /api/models
 /api/rag
 /api/site
+/api/simulation
+/api/reports
+/api/admin
+/api/audit
 ```
 
 ### 前端
@@ -329,6 +353,7 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 ./.venv/Scripts/python.exe scripts/check_day9_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day10_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day11_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day12_acceptance.py
 ```
 
 完整测试：
@@ -448,6 +473,19 @@ npm run build
 
 Day11 验收会检查官网层路由、Research Console 全页面、artifact-backed 主卡片、禁用文案、Spark/Lakehouse/Realtime 页面入口、`/api/site` 和固定研究边界提示。
 
+## Day12 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day12_acceptance.py
+./.venv/Scripts/python.exe -m pytest tests/test_day12_simulation_governance.py -q
+cd frontend
+npm run validate:routes
+npm run build
+```
+
+Day12 验收会重新生成 paper trading simulation、组合风控报告、RBAC/职责分离、license gate、append-only audit log、report state machine 和 export_manifest，并验证 `/api/simulation`、`/api/reports`、`/api/licenses`、`/api/admin`、`/api/audit` 与对应前端页面。
+
 ## 关键产物
 
 | 产物 | 路径 |
@@ -495,6 +533,12 @@ Day11 验收会检查官网层路由、Research Console 全页面、artifact-bac
 | Day11 Site acceptance | `reports/day11/acceptance_report.json` |
 | Day11 frontend component | `frontend/src/components/ArtifactStatusCard.tsx` |
 | Day11 console data registry | `frontend/src/lib/researchConsoleData.ts` |
+| Day12 governance engine | `simulation/day12_governance.py` |
+| Day12 acceptance report | `reports/day12/acceptance_report.json` |
+| Day12 simulation governance report | `reports/day12/day12_simulation_governance_report.json` |
+| Day12 export manifest | `reports/day12/export_manifest.json` |
+| Day12 audit log | `reports/day12/audit_log.json` |
+| Day12 license gate report | `reports/day12/license_gate_report.json` |
 
 ## 研究与合规边界
 
@@ -502,7 +546,7 @@ Day11 验收会检查官网层路由、Research Console 全页面、artifact-bac
 - 所有特征必须满足 point-in-time 约束，不能使用未来信息。
 - 历史回测必须考虑停牌、ST、涨跌停、退市、流动性、交易成本、滑点、容量和行业/风格暴露。
 - RAG 输出必须有 claim 级引用；没有证据的内容必须标记为假设或证据不足。
-- 数据源必须绑定 license_id 和 display/export policy。
+- 数据源必须绑定 license_id 和 display/export policy；导出必须通过 Day12 license_gate、redaction 和 export_manifest。
 - 禁止把单次回测、单一年份、单个随机种子或明星模型结果当成收益承诺。
 
 ## 后续建议
@@ -511,5 +555,5 @@ Day11 验收会检查官网层路由、Research Console 全页面、artifact-bac
 2. 准备官方 Qlib 数据目录，跑完整 Qlib workflow，而不只使用 minimal recorder。
 3. 扩展模型路线：XGBoost/CatBoost/LambdaRank、MASTER、StockMixer、HIST、Temporal Relational Stock Ranking。
 4. 把 Day10 本地 RAG adapter 替换/扩展为 Qdrant/Milvus/pgvector，并接入真实授权研报、公告和新闻源。
-5. 把 Day11 页面从 artifact-backed 静态研究卡片继续升级为可筛选、可钻取、可下载的交互式研究工作台。
-6. Day12 起补 simulation、risk guard、report review gate、RBAC、审计和报告导出状态机，把研究证据、模型候选和回测诊断打通。
+5. 把 Day11/Day12 页面从 artifact-backed 静态研究卡片继续升级为可筛选、可钻取、可下载的交互式研究工作台。
+6. Day13 起补自动化部署、Docker Compose smoke、观测性 dashboard、备份恢复和 release checklist。

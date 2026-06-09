@@ -178,58 +178,58 @@ export const consolePages: Record<string, ConsolePageConfig> = {
   },
   simulation: {
     route: '/simulation',
-    title: 'Simulation 模拟研究',
-    eyebrow: 'contract-backed · Day12 placeholder',
+    title: 'Simulation 模拟盘与组合风控',
+    eyebrow: 'artifact-backed · Day12 paper trading',
     apiPath: '/api/simulation',
-    artifact: 'Day12 simulation_account contract pending',
-    dataMode: 'contract-backed placeholder',
-    status: 'day12_contract_visible',
-    description: '模拟盘持仓、订单、风险和信号解释；仅用于 research simulation。',
-    fields: ['simulation_account', 'simulation_order', 'simulation_position', 'simulation_nav', 'risk_limit']
+    artifact: 'reports/day12/day12_simulation_governance_report.json',
+    dataMode: 'artifact-backed paper_trading_research_simulation_only',
+    status: 'paper_simulation_governance_ready',
+    description: 'simulation_account、simulation_order、simulation_position、simulation_nav、simulation_risk 与组合风控 gate；仅用于 research simulation。',
+    fields: ['simulation_account', 'simulation_order', 'simulation_position', 'simulation_nav', 'simulation_risk', 'risk_limit']
   },
   reports: {
     route: '/reports',
-    title: 'Reports 报告与导出',
-    eyebrow: 'contract-backed · report gate',
+    title: 'Reports 报告导出与状态机',
+    eyebrow: 'artifact-backed · Day12 export gate',
     apiPath: '/api/reports',
-    artifact: 'Day12 report_status/export_manifest contract pending',
-    dataMode: 'contract-backed placeholder',
-    status: 'report_state_machine_visible',
-    description: '报告状态机、导出、审批和 license_gate。',
-    fields: ['report_status', 'approval_status', 'license_gate', 'export_manifest', 'file_hash']
+    artifact: 'reports/day12/export_manifest.json',
+    dataMode: 'artifact-backed report_state_machine',
+    status: 'report_export_manifest_ready',
+    description: '报告状态机、导出审批、license_gate、forbidden_wording 和 export_manifest。',
+    fields: ['report_status', 'approval_status', 'license_gate', 'forbidden_wording', 'export_manifest', 'file_hash']
   },
   'settings/licenses': {
     route: '/settings/licenses',
     title: 'Settings · Licenses 许可证',
-    eyebrow: 'artifact-backed · license registry',
+    eyebrow: 'artifact-backed · Day12 license policy',
     apiPath: '/api/licenses',
-    artifact: 'metadata/license_registry.yaml',
-    dataMode: 'artifact-backed license policy',
-    status: 'license_gate_visible',
-    description: '许可证策略、可展示范围、snippet 限制和导出边界。',
-    fields: ['source_id', 'permitted_use', 'redisplay_allowed', 'snippet_allowed', 'export_allowed']
+    artifact: 'reports/day12/license_gate_report.json',
+    dataMode: 'artifact-backed license policy engine',
+    status: 'license_policy_gate_ready',
+    description: '许可证策略、可展示范围、snippet 限制、license_gate 和导出边界。',
+    fields: ['source_id', 'permitted_use', 'redisplay_allowed', 'snippet_allowed', 'export_allowed', 'external_share_allowed', 'compliance_status']
   },
   'settings/users': {
     route: '/settings/users',
     title: 'Settings · Users 用户角色',
-    eyebrow: 'contract-backed · RBAC',
+    eyebrow: 'artifact-backed · Day12 RBAC',
     apiPath: '/api/admin',
-    artifact: 'metadata RBAC contract',
-    dataMode: 'contract-backed placeholder',
-    status: 'rbac_contract_visible',
-    description: '用户、角色、权限和 action-level permission 的页面入口。',
-    fields: ['user_id', 'role', 'permission', 'data_scope', 'audit_required']
+    artifact: '/api/admin rbac_roles payload',
+    dataMode: 'artifact-backed RBAC duties separation',
+    status: 'rbac_duties_ready',
+    description: '用户、角色、权限、职责分离和 action-level permission 的页面入口。',
+    fields: ['user_id', 'role', 'permission', 'data_scope', 'duties_separation', 'audit_required']
   },
   'settings/audit': {
     route: '/settings/audit',
     title: 'Settings · Audit 审计',
-    eyebrow: 'artifact-backed · governance log',
+    eyebrow: 'artifact-backed · Day12 governance log',
     apiPath: '/api/audit',
-    artifact: 'metadata audit_log contract',
-    dataMode: 'contract-backed placeholder',
-    status: 'audit_log_visible',
-    description: '审计日志和治理事件查询；记录数据、因子、模型、RAG、报告动作。',
-    fields: ['audit_id', 'actor', 'action', 'resource', 'created_at', 'trace_id']
+    artifact: 'reports/day12/audit_log.json',
+    dataMode: 'artifact-backed append_only audit log',
+    status: 'append_only_audit_ready',
+    description: '审计日志和治理事件查询；记录数据、因子、模型、RAG、报告、simulation 动作。',
+    fields: ['audit_id', 'actor', 'action', 'resource', 'created_at', 'trace_id', 'append_only']
   }
 };
 
