@@ -9,13 +9,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.app.services.day2_catalog import data_quality_payload, lakehouse_payload, license_payload, lineage_payload
 from backend.app.services.day4_catalog import factor_payload, feature_payload, spark_jobs_payload
 from backend.app.services.day5_catalog import backtests_payload, dashboard_day5_payload, experiments_payload, scores_payload
+from backend.app.services.day6_catalog import flink_jobs_payload, realtime_payload
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day5",
+    version="0.1.0-day6",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -37,7 +38,7 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day5",
+        "version": "0.1.0-day6",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
@@ -52,9 +53,10 @@ def health() -> dict[str, Any]:
             "scores": "day5_lightgbm_scores_ready",
             "backtests": "day5_tradable_backtest_risk_capacity_ready",
             "experiments": "day5_experiment_recorder_ready",
-            "flink": "job_graph_stub_ready",
-            "redpanda_kafka": "topic_contract_ready",
-            "clickhouse": "day2_ads_loader_ready",
+            "realtime": "day6_replay_kafka_online_feature_ready",
+            "flink": "day6_event_time_factor_jobs_ready",
+            "redpanda_kafka": "day6_standard_topics_replay_ready",
+            "clickhouse": "day6_clickhouse_adapter_reserved_sqlite_sink_ready",
             "rag": "claim_schema_ready",
             "audit": "metadata_table_ready",
         },
@@ -104,6 +106,10 @@ def route_payload(module: str) -> dict[str, Any]:
         return feature_payload(RESEARCH_BOUNDARY)
     if module == "spark-jobs":
         return spark_jobs_payload(RESEARCH_BOUNDARY)
+    if module == "realtime":
+        return realtime_payload(RESEARCH_BOUNDARY)
+    if module == "flink-jobs":
+        return flink_jobs_payload(RESEARCH_BOUNDARY)
     if module == "scores":
         return scores_payload(RESEARCH_BOUNDARY)
     if module == "backtests":
