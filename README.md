@@ -47,20 +47,23 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - Day11 acceptance: `status=ok`, `checks=16`, `failed=[]`, `public_route_count=7`, `console_route_count=20`, `artifact_backed_pages=20`, `visual_system=professional_research_saas_light`。
 - Day12 acceptance: `status=ok`, `checks=25`, `failed=[]`, `simulation_order_count=8`, `simulation_position_count=8`, `risk_status=passed`, `role_count=6`, `license_source_count=3`, `export_manifest_status=generated`, `append_only_audit=true`。
 - Day13 acceptance: `status=ok`, `checks=28`, `failed=[]`, `orchestrator=prefect-local`, `mvp_task_count=15`, `extended_task_count=9`, `backfill_status=dry_run_passed`, `component_count=6`, `ci_gate_count=16`, `backup_asset_count=10`。
-- Day14 acceptance: `status=ok`, `checks>=34`, `failed=[]`, `final_status=day14_final_acceptance_ready`, `completed_days=14`, `coverage_area_count=30`, `release_gate_status=passed`。
+- Day14 acceptance: `status=ok`, `checks=48`, `failed=[]`, `final_status=day14_final_acceptance_ready`, `completed_days=14`, `coverage_area_count=30`, `release_gate_status=passed`。
 - 完整测试：`61 passed, 24 warnings`。
 - 前端路由：`route_count=29`。
 - Next.js production build：31 个静态页面生成成功。
 
 
-最新 Day14 本地验收快照（2026-06-09 22:01 +0800）：
+最新 Day12-Day14 复验与 GitHub 上传快照（2026-06-10 01:12 +0800）：
 
-- Day14：`scripts/check_day14_acceptance.py` 返回 `status=ok`、`checks>=34`、`failed=[]`、`final_status=day14_final_acceptance_ready`、`completed_days=14`、`coverage_area_count=30`、`document_count=16`、`demo_asset_count=13`、`release_gate_status=passed`。
-- Day14 focused tests：`tests/test_day14_final_acceptance.py` 共 `3 passed`。
-- 完整测试：`61 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day14。
-- API smoke：`/health`、`/api/final-acceptance`、`/api/ops`、`/api/reports`、`/api/rag`、`/api/site` 均返回 200；其中 `/health.version=0.1.0-day14`，`/api/final-acceptance=day14_final_acceptance_ready`。
+- Day12：`scripts/check_day12_acceptance.py` 返回 `status=ok`、`checks=25`、`failed=[]`、`simulation_order_count=8`、`simulation_position_count=8`、`risk_status=passed`、`role_count=6`、`license_source_count=3`、`export_manifest_status=generated`、`forbidden_wording_gate=passed`、`append_only_audit=true`。
+- Day13：`scripts/check_day13_acceptance.py` 返回 `status=ok`、`checks=28`、`failed=[]`、`orchestrator=prefect-local`、`mvp_task_count=15`、`extended_task_count=9`、`backfill_status=dry_run_passed`、`component_count=6`、`ci_gate_count=16`、`backup_asset_count=10`。
+- Day14：`scripts/check_day14_acceptance.py` 返回 `status=ok`、`checks=48`、`failed=[]`、`final_status=day14_final_acceptance_ready`、`completed_days=14`、`coverage_area_count=30`、`document_count=16`、`demo_asset_count=13`、`release_gate_status=passed`。
+- Day12-Day14 focused tests：`tests/test_day12_simulation_governance.py`、`tests/test_day13_ops_deployment.py`、`tests/test_day14_final_acceptance.py` 合计 `9 passed`。
+- 完整测试：`61 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day12-Day14。
+- API smoke：`/health`、`/api/simulation`、`/api/reports`、`/api/ops`、`/api/orchestration`、`/api/backfill`、`/api/observability`、`/api/deployment`、`/api/final-acceptance` 均返回 200；其中 `/health.version=0.1.0-day14`，`/api/final-acceptance=day14_final_acceptance_ready`。
 - 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=29`；`npm run build` 编译成功并生成 31 个静态页面。
 - 运维 smoke：`docker compose -f deploy/docker/docker-compose.yml config --services` 成功；backup/restore smoke 成功。
+- GitHub 同步：本节随 README docs 提交一起推送到 `origin/main`；本次同步包含 Day12 提交 `1d0a70a`、Day13 提交 `8fdf908`、Day14 提交 `7cb58db` 和 README 更新提交。
 - 最终文档：`docs/final_acceptance_report.md`、`docs/demo/coverage_matrix.md`、`docs/demo_script.md`、`docs/architecture.md`、`docs/security_compliance.md` 和 `docs/adr/ADR-005-final-release-gates.md` 已补齐。
 
 最新 Day13 本地验收快照（2026-06-09 21:44 +0800）：
