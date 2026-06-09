@@ -1,9 +1,14 @@
-# Day 1 Risk Register
+# Risk Register
 
-| risk_id | title | severity | mitigation | owner | status |
-|---|---|---:|---|---|---|
-| R-001 | Docker Desktop/CLI installed, but Docker Linux engine cannot start because WSL is not installed/enabled and this shell is not elevated | High | Docker CLI and Compose now resolve from `C:\Program Files\Docker\Docker\resources\bin`; enable WSL/VirtualMachinePlatform from an Administrator terminal and reboot, then start Docker Desktop before full compose gate | platform | open |
-| R-002 | PySpark parquet write on native Windows required HADOOP_HOME/winutils.exe | Medium | Installed `C:\Users\blankxxc\hadoop\bin\winutils.exe` and `hadoop.dll`; Spark smoke now writes Parquet successfully with `write_status=parquet_ok` | data-platform | mitigated |
-| R-003 | Future data leakage through timestamps | High | Enforce event_time/publish_time/ingest_time/available_time in contracts and point-in-time joins | quant | open |
-| R-004 | RAG answer without citations | High | claim_id/citation_span/evidence_strength required; no-citation answers marked evidence-insufficient | rag | open |
-| R-005 | UI wording looks like recommendation | Medium | Product copy uses research candidate/rank/explanation language only | product | open |
+本项目是智能选股研究平台/量化研究控制台，不是 AI 荐股网站、自动交易系统或买卖点工具；所有输出均为研究信号，必须经过样本外验证、模拟盘、风控、许可证 gate 和人工复核。
+
+| 风险 | 当前状态 | 处理方式 | Owner |
+| --- | --- | --- | --- |
+| Spark / Iceberg / Hudi / Delta Lake 依赖复杂 | 部分关闭 | Spark local + Parquet 可运行，Iceberg local PoC，Hudi/Delta 保留 adapter/blocked reason | data-platform |
+| Flink 实时链路复杂 | 部分关闭 | replay simulated feed + Flink-style deterministic jobs；正式集群后续推进 | streaming |
+| 高级模型依赖冲突 | 部分关闭 | MASTER/StockMixer/HIST/TRSR 先 small-sample adapter，禁止生产化宣传 | modeling |
+| 数据许可证/外部数据接入 | 未关闭 | license_id、display/export policy、redaction、manual review | compliance |
+| 实盘/券商/自动交易边界 | 已门禁 | no broker integration、simulated=true、broker_route=none_disabled | governance |
+| RAG 幻觉或无证据回答 | 部分关闭 | claim-level citation、无引用拒答、eval gate | rag |
+| 回测过拟合 | 部分关闭 | walk-forward、成本、滑点、capacity、blocked reason、严禁收益承诺 | quant |
+| 部署密钥泄漏 | 部分关闭 | .env.example 只放占位符，CI secret scan，真实 credentials 不进 Git | ops |

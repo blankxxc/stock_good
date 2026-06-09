@@ -1,0 +1,10 @@
+flowchart LR
+  Sources[Data Sources] --> Lakehouse[Bronze/Silver/Gold/ADS Lakehouse]
+  Lakehouse --> Factors[Factor Store]
+  Factors --> Models[LightGBM/Qlib + research adapters]
+  Models --> Backtest[Backtest/Risk/Capacity]
+  Lakehouse --> RAG[Claim-level RAG]
+  Backtest --> Console[Research Console]
+  RAG --> Console
+  Console --> Governance[RBAC/Audit/License/Export Manifest]
+  Ops[CI/CD Observability Backup] --> Console

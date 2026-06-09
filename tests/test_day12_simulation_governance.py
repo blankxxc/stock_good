@@ -184,7 +184,7 @@ def test_day12_api_frontend_and_acceptance_script_are_ready() -> None:
 
     client = TestClient(app)
     health = client.get("/health").json()
-    assert health["version"] in {"0.1.0-day12", "0.1.0-day13"}
+    assert health["version"] in {"0.1.0-day12", "0.1.0-day13", "0.1.0-day14"}
     assert health["modules"]["simulation"] == "day12_paper_simulation_governance_ready"
     assert health["modules"]["rbac"] == "day12_rbac_duties_ready"
     assert health["modules"]["reports"] == "day12_report_export_manifest_ready"

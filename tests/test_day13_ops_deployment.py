@@ -215,7 +215,7 @@ def test_day13_deployment_ci_backup_assets_and_api_are_ready():
         assert response.status_code == 200, path
         assert response.json()["status"] == expected_status, response.json()
     health = client.get("/health").json()
-    assert health["version"] == "0.1.0-day13"
+    assert health["version"] in {"0.1.0-day13", "0.1.0-day14"}
     assert health["modules"]["orchestration"] == "day13_prefect_local_dag_ready"
     assert health["modules"]["observability"] == "day13_ops_metrics_ready"
     assert health["modules"]["backup_restore"] == "day13_backup_restore_smoke_ready"

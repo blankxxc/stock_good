@@ -1,0 +1,6 @@
+flowchart LR
+  Replay[Replay simulated feed] --> Kafka[Redpanda/Kafka topics]
+  Kafka --> Flink[Flink-style event-time jobs]
+  Flink --> Online[online_feature_snapshot / Redis PoC]
+  Flink --> Alerts[quality alerts]
+  Online --> Console[Realtime Console]

@@ -17,13 +17,14 @@ from backend.app.services.day10_catalog import rag_payload
 from backend.app.services.day11_catalog import site_payload
 from backend.app.services.day12_catalog import admin_payload, audit_payload, licenses_day12_payload, reports_payload, simulation_payload
 from ops.day13_ops import build_day13_artifacts
+from ops.day14_final import build_day14_final_artifacts
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day13",
+    version="0.1.0-day14",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -45,7 +46,7 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day13",
+        "version": "0.1.0-day14",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
@@ -85,6 +86,8 @@ def health() -> dict[str, Any]:
             "ci_cd": "day13_quality_gates_ready",
             "deployment": "day13_compose_proxy_k8s_ready",
             "backup_restore": "day13_backup_restore_smoke_ready",
+            "final_acceptance": "day14_final_acceptance_ready",
+            "documentation": "day14_docs_demo_coverage_ready",
         },
     }
 
@@ -118,6 +121,7 @@ ROUTE_MODULES = {
     "backfill": "backfill_request、dry-run 影响范围和新 snapshot",
     "observability": "数据/任务/模型/系统指标和 Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis 状态",
     "deployment": "Docker Compose、反向代理、K8s 草案、CI/CD 和 backup/restore smoke",
+    "final-acceptance": "Day14 全量联调、最终验收、覆盖矩阵、文档和演示资产",
     "licenses": "数据许可证、可展示范围和 license_gate",
 }
 
@@ -151,6 +155,8 @@ def route_payload(module: str) -> dict[str, Any]:
     if module == "deployment":
         payload = build_day13_artifacts()
         return {"status": "day13_deployment_backup_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "ci_cd": payload["ci_cd"], **payload["deployment"]}
+    if module == "final-acceptance":
+        return build_day14_final_artifacts()
     if module == "lakehouse":
         return lakehouse_payload(RESEARCH_BOUNDARY)
     if module == "data-quality":

@@ -1,6 +1,6 @@
 # stock_good — 智能选股研究平台
 
-stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 13 的本地闭环实现。
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 14 的本地闭环实现。
 
 仓库地址：https://github.com/blankxxc/stock_good
 
@@ -33,6 +33,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 | Day 11 | 官网层、Research Console 全页面产品化、统一视觉系统、artifact-backed 主卡片、Spark/Lakehouse/Realtime 状态展示 | 已完成 Day11 site productized |
 | Day 12 | paper trading research simulation、组合风控、RBAC/职责分离、append-only 审计、license policy、报告状态机和 export manifest | 已完成 Day12 simulation governance |
 | Day 13 | 自动化部署与运维闭环、配置解析/config_hash、prefect-local DAG、backfill dry-run、snapshot manifest、可观测性、CI/CD、备份恢复 | 已完成 Day13 ops deployment readiness |
+| Day 14 | 全量联调、最终验收、覆盖矩阵、演示资产、ADR、risk register、最终文档和 release gates | 已完成 Day14 final acceptance |
 
 最近本地验收结果：
 
@@ -46,10 +47,21 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - Day11 acceptance: `status=ok`, `checks=16`, `failed=[]`, `public_route_count=7`, `console_route_count=20`, `artifact_backed_pages=20`, `visual_system=professional_research_saas_light`。
 - Day12 acceptance: `status=ok`, `checks=25`, `failed=[]`, `simulation_order_count=8`, `simulation_position_count=8`, `risk_status=passed`, `role_count=6`, `license_source_count=3`, `export_manifest_status=generated`, `append_only_audit=true`。
 - Day13 acceptance: `status=ok`, `checks=28`, `failed=[]`, `orchestrator=prefect-local`, `mvp_task_count=15`, `extended_task_count=9`, `backfill_status=dry_run_passed`, `component_count=6`, `ci_gate_count=16`, `backup_asset_count=10`。
-- 完整测试：`58 passed, 24 warnings`。
+- Day14 acceptance: `status=ok`, `checks>=34`, `failed=[]`, `final_status=day14_final_acceptance_ready`, `completed_days=14`, `coverage_area_count=30`, `release_gate_status=passed`。
+- 完整测试：`61 passed, 24 warnings`。
 - 前端路由：`route_count=29`。
 - Next.js production build：31 个静态页面生成成功。
 
+
+最新 Day14 本地验收快照（2026-06-09 22:01 +0800）：
+
+- Day14：`scripts/check_day14_acceptance.py` 返回 `status=ok`、`checks>=34`、`failed=[]`、`final_status=day14_final_acceptance_ready`、`completed_days=14`、`coverage_area_count=30`、`document_count=16`、`demo_asset_count=13`、`release_gate_status=passed`。
+- Day14 focused tests：`tests/test_day14_final_acceptance.py` 共 `3 passed`。
+- 完整测试：`61 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day14。
+- API smoke：`/health`、`/api/final-acceptance`、`/api/ops`、`/api/reports`、`/api/rag`、`/api/site` 均返回 200；其中 `/health.version=0.1.0-day14`，`/api/final-acceptance=day14_final_acceptance_ready`。
+- 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=29`；`npm run build` 编译成功并生成 31 个静态页面。
+- 运维 smoke：`docker compose -f deploy/docker/docker-compose.yml config --services` 成功；backup/restore smoke 成功。
+- 最终文档：`docs/final_acceptance_report.md`、`docs/demo/coverage_matrix.md`、`docs/demo_script.md`、`docs/architecture.md`、`docs/security_compliance.md` 和 `docs/adr/ADR-005-final-release-gates.md` 已补齐。
 
 最新 Day13 本地验收快照（2026-06-09 21:44 +0800）：
 
@@ -118,6 +130,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 backend/                         FastAPI 后端、API 路由、Alembic migration
 configs/                         数据源、因子、模型等配置
 contracts/                       项目契约与治理约束
+docs/                            Day14 架构、最终验收、演示脚本、风险 register 和 ADR
 data/                            Bronze/Silver/Gold/ADS/样例数据/隔离数据
 feature_store/                   Feature registry 与 point-in-time join
 factors/                         离线因子计算引擎
@@ -128,7 +141,7 @@ models/                          Day5 研究闭环、Day7 事件/市场环境因
 quality/                         Day3 数据质量、防泄漏、血缘与可信度逻辑
 rag/                             Day10 claim 级 RAG schema、eval sets、证据检索与回答约束
 simulation/                      Day12 paper trading simulation、风控、RBAC/license/report governance
-ops/                             Day13 配置解析、DAG、backfill、可观测性和部署运维 helper
+ops/                             Day13/Day14 配置解析、DAG、运维 helper 和最终验收 payload
 reports/                         验收报告、质量报告、回测报告、实验 artifacts
 scripts/                         一键验收、pipeline、ClickHouse 装载等脚本
 spark/                           Spark 本地批处理与因子物化任务
@@ -614,3 +627,11 @@ Day13 验收会检查配置解析与 config_hash、prefect-local DAG、backfill 
 4. 把 Day10 本地 RAG adapter 替换/扩展为 Qdrant/Milvus/pgvector，并接入真实授权研报、公告和新闻源。
 5. 把 Day11/Day12 页面从 artifact-backed 静态研究卡片继续升级为可筛选、可钻取、可下载的交互式研究工作台。
 6. Day14 继续做最终总验收、release checklist、性能/安全复盘和用户使用文档。
+
+
+### 14. Day14 最终验收与演示资产
+
+- `ops/day14_final.py` 汇总 Day1-Day14 的最终验收 payload，覆盖 30 个能力区，包括 Spark、Lakehouse、Flink、RAG、风险归因、导出合规、部署与文档。
+- `scripts/check_day14_acceptance.py` 固化最终 release gates：pytest/route/build/Compose/backup smoke、no broker integration、no trading advice wording、license gate、RAG citation、point-in-time、manual review required。
+- `/api/final-acceptance` 返回最终覆盖矩阵、文档清单、演示资产、blocked reasons、release gates 与 artifact hash。
+- `docs/final_acceptance_report.md`、`docs/demo/coverage_matrix.md`、`docs/demo_script.md`、`docs/risk_register.md` 与 ADR-005 记录最终交付、成熟度、剩余风险和 blocked reason。

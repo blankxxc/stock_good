@@ -1,0 +1,7 @@
+flowchart TD
+  Raw[Bronze/ODS raw] --> Clean[Silver/DWD clean]
+  Clean --> Gold[Gold factor/label/model samples]
+  Gold --> Report[Reports and export_manifest]
+  Raw --> Quality[Quality and quarantine]
+  Quality --> Lineage[Lineage graph]
+  Report --> Audit[Append-only audit]

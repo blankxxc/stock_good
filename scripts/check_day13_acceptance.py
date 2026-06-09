@@ -77,7 +77,7 @@ def run_acceptance() -> dict[str, Any]:
         resp = client.get(path)
         check(f"api_{path}", resp.status_code == 200 and resp.json().get("status") == expected, resp.json() if resp.status_code == 200 else resp.text)
     health = client.get("/health").json()
-    check("health_day13_modules", health.get("version") == "0.1.0-day13" and health.get("modules", {}).get("orchestration") == "day13_prefect_local_dag_ready", health)
+    check("health_day13_modules", health.get("version") in {"0.1.0-day13", "0.1.0-day14"} and health.get("modules", {}).get("orchestration") == "day13_prefect_local_dag_ready", health)
 
     page = (ROOT / "frontend" / "src" / "app" / "ops" / "page.tsx").read_text(encoding="utf-8")
     registry = (ROOT / "frontend" / "src" / "lib" / "researchConsoleData.ts").read_text(encoding="utf-8")
