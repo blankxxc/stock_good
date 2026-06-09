@@ -1,177 +1,214 @@
 table: rag_claim
 layer: RAG
-schema_version: v0.1.0
-description: Day 1 contract stub with point-in-time metadata and license governance.
-primary_key: [claim_id]
-unique_key: [claim_id]
+schema_version: v0.10.0
+description: Day 10 claim-level RAG evidence schema with point-in-time retrieval,
+  citation spans, license gates, and index metadata.
+primary_key:
+- claim_id
+unique_key:
+- claim_id
 fields:
-  - name: claim_id
-    type: string
-    primary_key: true
-    unique_key: true
-    nullable: false
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: document_id
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: chunk_id
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: citation_span
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: evidence_direction
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: evidence_strength
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: valid_from
-    type: timestamp
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: "valid_from"
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: valid_to
-    type: timestamp
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: "valid_to"
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: as_of
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: status
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: ingest_time
-    type: timestamp
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: "ingest_time"
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: available_time
-    type: timestamp
-    primary_key: false
-    unique_key: false
-    nullable: true
-    time_semantic: "available_time"
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: source
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: false
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: license_id
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: false
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: data_version
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: false
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: schema_version
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: false
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
-  - name: trace_id
-    type: string
-    primary_key: false
-    unique_key: false
-    nullable: false
-    time_semantic: null
-    unit: "raw"
-    range: "domain controlled"
-    anomaly_rule: "quarantine negative prices, impossible timestamps, duplicated unique keys"
-    backfill_allowed: true
+- name: claim_id
+  type: string
+  nullable: false
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: doc_id
+  type: string
+  nullable: false
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: chunk_id
+  type: string
+  nullable: false
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: doc_type
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: claim_type
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: claim_text
+  type: string
+  nullable: false
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: citation_span
+  type: string
+  nullable: false
+  time_semantic: null
+  governance_rule: required for as_of retrieval and license-gated citation output
+  backfill_allowed: true
+- name: source_title
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: source_url
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: source_quality
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: license_id
+  type: string
+  nullable: false
+  time_semantic: null
+  governance_rule: required for as_of retrieval and license-gated citation output
+  backfill_allowed: true
+- name: redisplay_allowed
+  type: boolean
+  nullable: true
+  time_semantic: null
+  governance_rule: required for as_of retrieval and license-gated citation output
+  backfill_allowed: true
+- name: export_allowed
+  type: boolean
+  nullable: true
+  time_semantic: null
+  governance_rule: required for as_of retrieval and license-gated citation output
+  backfill_allowed: true
+- name: event_time
+  type: timestamp
+  nullable: true
+  time_semantic: event_time
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: publish_time
+  type: timestamp
+  nullable: true
+  time_semantic: publish_time
+  governance_rule: required for as_of retrieval and license-gated citation output
+  backfill_allowed: true
+- name: ingest_time
+  type: timestamp
+  nullable: true
+  time_semantic: ingest_time
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: available_time
+  type: timestamp
+  nullable: true
+  time_semantic: available_time
+  governance_rule: required for as_of retrieval and license-gated citation output
+  backfill_allowed: true
+- name: valid_from
+  type: timestamp
+  nullable: true
+  time_semantic: valid_from
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: valid_to
+  type: timestamp
+  nullable: true
+  time_semantic: valid_to
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: symbols
+  type: array<string>
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: industries
+  type: array<string>
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: concepts
+  type: array<string>
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: related_factor_ids
+  type: array<string>
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: related_model_ids
+  type: array<string>
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: related_experiment_ids
+  type: array<string>
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: related_run_ids
+  type: array<string>
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: evidence_direction
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: evidence_strength
+  type: float
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: confidence
+  type: float
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: status
+  type: string
+  nullable: false
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: schema_version
+  type: string
+  nullable: false
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: content_hash
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: embedding_model
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true
+- name: index_version
+  type: string
+  nullable: true
+  time_semantic: null
+  governance_rule: standard claim metadata
+  backfill_allowed: true

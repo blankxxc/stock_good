@@ -1,6 +1,6 @@
 {
   "name": "stock-good-frontend",
-  "version": "0.1.0-day9",
+  "version": "0.1.0-day10",
   "private": true,
   "scripts": {
     "validate:routes": "node scripts/validate_routes.mjs",

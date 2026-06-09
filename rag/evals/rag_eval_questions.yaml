@@ -1,0 +1,17 @@
+questions:
+- id: q_relation_ablation
+  query: relation_spillover 是否有 ablation 证据？
+  mode: present
+  expected_claim_ids_any:
+  - experiment_card_004
+  - factor_card_002
+- id: q_asof_news
+  query: 公告 情绪 因子 可用时间
+  mode: as_of
+  prediction_time: '2026-01-04T15:00:00+00:00'
+  must_not_include:
+  - future_ann_001
+- id: q_unknown_abstain
+  query: 不存在的火星矿业股票稳赚吗
+  mode: present
+  expect_abstain: true

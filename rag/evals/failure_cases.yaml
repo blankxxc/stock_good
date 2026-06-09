@@ -1,0 +1,3 @@
+failure_cases:
+- id: time_leakage
+  description: future announcement must be filtered in as_of mode

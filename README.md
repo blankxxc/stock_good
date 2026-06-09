@@ -1,6 +1,6 @@
 # stock_good — 智能选股研究平台
 
-stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 9 的本地闭环实现。
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 10 的本地闭环实现。
 
 仓库地址：https://github.com/blankxxc/stock_good
 
@@ -29,6 +29,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 | Day 7 | 新闻/公告事件、FinBERT-compatible 情绪 baseline、事件因子、market regime、增强特征矩阵、ablation | 已完成 |
 | Day 8 | 股票关系图、Spark-style 价格相关边、NetworkX centrality/community、关系传播因子、HIST/TRSR adapter、图谱页面/API | 已完成 L1/L2 PoC |
 | Day 9 | MASTER、StockMixer、HIST、TRSR 高级模型 adapter、小样本训练/推理、统一对比报告、模型页面/API | 已完成 L1 research candidate |
+| Day 10 | claim 级 RAG 证据系统、as_of/present/retrospective 检索、引用卡片、许可证门禁、RAG 页面/API | 已完成 L1/L2 claim evidence RAG |
 
 最近本地验收结果：
 
@@ -38,17 +39,19 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - Day7 acceptance: `status=ok`, `checks=18`, `failed=[]`, `text_model_status=lexicon_finbert_compatible_baseline_ready`, `event_factor_rows=29400`, `market_regime_rows=100`, `enhanced_feature_rows=1960`, `ablation_status=lightgbm_smoke_trained`。
 - Day8 acceptance: `status=ok`, `checks=17`, `failed=[]`, `edge_rows=990`, `relation_type_count=8`, `relation_factor_rows=1960`, `enhanced_feature_rows=1960`, `networkx_status=networkx_centrality_ready`, `hist_trsr_adapter_status=hist_trsr_relation_inputs_ready`。
 - Day9 acceptance: `status=ok`, `checks=16`, `failed=[]`, `model_count=4`, `prediction_rows=1620`, `approval_status=research_candidate_only_not_approved`, `leakage_check_status=passed`。
-- 完整测试：`46 passed, 24 warnings`。
+- Day10 acceptance: `status=ok`, `checks=18`, `failed=[]`, `document_count=11`, `claim_count=11`, `eval_status=ok`, `time_leakage_rate=0.0`, `license_gate_status=passed`。
+- 完整测试：`49 passed, 24 warnings`。
 - 前端路由：`route_count=21`。
 - Next.js production build：23 个静态页面生成成功。
 
-最新 Day8/Day9 复验快照（2026-06-09）：
+最新 Day8/Day9/Day10 复验快照（2026-06-09）：
 
 - Day8：`scripts/check_day8_acceptance.py` 返回 `status=ok`、`checks=17`、`failed=[]`、`edge_rows=990`、`relation_type_count=8`、`relation_factor_rows=1960`、`enhanced_feature_rows=1960`、`spark_price_corr_status=spark_compatible_price_corr_edges_ready`、`hist_trsr_adapter_status=hist_trsr_relation_inputs_ready`。
 - Day9：`scripts/check_day9_acceptance.py` 返回 `status=ok`、`checks=16`、`failed=[]`、`model_count=4`、`prediction_rows=1620`、`approval_status=research_candidate_only_not_approved`、`leakage_check_status=passed`。
-- Day8/Day9 focused tests：`tests/test_day8_relation_graph.py tests/test_day9_advanced_models.py` 共 `7 passed`。
-- 完整测试：`46 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day8/Day9。
-- API smoke：`/health`、`/api/graph`、`/api/factors`、`/api/models`、`/api/experiments` 均返回 200；其中 `/api/graph` 为 `day8_relation_graph_ready`，`/api/models` 为 `day9_advanced_models_ready`。
+- Day10：`scripts/check_day10_acceptance.py` 返回 `status=ok`、`checks=18`、`failed=[]`、`document_count=11`、`claim_count=11`、`eval_status=ok`、`time_leakage_rate=0.0`、`license_gate_status=passed`。
+- Day10 focused tests：`tests/test_day10_rag_evidence.py` 共 `3 passed`。
+- 完整测试：`49 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day10。
+- API smoke：`/health`、`/api/rag`、`/api/models`、`/api/experiments` 均返回 200；其中 `/api/rag` 为 `day10_rag_evidence_ready`，`/api/models` 为 `day9_advanced_models_ready`。
 - 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=21`；`npm run build` 生成 23 个静态页面。
 
 ## 技术栈
@@ -97,6 +100,7 @@ graph/                           Day8 股票关系图、关系传播因子和图
 lakehouse/                       DuckDB 查询、Iceberg/Delta PoC 相关入口
 models/                          Day5 研究闭环、Day7 事件/市场环境因子与 ablation、Day9 高级模型 adapter
 quality/                         Day3 数据质量、防泄漏、血缘与可信度逻辑
+rag/                             Day10 claim 级 RAG schema、eval sets、证据检索与回答约束
 reports/                         验收报告、质量报告、回测报告、实验 artifacts
 scripts/                         一键验收、pipeline、ClickHouse 装载等脚本
 spark/                           Spark 本地批处理与因子物化任务
@@ -183,6 +187,15 @@ warehouse_schema/                元数据仓库 SQL migration
 - 对比报告覆盖 LightGBM vs MASTER vs StockMixer vs HIST vs TRSR 的 IC、RankIC、TopK、Drawdown、Turnover、Runtime、ParameterCount、TrainingCostTier、WorstSeedRankIC 和 BlockedReason。
 - 四个高级模型均为 `candidate / not_approved_research_candidate_only`，不能进入正式评分或交易决策。
 
+### 10. Day10 claim 级 RAG 证据系统
+
+- `rag/day10_evidence_system.py` 构建 document -> chunk -> claim 的本地证据链，支持 paper、factor_card、strategy_card、experiment_card、backtest_report、failure_case、market_review、announcement、news、research_note、relation_case 等 11 类资料。
+- `rag/schemas/rag_claim.schema.yaml` 明确 `claim_id`、`citation_span`、`license_id`、`event_time`、`publish_time`、`ingest_time`、`available_time`、`valid_from`、`valid_to`、`evidence_direction`、`evidence_strength`、`content_hash`、`embedding_model` 和 `index_version`。
+- 输出 `data/gold/rag_documents`、`data/gold/rag_chunks`、`data/gold/rag_claims`，并生成 `reports/day10/rag_evidence_report.json`、`rag_eval_report.json`、`rag_answer_cards.json`、`rag_citation_cards.html`。
+- 检索支持 `as_of`、`present`、`retrospective_review`：`as_of` 强制 `available_time <= prediction_time`、`publish_time <= prediction_time`、`status=approved` 和 license gate。
+- 回答约束为事实、推断、假设、支持证据、反对证据、适用条件；无引用拒答，不输出买入/卖出/持有/目标价/稳赚/确定上涨等交易指令。
+- RAG 评测覆盖 expected citations、time leakage、license gate、forbidden wording、abstention accuracy、citation support rate 和 Recall@5。
+
 ## Web Research Console
 
 前端位于 `frontend/`，当前包含 21 条业务路由，覆盖：
@@ -201,7 +214,8 @@ warehouse_schema/                元数据仓库 SQL migration
 - `/flink-jobs`：Day6 Flink-style job status
 - `/graph`：Day8 股票关系图、关系传播因子、HIST/TRSR adapter 和 ablation 状态
 - `/models`：Day9 MASTER、StockMixer、HIST、TRSR 小样本 adapter、模型对比和 candidate 准入状态
-- `/rag`、`/simulation`、`/reports` 等研究扩展页面
+- `/rag`：Day10 claim 级 RAG 证据、as_of 检索、引用卡片、评测门禁和无引用拒答边界
+- `/simulation`、`/reports` 等研究扩展页面
 
 ## 快速开始
 
@@ -256,6 +270,7 @@ curl http://127.0.0.1:8000/health
 /api/event-regime
 /api/graph
 /api/models
+/api/rag
 ```
 
 ### 前端
@@ -297,6 +312,7 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 ./.venv/Scripts/python.exe scripts/check_day7_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day8_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day9_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day10_acceptance.py
 ```
 
 完整测试：
@@ -393,6 +409,16 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 
 Day9 验收会重新运行 MASTER、StockMixer、HIST、TRSR 的本地 small-sample adapter，生成统一对比报告、experiment recorder artifact 和模型页面/API 验证。当前四个模型均为 `research_candidate_only_not_approved`。
 
+## Day10 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day10_acceptance.py
+./.venv/Scripts/python.exe -m pytest tests/test_day10_rag_evidence.py -q
+```
+
+Day10 验收会重新生成 document/chunk/claim 证据表、claim schema、RAG eval sets、answer/citation cards、RAG API 与 `/rag` 页面验证。当前 RAG 模块为 claim-level evidence research assistant，不生成交易指令。
+
 ## 关键产物
 
 | 产物 | 路径 |
@@ -431,6 +457,12 @@ Day9 验收会重新运行 MASTER、StockMixer、HIST、TRSR 的本地 small-sam
 | Day9 模型对比 CSV | `data/gold/advanced_model_comparison/model_comparison.csv` |
 | Day9 模型对比报告 | `reports/day9/model_comparison_report.json` |
 | Day9 实验记录器 | `reports/day9/experiment_recorder` |
+| Day10 RAG documents | `data/gold/rag_documents` |
+| Day10 RAG chunks | `data/gold/rag_chunks` |
+| Day10 RAG claims | `data/gold/rag_claims` |
+| Day10 RAG 证据报告 | `reports/day10/rag_evidence_report.json` |
+| Day10 RAG eval 报告 | `reports/day10/rag_eval_report.json` |
+| Day10 RAG answer/citation cards | `reports/day10/rag_answer_cards.json`, `reports/day10/rag_citation_cards.html` |
 
 ## 研究与合规边界
 
@@ -446,6 +478,6 @@ Day9 验收会重新运行 MASTER、StockMixer、HIST、TRSR 的本地 small-sam
 1. 接入真实授权数据源，并把 Day2 synthetic pipeline 替换为正式 adapter。
 2. 准备官方 Qlib 数据目录，跑完整 Qlib workflow，而不只使用 minimal recorder。
 3. 扩展模型路线：XGBoost/CatBoost/LambdaRank、MASTER、StockMixer、HIST、Temporal Relational Stock Ranking。
-4. 增强 RAG claim-level evidence、factor card、experiment card 和 failure case 记忆库。
+4. 把 Day10 本地 RAG adapter 替换/扩展为 Qdrant/Milvus/pgvector，并接入真实授权研报、公告和新闻源。
 5. 把 Web research console 从静态说明页升级为可筛选、可钻取、可下载的交互式研究工作台。
-6. Day8 可继续补 relation graph、行业/概念/供应链/新闻共现/价格相关/lead-lag 邻居溢出因子，并把 Day7 relation placeholder 替换为真实图特征。
+6. Day11 起补 simulation、risk guard、report review gate 和网站交互层，把研究证据、模型候选和回测诊断打通。
