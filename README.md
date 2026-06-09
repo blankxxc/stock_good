@@ -1,6 +1,6 @@
 # stock_good — 智能选股研究平台
 
-stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 8 的本地闭环实现。
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 9 的本地闭环实现。
 
 仓库地址：https://github.com/blankxxc/stock_good
 
@@ -28,6 +28,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 | Day 6 | Redpanda/Kafka topic、replay simulated producer、Flink-style 实时因子、online feature snapshot、实时页面/API | 已完成 L1 PoC |
 | Day 7 | 新闻/公告事件、FinBERT-compatible 情绪 baseline、事件因子、market regime、增强特征矩阵、ablation | 已完成 |
 | Day 8 | 股票关系图、Spark-style 价格相关边、NetworkX centrality/community、关系传播因子、HIST/TRSR adapter、图谱页面/API | 已完成 L1/L2 PoC |
+| Day 9 | MASTER、StockMixer、HIST、TRSR 高级模型 adapter、小样本训练/推理、统一对比报告、模型页面/API | 已完成 L1 research candidate |
 
 最近本地验收结果：
 
@@ -36,7 +37,8 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - Day6 acceptance: `status=ok`, `checks=24`, `failed=[]`, `feed_mode=replay_simulated_not_live_market_data`, `raw_events_written=137`, `flink_jobs_ready=5`, `realtime_factor_rows=162`, `online_feature_rows=36`, `diff_report.max_abs_diff=0.0`。
 - Day7 acceptance: `status=ok`, `checks=18`, `failed=[]`, `text_model_status=lexicon_finbert_compatible_baseline_ready`, `event_factor_rows=29400`, `market_regime_rows=100`, `enhanced_feature_rows=1960`, `ablation_status=lightgbm_smoke_trained`。
 - Day8 acceptance: `status=ok`, `checks=17`, `failed=[]`, `edge_rows=990`, `relation_type_count=8`, `relation_factor_rows=1960`, `enhanced_feature_rows=1960`, `networkx_status=networkx_centrality_ready`, `hist_trsr_adapter_status=hist_trsr_relation_inputs_ready`。
-- 完整测试：`43 passed, 24 warnings`。
+- Day9 acceptance: `status=ok`, `checks=16`, `failed=[]`, `model_count=4`, `prediction_rows=1620`, `approval_status=research_candidate_only_not_approved`, `leakage_check_status=passed`。
+- 完整测试：`46 passed, 24 warnings`。
 - 前端路由：`route_count=21`。
 - Next.js production build：23 个静态页面生成成功。
 
@@ -84,7 +86,7 @@ factors/                         离线因子计算引擎
 frontend/                        Next.js research console
 graph/                           Day8 股票关系图、关系传播因子和图模型 adapter
 lakehouse/                       DuckDB 查询、Iceberg/Delta PoC 相关入口
-models/                          Day5 研究闭环、Day7 事件/市场环境因子与 ablation
+models/                          Day5 研究闭环、Day7 事件/市场环境因子与 ablation、Day9 高级模型 adapter
 quality/                         Day3 数据质量、防泄漏、血缘与可信度逻辑
 reports/                         验收报告、质量报告、回测报告、实验 artifacts
 scripts/                         一键验收、pipeline、ClickHouse 装载等脚本
@@ -163,6 +165,15 @@ warehouse_schema/                元数据仓库 SQL migration
 - `data/gold/graph_model_adapters/hist_trsr` 已生成 stock_id_mapping、relation_type_mapping、relation_matrix、concept_matrix、stock_feature_tensor、label_tensor，作为 HIST/TRSR 关系图模型输入 adapter。
 - `relation_factor_ablation_report` 覆盖 base_day7、base_plus_relation_graph、full_minus_relation_graph；结果仍标记为 `not_approved_research_candidate_only`，不能视为实盘信号。
 
+### 9. Day9 高级模型 adapter 与统一对比
+
+- `models/day9_advanced_models.py` 实现统一模型接口：`fit`、`predict`、`evaluate`、`register_model_artifact`、`explain_feature_dependency`。
+- `models/master`、`models/stockmixer`、`models/hist`、`models/trsr` 均包含 `adapter.py`、`run_small_sample.py`、`README.md`、`environment.lock` 和官方生产集成 blocked note。
+- MASTER 使用 market information token；StockMixer 使用 indicator/temporal/stock mixing token；HIST 使用 concept/industry shared-information proxy；TRSR 使用 relation_matrix/lead-lag 排序 proxy。
+- 输出 `data/gold/advanced_model_predictions`、`data/gold/advanced_model_comparison/model_comparison.csv`、`reports/day9/model_comparison_report.json` 和 `reports/day9/experiment_recorder/*`。
+- 对比报告覆盖 LightGBM vs MASTER vs StockMixer vs HIST vs TRSR 的 IC、RankIC、TopK、Drawdown、Turnover、Runtime、ParameterCount、TrainingCostTier、WorstSeedRankIC 和 BlockedReason。
+- 四个高级模型均为 `candidate / not_approved_research_candidate_only`，不能进入正式评分或交易决策。
+
 ## Web Research Console
 
 前端位于 `frontend/`，当前包含 21 条业务路由，覆盖：
@@ -180,7 +191,8 @@ warehouse_schema/                元数据仓库 SQL migration
 - `/realtime`：Day6 replay simulated realtime factor PoC
 - `/flink-jobs`：Day6 Flink-style job status
 - `/graph`：Day8 股票关系图、关系传播因子、HIST/TRSR adapter 和 ablation 状态
-- `/rag`、`/models`、`/simulation`、`/reports` 等研究扩展页面
+- `/models`：Day9 MASTER、StockMixer、HIST、TRSR 小样本 adapter、模型对比和 candidate 准入状态
+- `/rag`、`/simulation`、`/reports` 等研究扩展页面
 
 ## 快速开始
 
@@ -234,6 +246,7 @@ curl http://127.0.0.1:8000/health
 /api/flink-jobs
 /api/event-regime
 /api/graph
+/api/models
 ```
 
 ### 前端
@@ -273,6 +286,8 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 ./.venv/Scripts/python.exe scripts/check_day5_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day6_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day7_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day8_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day9_acceptance.py
 ```
 
 完整测试：
@@ -349,6 +364,26 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 
 Day7 验收会重新生成新闻/公告事件、事件因子、市场环境因子、增强特征矩阵和 ablation 报告。当前金融文本模型状态是本地 `lexicon_finbert_compatible_baseline_ready`。
 
+## Day8 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day8_acceptance.py
+./.venv/Scripts/python.exe -m pytest tests/test_day8_relation_graph.py -q
+```
+
+Day8 验收会重新生成股票关系边、关系传播因子、HIST/TRSR 输入 adapter、图谱摘要和 relation ablation 报告。
+
+## Day9 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day9_acceptance.py
+./.venv/Scripts/python.exe -m pytest tests/test_day9_advanced_models.py -q
+```
+
+Day9 验收会重新运行 MASTER、StockMixer、HIST、TRSR 的本地 small-sample adapter，生成统一对比报告、experiment recorder artifact 和模型页面/API 验证。当前四个模型均为 `research_candidate_only_not_approved`。
+
 ## 关键产物
 
 | 产物 | 路径 |
@@ -380,6 +415,13 @@ Day7 验收会重新生成新闻/公告事件、事件因子、市场环境因�
 | Day7 市场环境因子 | `data/gold/factor_market_regime_panel` |
 | Day7 增强特征矩阵 | `data/gold/model_feature_matrix_wide_day7` |
 | Day7 ablation 报告 | `reports/day7/event_regime_ablation_report.json` |
+| Day8 股票关系边 | `data/gold/stock_relation_edge` |
+| Day8 关系传播因子 | `data/gold/factor_relation_panel` |
+| Day8 HIST/TRSR 图模型输入 | `data/gold/graph_model_adapters/hist_trsr` |
+| Day9 高级模型预测 | `data/gold/advanced_model_predictions` |
+| Day9 模型对比 CSV | `data/gold/advanced_model_comparison/model_comparison.csv` |
+| Day9 模型对比报告 | `reports/day9/model_comparison_report.json` |
+| Day9 实验记录器 | `reports/day9/experiment_recorder` |
 
 ## 研究与合规边界
 

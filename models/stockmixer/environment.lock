@@ -1,0 +1,13 @@
+model=StockMixer
+run_id=day9_stockmixer_small_sample_v001
+python=3.11.15
+platform=Windows-10-10.0.26200-SP0
+machine=AMD64
+processor=Intel64 Family 6 Model 140 Stepping 1, GenuineIntel
+numpy=2.4.6
+pandas=2.3.3
+torch_status=missing:ModuleNotFoundError:No module named 'torch'
+sklearn_status=installed:1.9.0
+official_repo=SJTU-DMTai/StockMixer
+official_repo_clone_status=not_cloned_local_small_sample_adapter_used
+research_boundary=research_signals_only_not_investment_advice

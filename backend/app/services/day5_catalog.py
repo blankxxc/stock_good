@@ -104,6 +104,7 @@ def experiments_payload(research_boundary: str) -> dict[str, Any]:
     report = day5_report()
     manifest = _read_json(root / "reports" / "day5" / "experiment_recorder" / str(report.get("run_id", "")) / "artifact_manifest.json")
     config = _read_yaml(root / "reports" / "day5" / "experiment_recorder" / str(report.get("run_id", "")) / "resolved_config.yaml")
+    advanced = _read_json(root / "reports" / "day9" / "advanced_model_integration_report.json")
     if report.get("status") != "ok":
         return {
             "module": "experiments",
@@ -129,6 +130,16 @@ def experiments_payload(research_boundary: str) -> dict[str, Any]:
         "qlib_status": report.get("qlib_status"),
         "resolved_config": config,
         "artifact_manifest": manifest,
+        "advanced_models": {
+            "status": "day9_advanced_models_ready" if advanced.get("status") == "ok" else "day9_advanced_models_pending",
+            "maturity": advanced.get("maturity"),
+            "run_id": advanced.get("run_id"),
+            "experiment_id": advanced.get("experiment_id"),
+            "model_count": len(advanced.get("models", {})),
+            "approval_status": advanced.get("approval_status"),
+            "leakage_check_status": advanced.get("leakage_check_status"),
+            "artifacts": advanced.get("artifacts", {}),
+        },
     }
 
 
