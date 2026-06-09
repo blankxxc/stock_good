@@ -1,6 +1,6 @@
 # stock_good — 智能选股研究平台
 
-stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 5 的本地闭环实现。
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 7 的本地闭环实现。
 
 仓库地址：https://github.com/blankxxc/stock_good
 
@@ -25,12 +25,16 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 | Day 3 | 数据质量、quarantine、防泄漏、point-in-time、血缘、数据可信度页面/API | 已完成 |
 | Day 4 | 74 个离线因子、Feature Store、点时间特征 join、Spark/Polars 一致性、因子页面/API | 已完成 |
 | Day 5 | 5d/10d 标签、LightGBM baseline、walk-forward、回测/风险/容量、实验记录器、Qlib-compatible recorder | 已完成 |
+| Day 6 | Redpanda/Kafka topic、replay simulated producer、Flink-style 实时因子、online feature snapshot、实时页面/API | 已完成 L1 PoC |
+| Day 7 | 新闻/公告事件、FinBERT-compatible 情绪 baseline、事件因子、market regime、增强特征矩阵、ablation | 已完成 |
 
 最近本地验收结果：
 
 - Day4 acceptance: `status=ok`, `checks=15`, `failed=[]`, `factor_count=74`, `factor_rows=129796`, `feature_matrix_rows=1960`, `spark_consistency_status=passed`, `point_in_time_violations=0`。
 - Day5 acceptance: `status=ok`, `checks=19`, `failed=[]`, `label_rows=3620`, `prediction_rows=413`, `holding_rows=105`, `split_count=3`, `feature_count=72`, `lightgbm_status=trained`, `qlib_status=minimal_qlib_recorder_available`, `leakage_check_status=passed`。
-- 完整测试：`31 passed, 24 warnings`。
+- Day6 acceptance: `status=ok`, `checks=24`, `failed=[]`, `feed_mode=replay_simulated_not_live_market_data`, `raw_events_written=137`, `flink_jobs_ready=5`, `realtime_factor_rows=162`, `online_feature_rows=36`, `diff_report.max_abs_diff=0.0`。
+- Day7 acceptance: `status=ok`, `checks=18`, `failed=[]`, `text_model_status=lexicon_finbert_compatible_baseline_ready`, `event_factor_rows=29400`, `market_regime_rows=100`, `enhanced_feature_rows=1960`, `ablation_status=lightgbm_smoke_trained`。
+- 完整测试：`39 passed, 24 warnings`。
 - 前端路由：`route_count=21`。
 - Next.js production build：23 个静态页面生成成功。
 
@@ -76,12 +80,12 @@ feature_store/                   Feature registry 与 point-in-time join
 factors/                         离线因子计算引擎
 frontend/                        Next.js research console
 lakehouse/                       DuckDB 查询、Iceberg/Delta PoC 相关入口
-models/                          Day5 研究闭环、标签、模型、回测、实验记录器
+models/                          Day5 研究闭环、Day7 事件/市场环境因子与 ablation
 quality/                         Day3 数据质量、防泄漏、血缘与可信度逻辑
 reports/                         验收报告、质量报告、回测报告、实验 artifacts
 scripts/                         一键验收、pipeline、ClickHouse 装载等脚本
 spark/                           Spark 本地批处理与因子物化任务
-streaming/                       Kafka topic 与 Flink job graph 设计
+streaming/                       Kafka topic、replay producer 与 Flink-style 实时因子 PoC
 warehouse_schema/                元数据仓库 SQL migration
 ```
 
@@ -128,6 +132,23 @@ warehouse_schema/                元数据仓库 SQL migration
 - 输出预测、持仓、净值曲线、风险报告、回测 HTML 和 experiment recorder artifact。
 - Qlib Python 包已安装，当前 recorder 状态为 `minimal_qlib_recorder_available`。注意：这表示 Qlib 包和最小 recorder 可用，不代表已下载官方 Qlib 股票数据集。
 
+### 6. Day6 实时流 PoC
+
+- `streaming/kafka/topics.yaml` 覆盖 raw、clean、factor、feature、signal、alert 等 Kafka/Redpanda topic。
+- 本地 replay producer 生成契约合法 JSONL topic logs，feed mode 明确为 `replay_simulated_not_live_market_data`。
+- Flink-style deterministic pipeline 生成实时价格量价、微观结构、新闻情绪、市场环境、relation placeholder 等因子。
+- 输出 `realtime_factor_latest.parquet`、`factor_intraday_panel`、`online_feature_snapshot.json`、`flink_job_status.json`、`topic_health.json` 和 realtime-vs-offline diff report。
+- `/api/realtime`、`/api/flink-jobs` 与 `/realtime`、`/flink-jobs` 页面展示 PoC 状态和 not formal signal 边界。
+
+### 7. Day7 事件/市场环境因子
+
+- 生成 news/announcement document、event extraction、entity-symbol mapping、DWD event 表。
+- 使用诚实标注的 `lexicon_finbert_compatible_baseline` 作为本地金融文本情绪 baseline；未伪装成真实远程 FinBERT/FinGPT 推理。
+- 事件因子覆盖 1d/3d/5d 情绪、公告情绪、事件数、负面事件、source weighted sentiment、novelty、authority、decay、policy/macro event score。
+- 市场环境因子覆盖 breadth、return、volatility、drawdown、limit up/down、成交额分位、风格轮动、industry dispersion、northbound flow、liquidity regime、risk appetite。
+- 严格区分 `ex_ante_regime_feature` 与 `ex_post_regime_label`，并保留 publish/available/prediction time 以避免新闻公告时间泄漏。
+- 输出 Day7 增强特征矩阵和 `event_regime_ablation_report`，当前 ablation 状态为 `lightgbm_smoke_trained`。
+
 ## Web Research Console
 
 前端位于 `frontend/`，当前包含 21 条业务路由，覆盖：
@@ -136,13 +157,15 @@ warehouse_schema/                元数据仓库 SQL migration
 - `/scores`：横截面评分与候选池
 - `/backtests`：回测与风险/容量结果
 - `/experiments`：实验记录器与 artifact manifest
-- `/factors`：Day4 因子库与 Feature Store
+- `/factors`：Day4 因子库、Feature Store、Day7 事件/市场环境因子
 - `/spark-jobs`：Spark 因子物化与一致性校验
 - `/data-quality`：Day3 数据质量与防泄漏摘要
 - `/lineage`：数据血缘
 - `/lakehouse`：Day2 湖仓与 snapshot
 - `/settings/licenses`：数据源许可证治理
-- `/rag`、`/graph`、`/models`、`/simulation`、`/reports`、`/realtime`、`/flink-jobs` 等后续扩展页面
+- `/realtime`：Day6 replay simulated realtime factor PoC
+- `/flink-jobs`：Day6 Flink-style job status
+- `/rag`、`/graph`、`/models`、`/simulation`、`/reports` 等研究扩展页面
 
 ## 快速开始
 
@@ -192,6 +215,9 @@ curl http://127.0.0.1:8000/health
 /api/lineage
 /api/lakehouse
 /api/licenses
+/api/realtime
+/api/flink-jobs
+/api/event-regime
 ```
 
 ### 前端
@@ -229,6 +255,8 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 ./.venv/Scripts/python.exe scripts/check_day3_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day4_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day5_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day6_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day7_acceptance.py
 ```
 
 完整测试：
@@ -284,6 +312,27 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 
 Day5 验收会重新运行研究闭环并检查标签、模型、预测、持仓、回测、风险报告、实验记录器、API 和前端页面文案。
 
+## Day6 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day6_acceptance.py
+./.venv/Scripts/python.exe -m pytest tests/test_day6_realtime_streaming.py -q
+docker compose -f deploy/docker/docker-compose.yml config --services
+```
+
+Day6 验收会重新生成 replay simulated topic logs、实时因子、online feature snapshot、Flink-style job status 和 realtime-vs-offline diff report。该阶段是本地 L1 PoC，不代表接入真实实盘行情。
+
+## Day7 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day7_acceptance.py
+./.venv/Scripts/python.exe -m pytest tests/test_day7_event_regime.py -q
+```
+
+Day7 验收会重新生成新闻/公告事件、事件因子、市场环境因子、增强特征矩阵和 ablation 报告。当前金融文本模型状态是本地 `lexicon_finbert_compatible_baseline_ready`。
+
 ## 关键产物
 
 | 产物 | 路径 |
@@ -302,6 +351,19 @@ Day5 验收会重新运行研究闭环并检查标签、模型、预测、持仓
 | Day5 风险报告 | `reports/day5/risk_report.parquet` |
 | Day5 回测 HTML | `reports/day5/backtest_report.html` |
 | Day5 实验记录器 | `reports/day5/experiment_recorder/day5_lightgbm_walk_forward_v001` |
+| Day6 Kafka topic logs | `data/realtime/kafka_topics` |
+| Day6 实时因子 latest | `reports/day6/realtime_factor_latest.parquet` |
+| Day6 intraday factor panel | `data/gold/factor_intraday_panel` |
+| Day6 online feature snapshot | `reports/day6/online_feature_snapshot.json` |
+| Day6 Flink-style job status | `reports/day6/flink_job_status.json` |
+| Day6 realtime/offline diff | `reports/day6/realtime_vs_offline_diff_report.json` |
+| Day7 新闻文档 | `data/silver/news_document` |
+| Day7 公告文档 | `data/silver/announcement_document` |
+| Day7 事件抽取 | `data/silver/event_extraction_result` |
+| Day7 事件因子 | `data/gold/factor_news_sentiment_panel` |
+| Day7 市场环境因子 | `data/gold/factor_market_regime_panel` |
+| Day7 增强特征矩阵 | `data/gold/model_feature_matrix_wide_day7` |
+| Day7 ablation 报告 | `reports/day7/event_regime_ablation_report.json` |
 
 ## 研究与合规边界
 
@@ -319,3 +381,4 @@ Day5 验收会重新运行研究闭环并检查标签、模型、预测、持仓
 3. 扩展模型路线：XGBoost/CatBoost/LambdaRank、MASTER、StockMixer、HIST、Temporal Relational Stock Ranking。
 4. 增强 RAG claim-level evidence、factor card、experiment card 和 failure case 记忆库。
 5. 把 Web research console 从静态说明页升级为可筛选、可钻取、可下载的交互式研究工作台。
+6. Day8 可继续补 relation graph、行业/概念/供应链/新闻共现/价格相关/lead-lag 邻居溢出因子，并把 Day7 relation placeholder 替换为真实图特征。
