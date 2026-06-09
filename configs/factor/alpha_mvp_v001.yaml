@@ -1,0 +1,9 @@
+factor_set: alpha_mvp_v001
+factor_version: factor_v004
+feature_set_version: feature_set_day4_v001
+range: 50_80_offline_factors
+admission_gates:
+  min_coverage: 0.80
+  require_point_in_time: true
+  require_single_factor_report: true
+  require_capacity_note: true

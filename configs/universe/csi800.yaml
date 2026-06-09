@@ -1,0 +1,8 @@
+universe_id: csi800_mvp
+name: CSI800 MVP research universe
+membership_mode: point_in_time
+selection_policy:
+  include_indexes: [CSI300, CSI500]
+  exclude_flags: [ST, suspended, delisted]
+  min_listing_days: 120
+  max_single_industry_weight: 0.30

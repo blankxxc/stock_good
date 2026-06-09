@@ -1,0 +1,11 @@
+streaming_id: flink_realtime_poc
+mode: replay_simulated_not_live_market_data
+kafka:
+  broker: redpanda:9092
+  raw_topic: raw.market.minute
+  factor_topic: factor.realtime.minute
+flink:
+  checkpoint_interval_seconds: 60
+  savepoint_policy: manual_before_release
+  watermark_lateness_seconds: 120
+  restart_strategy: fixed_delay_smoke

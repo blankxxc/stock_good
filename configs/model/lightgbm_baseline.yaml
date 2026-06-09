@@ -1,0 +1,10 @@
+model_id: lightgbm_baseline_v1
+route: qlib_lightgbm_v1
+objective: cross_sectional_rank_research
+training:
+  walk_forward_splits: 3
+  seed_policy: fixed_multi_seed_smoke
+  max_runtime_seconds: 300
+approval:
+  status: research_candidate_only_not_approved
+  require_report_review: true

@@ -1,0 +1,16 @@
+{
+  auto_https off
+}
+
+:8088 {
+  encode gzip
+  header {
+    X-Research-Boundary "research_signals_only_not_investment_advice"
+  }
+  route /api/* {
+    reverse_proxy backend:8000
+  }
+  route /* {
+    reverse_proxy frontend:3000
+  }
+}

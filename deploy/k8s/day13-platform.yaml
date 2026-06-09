@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: stock-good-research
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-good-backend
+  namespace: stock-good-research
+  labels:
+    app: stock-good-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: stock-good-backend
+  template:
+    metadata:
+      labels:
+        app: stock-good-backend
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/blankxxc/stock_good/backend:staging-placeholder
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: RESEARCH_BOUNDARY
+              value: research_signals_only_not_investment_advice
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: stock-good-backend
+  namespace: stock-good-research
+spec:
+  selector:
+    app: stock-good-backend
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000

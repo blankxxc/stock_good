@@ -1,6 +1,6 @@
 # stock_good — 智能选股研究平台
 
-stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 12 的本地闭环实现。
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 13 的本地闭环实现。
 
 仓库地址：https://github.com/blankxxc/stock_good
 
@@ -32,6 +32,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 | Day 10 | claim 级 RAG 证据系统、as_of/present/retrospective 检索、引用卡片、许可证门禁、RAG 页面/API | 已完成 L1/L2 claim evidence RAG |
 | Day 11 | 官网层、Research Console 全页面产品化、统一视觉系统、artifact-backed 主卡片、Spark/Lakehouse/Realtime 状态展示 | 已完成 Day11 site productized |
 | Day 12 | paper trading research simulation、组合风控、RBAC/职责分离、append-only 审计、license policy、报告状态机和 export manifest | 已完成 Day12 simulation governance |
+| Day 13 | 自动化部署与运维闭环、配置解析/config_hash、prefect-local DAG、backfill dry-run、snapshot manifest、可观测性、CI/CD、备份恢复 | 已完成 Day13 ops deployment readiness |
 
 最近本地验收结果：
 
@@ -44,9 +45,20 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - Day10 acceptance: `status=ok`, `checks=18`, `failed=[]`, `document_count=11`, `claim_count=11`, `eval_status=ok`, `time_leakage_rate=0.0`, `license_gate_status=passed`。
 - Day11 acceptance: `status=ok`, `checks=16`, `failed=[]`, `public_route_count=7`, `console_route_count=20`, `artifact_backed_pages=20`, `visual_system=professional_research_saas_light`。
 - Day12 acceptance: `status=ok`, `checks=25`, `failed=[]`, `simulation_order_count=8`, `simulation_position_count=8`, `risk_status=passed`, `role_count=6`, `license_source_count=3`, `export_manifest_status=generated`, `append_only_audit=true`。
-- 完整测试：`55 passed, 24 warnings`。
-- 前端路由：`route_count=28`。
-- Next.js production build：30 个静态页面生成成功。
+- Day13 acceptance: `status=ok`, `checks=28`, `failed=[]`, `orchestrator=prefect-local`, `mvp_task_count=15`, `extended_task_count=9`, `backfill_status=dry_run_passed`, `component_count=6`, `ci_gate_count=16`, `backup_asset_count=10`。
+- 完整测试：`58 passed, 24 warnings`。
+- 前端路由：`route_count=29`。
+- Next.js production build：31 个静态页面生成成功。
+
+
+最新 Day13 本地验收快照（2026-06-09 21:44 +0800）：
+
+- Day13：`scripts/check_day13_acceptance.py` 返回 `status=ok`、`checks=28`、`failed=[]`、`orchestrator=prefect-local`、`mvp_task_count=15`、`extended_task_count=9`、`config_hash=051752bbf18971476b7cecab6eb18f5703c2c90c137937394876dc4fa8f6724d`、`backfill_status=dry_run_passed`、`component_count=6`、`ci_gate_count=16`、`backup_asset_count=10`。
+- Day13 focused tests：`tests/test_day13_ops_deployment.py` 共 `3 passed`。
+- 完整测试：`58 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day13。
+- API smoke：`/health`、`/api/ops`、`/api/orchestration`、`/api/backfill`、`/api/observability`、`/api/deployment`、`/api/simulation`、`/api/reports`、`/api/site`、`/api/rag` 均返回 200；其中 `/health.version=0.1.0-day13`，`/api/ops=day13_ops_deployment_ready`。
+- 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=29`；`npm run build` 编译成功并生成 31 个静态页面，新增 `/ops`。
+- 运维 smoke：`docker compose -f deploy/docker/docker-compose.yml config --services` 成功；`sh deploy/backup/backup_day13.sh --smoke` 与 `sh deploy/backup/restore_day13.sh --smoke` 成功。
 
 最新 Day12 本地验收快照（2026-06-09 18:32 +0800）：
 
@@ -116,6 +128,7 @@ models/                          Day5 研究闭环、Day7 事件/市场环境因
 quality/                         Day3 数据质量、防泄漏、血缘与可信度逻辑
 rag/                             Day10 claim 级 RAG schema、eval sets、证据检索与回答约束
 simulation/                      Day12 paper trading simulation、风控、RBAC/license/report governance
+ops/                             Day13 配置解析、DAG、backfill、可观测性和部署运维 helper
 reports/                         验收报告、质量报告、回测报告、实验 artifacts
 scripts/                         一键验收、pipeline、ClickHouse 装载等脚本
 spark/                           Spark 本地批处理与因子物化任务
@@ -229,9 +242,19 @@ warehouse_schema/                元数据仓库 SQL migration
 - 实现报告状态机与导出门禁：draft → review → approved → exportable → exported → revoked；导出前检查 data_quality、leakage、license_gate、RAG citation 和 forbidden_wording。
 - 生成 `export_manifest`，包含 run/data/factor/model/label/RAG source version、watermark、disclaimer、file_hash 和 audit_id；审计日志为 append-only。
 
+
+### 13. Day13 自动化部署与运维闭环
+
+- `ops/day13_ops.py` 统一生成 Day13 运维 payload，解析 base/env/universe/data/factor/label/model/backtest/streaming/spark 配置并生成 `resolved_config.yaml` 与 sha256 `config_hash`。
+- 采用单一 `prefect-local` 编排语义，MVP DAG 覆盖 ingest、validate、Spark materialization、factor、label、leakage、train、backtest、risk report、RAG index 和 publish；扩展 DAG 覆盖 replay/Kafka/Flink/online feature/graph/advanced model/simulation/report export。
+- `backfill_request` 支持 dry-run，记录 partition、source_correction_id、affected_downstream、new_snapshot_id，并禁止覆盖正式报告已引用 snapshot。
+- `dataset_snapshot_manifest` 支持按 data_version、run_id、trade_date、kafka_offset、model_version、rag_index_version 恢复。
+- 可观测性覆盖 data/task/model/system metrics，以及 Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis 组件健康。
+- 新增 `.github/workflows/ci.yml`、`deploy/proxy/Caddyfile`、`deploy/k8s/day13-platform.yaml`、Prometheus/Grafana dashboard、backup/restore smoke 脚本和 `/ops` 页面。
+
 ## Web Research Console
 
-前端位于 `frontend/`，当前包含 28 条路由：7 条官网层路由 + 20 条 Research Console 业务路由 + 首页，覆盖：
+前端位于 `frontend/`，当前包含 29 条路由：7 条官网层路由 + 21 条 Research Console/Ops 业务路由 + 首页，覆盖：
 
 - `/dashboard`：研究总览与 Day5 dashboard summary
 - `/scores`：横截面评分与候选池
@@ -249,6 +272,7 @@ warehouse_schema/                元数据仓库 SQL migration
 - `/models`：Day9 MASTER、StockMixer、HIST、TRSR 小样本 adapter、模型对比和 candidate 准入状态
 - `/rag`：Day10 claim 级 RAG 证据、as_of 检索、引用卡片、评测门禁和无引用拒答边界
 - `/simulation`、`/reports` 等研究扩展页面
+- `/ops`：Day13 配置、DAG、backfill dry-run、dataset snapshot、observability、CI/CD、deployment 和 backup/restore smoke
 - 官网层：`/capabilities`、`/methodology`、`/data-security`、`/backtest-risk`、`/rag-evidence`、`/architecture-roadmap`、`/login`
 
 ## 快速开始
@@ -310,6 +334,11 @@ curl http://127.0.0.1:8000/health
 /api/reports
 /api/admin
 /api/audit
+/api/ops
+/api/orchestration
+/api/backfill
+/api/observability
+/api/deployment
 ```
 
 ### 前端
@@ -354,6 +383,7 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 ./.venv/Scripts/python.exe scripts/check_day10_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day11_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day12_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day13_acceptance.py
 ```
 
 完整测试：
@@ -486,6 +516,23 @@ npm run build
 
 Day12 验收会重新生成 paper trading simulation、组合风控报告、RBAC/职责分离、license gate、append-only audit log、report state machine 和 export_manifest，并验证 `/api/simulation`、`/api/reports`、`/api/licenses`、`/api/admin`、`/api/audit` 与对应前端页面。
 
+## Day13 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day13_acceptance.py
+./.venv/Scripts/python.exe -m pytest tests/test_day13_ops_deployment.py -q
+./.venv/Scripts/python.exe scripts/run_day13_pipeline.py --dry-run
+docker compose -f deploy/docker/docker-compose.yml config --services
+sh deploy/backup/backup_day13.sh --smoke
+sh deploy/backup/restore_day13.sh --smoke
+cd frontend
+npm run validate:routes
+npm run build
+```
+
+Day13 验收会检查配置解析与 config_hash、prefect-local DAG、backfill dry-run、dataset_snapshot_manifest、可观测性、CI/CD gates、Docker Compose config、backup/restore smoke、Day13 API 和 `/ops` 页面。
+
 ## 关键产物
 
 | 产物 | 路径 |
@@ -539,6 +586,15 @@ Day12 验收会重新生成 paper trading simulation、组合风控报告、RBAC
 | Day12 export manifest | `reports/day12/export_manifest.json` |
 | Day12 audit log | `reports/day12/audit_log.json` |
 | Day12 license gate report | `reports/day12/license_gate_report.json` |
+| Day13 ops helper | `ops/day13_ops.py` |
+| Day13 acceptance report | `reports/day13/acceptance_report.json` |
+| Day13 ops payload | `reports/day13/day13_ops_acceptance_report.json` |
+| Day13 resolved config | `reports/day13/runs/day13_<config_hash>/resolved_config.yaml` |
+| Day13 pipeline dry-run | `reports/day13/day13_pipeline_dry_run.json` |
+| Day13 backfill dry-run | `reports/day13/backfill_dry_run.json` |
+| Day13 CI workflow | `.github/workflows/ci.yml` |
+| Day13 backup/restore smoke | `deploy/backup/backup_day13.sh`, `deploy/backup/restore_day13.sh` |
+| Day13 Ops 页面 | `frontend/src/app/ops/page.tsx` |
 
 ## 研究与合规边界
 
@@ -547,6 +603,7 @@ Day12 验收会重新生成 paper trading simulation、组合风控报告、RBAC
 - 历史回测必须考虑停牌、ST、涨跌停、退市、流动性、交易成本、滑点、容量和行业/风格暴露。
 - RAG 输出必须有 claim 级引用；没有证据的内容必须标记为假设或证据不足。
 - 数据源必须绑定 license_id 和 display/export policy；导出必须通过 Day12 license_gate、redaction 和 export_manifest。
+- Day13 运维动作必须先通过 dry-run、snapshot manifest、CI gates、backup/restore smoke 与人工审批，不允许直接覆盖正式报告引用的历史快照。
 - 禁止把单次回测、单一年份、单个随机种子或明星模型结果当成收益承诺。
 
 ## 后续建议
@@ -556,4 +613,4 @@ Day12 验收会重新生成 paper trading simulation、组合风控报告、RBAC
 3. 扩展模型路线：XGBoost/CatBoost/LambdaRank、MASTER、StockMixer、HIST、Temporal Relational Stock Ranking。
 4. 把 Day10 本地 RAG adapter 替换/扩展为 Qdrant/Milvus/pgvector，并接入真实授权研报、公告和新闻源。
 5. 把 Day11/Day12 页面从 artifact-backed 静态研究卡片继续升级为可筛选、可钻取、可下载的交互式研究工作台。
-6. Day13 起补自动化部署、Docker Compose smoke、观测性 dashboard、备份恢复和 release checklist。
+6. Day14 继续做最终总验收、release checklist、性能/安全复盘和用户使用文档。

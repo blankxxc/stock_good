@@ -29,7 +29,8 @@ const routes = [
   'reports/page.tsx',
   'settings/licenses/page.tsx',
   'settings/users/page.tsx',
-  'settings/audit/page.tsx'
+  'settings/audit/page.tsx',
+  'ops/page.tsx'
 ];
 const base = path.join(process.cwd(), 'src', 'app');
 const missing = routes.filter(route => !fs.existsSync(path.join(base, route)));

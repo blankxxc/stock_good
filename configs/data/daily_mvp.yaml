@@ -1,0 +1,15 @@
+dataset_bundle: daily_mvp
+calendar: cn_stock_trade_calendar
+partitioning: [trade_date]
+data_sources:
+  - dataset_name: market_daily_ohlcv
+    layer: bronze_to_gold
+    license_id: license_market_authorized
+    freshness_slo_minutes: 1440
+  - dataset_name: reference_industry_index
+    layer: reference
+    license_id: license_reference_authorized
+    freshness_slo_minutes: 1440
+snapshot_policy:
+  immutable_after_report_export: true
+  manifest_required: true

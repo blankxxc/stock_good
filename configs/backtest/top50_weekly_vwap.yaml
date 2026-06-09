@@ -1,0 +1,15 @@
+backtest_id: top50_weekly_vwap
+signal_timing: t_close_after_market
+execution: t_plus_1_vwap_or_open
+rebalance: weekly
+topk: [50, 100]
+cost_model:
+  commission_bps: 5
+  slippage_bps: 10
+risk_outputs:
+  active_return: true
+  tracking_error: true
+  information_ratio: true
+  risk_attribution: true
+  cost_attribution: true
+  capacity_curve: true

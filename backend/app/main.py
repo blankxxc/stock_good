@@ -16,13 +16,14 @@ from backend.app.services.day9_catalog import advanced_models_payload
 from backend.app.services.day10_catalog import rag_payload
 from backend.app.services.day11_catalog import site_payload
 from backend.app.services.day12_catalog import admin_payload, audit_payload, licenses_day12_payload, reports_payload, simulation_payload
+from ops.day13_ops import build_day13_artifacts
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day12",
+    version="0.1.0-day13",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -44,7 +45,7 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day12",
+        "version": "0.1.0-day13",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
@@ -76,6 +77,14 @@ def health() -> dict[str, Any]:
             "reports": "day12_report_export_manifest_ready",
             "license_policy": "day12_license_policy_engine_ready",
             "audit": "day12_append_only_audit_ready",
+            "orchestration": "day13_prefect_local_dag_ready",
+            "config_hash": "day13_resolved_config_hash_ready",
+            "backfill": "day13_backfill_dry_run_ready",
+            "dataset_snapshots": "day13_recoverable_snapshot_manifest_ready",
+            "observability": "day13_ops_metrics_ready",
+            "ci_cd": "day13_quality_gates_ready",
+            "deployment": "day13_compose_proxy_k8s_ready",
+            "backup_restore": "day13_backup_restore_smoke_ready",
         },
     }
 
@@ -104,6 +113,11 @@ ROUTE_MODULES = {
     "simulation": "模拟账户、模拟订单、模拟持仓和风控约束",
     "admin": "用户、角色、权限、系统配置管理",
     "audit": "审计日志和治理事件查询",
+    "ops": "Day13 任务编排、配置哈希、回填、可观测性、CI/CD、部署和备份恢复",
+    "orchestration": "Prefect local DAG、MVP pipeline 和扩展 DAG dry-run",
+    "backfill": "backfill_request、dry-run 影响范围和新 snapshot",
+    "observability": "数据/任务/模型/系统指标和 Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis 状态",
+    "deployment": "Docker Compose、反向代理、K8s 草案、CI/CD 和 backup/restore smoke",
     "licenses": "数据许可证、可展示范围和 license_gate",
 }
 
@@ -123,6 +137,20 @@ def route_payload(module: str) -> dict[str, Any]:
         return reports_payload(RESEARCH_BOUNDARY)
     if module == "simulation":
         return simulation_payload(RESEARCH_BOUNDARY)
+    if module == "ops":
+        return build_day13_artifacts()
+    if module == "orchestration":
+        payload = build_day13_artifacts()
+        return {"status": "day13_orchestration_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, **payload["orchestration"]}
+    if module == "backfill":
+        payload = build_day13_artifacts()
+        return {"status": "day13_backfill_dry_run_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "backfill_request": payload["backfill_request"], "dataset_snapshot_manifest": payload["dataset_snapshot_manifest"]}
+    if module == "observability":
+        payload = build_day13_artifacts()
+        return {"status": "day13_observability_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, **payload["observability"]}
+    if module == "deployment":
+        payload = build_day13_artifacts()
+        return {"status": "day13_deployment_backup_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "ci_cd": payload["ci_cd"], **payload["deployment"]}
     if module == "lakehouse":
         return lakehouse_payload(RESEARCH_BOUNDARY)
     if module == "data-quality":

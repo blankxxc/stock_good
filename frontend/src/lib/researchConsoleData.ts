@@ -230,6 +230,17 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     status: 'append_only_audit_ready',
     description: '审计日志和治理事件查询；记录数据、因子、模型、RAG、报告、simulation 动作。',
     fields: ['audit_id', 'actor', 'action', 'resource', 'created_at', 'trace_id', 'append_only']
+  },
+  ops: {
+    route: '/ops',
+    title: 'Ops 运维部署与编排',
+    eyebrow: 'artifact-backed · Day13 ops readiness',
+    apiPath: '/api/ops',
+    artifact: 'reports/day13/day13_ops_acceptance_report.json',
+    dataMode: 'artifact-backed orchestration_observability_backup_restore',
+    status: 'day13_ops_deployment_ready',
+    description: '配置解析、config_hash、prefect-local DAG、backfill dry-run、dataset_snapshot_manifest、CI/CD、可观测性和 backup/restore smoke。',
+    fields: ['config_hash', 'orchestrator', 'backfill_request', 'dataset_snapshot_manifest', 'component_health', 'backup_assets']
   }
 };
 

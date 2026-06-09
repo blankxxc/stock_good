@@ -2,8 +2,24 @@ global:
   scrape_interval: 15s
 scrape_configs:
   - job_name: backend
+    metrics_path: /health
     static_configs:
       - targets: ['backend:8000']
   - job_name: redpanda
     static_configs:
       - targets: ['redpanda:9644']
+  - job_name: flink
+    static_configs:
+      - targets: ['flink-jobmanager:8081']
+  - job_name: spark
+    static_configs:
+      - targets: ['spark-master:8080']
+  - job_name: clickhouse
+    static_configs:
+      - targets: ['clickhouse:8123']
+  - job_name: postgres
+    static_configs:
+      - targets: ['postgres:5432']
+  - job_name: redis
+    static_configs:
+      - targets: ['redis:6379']

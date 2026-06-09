@@ -90,6 +90,8 @@ lakehouse/warehouse/
 # Generated reports; keep markdown summaries trackable.
 reports/**/*.json
 reports/**/*.html
+reports/**/*.yaml
+reports/**/*.yml
 !reports/**/*.md
 
 # Large model/vector artifacts

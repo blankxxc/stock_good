@@ -1,0 +1,13 @@
+label_set: label_5d_10d_v001
+prediction_time: t_close_after_market
+entry_policy: t_plus_1_vwap_or_open
+horizons: [5d, 10d]
+tradability:
+  block_st: true
+  block_suspended: true
+  block_limit_up_buy: true
+  block_limit_down_sell: true
+leakage_gates:
+  label_start_after_prediction_time: true
+  purged_split: true
+  embargo_days: 5

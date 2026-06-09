@@ -15,7 +15,8 @@ const consoleNav = [
   ['Factors', '/factors'], ['Experiments', '/experiments'], ['RAG', '/rag'], ['Data Quality', '/data-quality'],
   ['Lineage', '/lineage'], ['Lakehouse', '/lakehouse'], ['Spark Jobs', '/spark-jobs'], ['Realtime', '/realtime'],
   ['Flink Jobs', '/flink-jobs'], ['Graph', '/graph'], ['Models', '/models'], ['Simulation', '/simulation'],
-  ['Reports', '/reports'], ['Licenses', '/settings/licenses'], ['Users', '/settings/users'], ['Audit', '/settings/audit']
+  ['Reports', '/reports'], ['Licenses', '/settings/licenses'], ['Users', '/settings/users'], ['Audit', '/settings/audit'],
+  ['Ops', '/ops']
 ];
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -33,7 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </aside>
           <main>{children}</main>
           <div className="fixed-disclaimer">研究用途：仅输出研究排序、解释、回测报告和引用证据；正式使用前必须经过样本外验证、风控复核和人工审批。</div>
-          <footer>Day11 网站产品化：官网层 + Research Console + Spark/Lakehouse/Realtime 状态入口。</footer>
+          <footer>Day13 运维闭环：Research Console + Ops 编排 + 可观测性 + backup/restore smoke。</footer>
         </div>
       </body>
     </html>

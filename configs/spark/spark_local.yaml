@@ -1,0 +1,9 @@
+spark_profile: spark_local_day13
+master: local[*]
+app_name: stock_good_day13_ops
+shuffle_partitions: 4
+output_format: parquet
+smoke_jobs:
+  - spark_bronze_to_silver
+  - spark_materialize_factor_daily
+  - build_training_matrix

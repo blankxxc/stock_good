@@ -1,0 +1,16 @@
+project: stock_good
+version: 0.1.0-day13
+research_boundary: research_signals_only_not_investment_advice
+orchestrator: prefect-local
+run:
+  mode: local_dry_run
+  timezone: Asia/Shanghai
+paths:
+  data_root: data
+  report_root: reports
+  artifact_root: reports/day13
+quality_gates:
+  require_leakage_check: true
+  require_license_gate: true
+  require_rag_citations: true
+  require_human_review: true

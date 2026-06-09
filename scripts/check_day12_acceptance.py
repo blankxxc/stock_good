@@ -66,7 +66,7 @@ def main() -> None:
         ("append_only_audit", all(entry["append_only"] for entry in data["audit_log"])),
         ("forbidden_wording_gate", evaluate_forbidden_wording("今日必买，目标价上涨，稳赚")["contains_forbidden_words"] is True),
         ("clean_export_gate_passes", evaluate_export_gate(data_quality_status="passed", leakage_check_status="passed", license_gate="passed", report_status="exportable", contains_forbidden_words=False, rag_citation_check="passed")["allowed"] is True),
-        ("health_day12", health["version"] == "0.1.0-day12" and health["modules"].get("simulation") == "day12_paper_simulation_governance_ready"),
+        ("health_day12", health["version"] in {"0.1.0-day12", "0.1.0-day13"} and health["modules"].get("simulation") == "day12_paper_simulation_governance_ready"),
     ])
     for path, expected in endpoints.items():
         resp = client.get(path)
