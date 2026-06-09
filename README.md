@@ -42,6 +42,15 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - 前端路由：`route_count=21`。
 - Next.js production build：23 个静态页面生成成功。
 
+最新 Day8/Day9 复验快照（2026-06-09）：
+
+- Day8：`scripts/check_day8_acceptance.py` 返回 `status=ok`、`checks=17`、`failed=[]`、`edge_rows=990`、`relation_type_count=8`、`relation_factor_rows=1960`、`enhanced_feature_rows=1960`、`spark_price_corr_status=spark_compatible_price_corr_edges_ready`、`hist_trsr_adapter_status=hist_trsr_relation_inputs_ready`。
+- Day9：`scripts/check_day9_acceptance.py` 返回 `status=ok`、`checks=16`、`failed=[]`、`model_count=4`、`prediction_rows=1620`、`approval_status=research_candidate_only_not_approved`、`leakage_check_status=passed`。
+- Day8/Day9 focused tests：`tests/test_day8_relation_graph.py tests/test_day9_advanced_models.py` 共 `7 passed`。
+- 完整测试：`46 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day8/Day9。
+- API smoke：`/health`、`/api/graph`、`/api/factors`、`/api/models`、`/api/experiments` 均返回 200；其中 `/api/graph` 为 `day8_relation_graph_ready`，`/api/models` 为 `day9_advanced_models_ready`。
+- 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=21`；`npm run build` 生成 23 个静态页面。
+
 ## 技术栈
 
 后端与研究计算：
