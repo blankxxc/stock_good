@@ -25,6 +25,7 @@ def _read_yaml(path: Path) -> dict[str, Any]:
 
 def factor_payload(research_boundary: str) -> dict[str, Any]:
     from backend.app.services.day7_catalog import event_regime_payload
+    from backend.app.services.day8_catalog import relation_graph_payload
 
     root = project_root()
     report = _read_json(root / "reports" / "day4" / "day4_factor_report.json") or {}
@@ -33,12 +34,13 @@ def factor_payload(research_boundary: str) -> dict[str, Any]:
     registry = _read_yaml(root / "feature_store" / "feature_registry.yaml")
     factor_spec = _read_yaml(root / "configs" / "factor" / "factor_spec.yaml")
     day7_event_regime = event_regime_payload(research_boundary)
+    day8_relation_graph = relation_graph_payload(research_boundary)
 
     if report.get("status") == "ok":
         return {
             "module": "factors",
             "status": "day4_factor_store_ready",
-            "maturity": "L2-offline-factor-store-polars-spark-feature-registry-with-day7-event-regime-extension",
+            "maturity": "L2-offline-factor-store-polars-spark-feature-registry-with-day7-event-regime-and-day8-relation-graph-extension",
             "research_boundary": research_boundary,
             "data_version": report.get("data_version"),
             "factor_version": report.get("factor_version"),
@@ -53,6 +55,7 @@ def factor_payload(research_boundary: str) -> dict[str, Any]:
             "single_factor_reports": report.get("single_factor_reports", [])[:12],
             "risk_outputs": report.get("risk_outputs", {}),
             "event_regime": day7_event_regime,
+            "relation_graph": day8_relation_graph,
             "point_in_time_join": {
                 "status": point_in_time.get("status"),
                 "feature_count": point_in_time.get("feature_count"),

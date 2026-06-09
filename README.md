@@ -1,6 +1,6 @@
 # stock_good — 智能选股研究平台
 
-stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 7 的本地闭环实现。
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 8 的本地闭环实现。
 
 仓库地址：https://github.com/blankxxc/stock_good
 
@@ -27,6 +27,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 | Day 5 | 5d/10d 标签、LightGBM baseline、walk-forward、回测/风险/容量、实验记录器、Qlib-compatible recorder | 已完成 |
 | Day 6 | Redpanda/Kafka topic、replay simulated producer、Flink-style 实时因子、online feature snapshot、实时页面/API | 已完成 L1 PoC |
 | Day 7 | 新闻/公告事件、FinBERT-compatible 情绪 baseline、事件因子、market regime、增强特征矩阵、ablation | 已完成 |
+| Day 8 | 股票关系图、Spark-style 价格相关边、NetworkX centrality/community、关系传播因子、HIST/TRSR adapter、图谱页面/API | 已完成 L1/L2 PoC |
 
 最近本地验收结果：
 
@@ -34,7 +35,8 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - Day5 acceptance: `status=ok`, `checks=19`, `failed=[]`, `label_rows=3620`, `prediction_rows=413`, `holding_rows=105`, `split_count=3`, `feature_count=72`, `lightgbm_status=trained`, `qlib_status=minimal_qlib_recorder_available`, `leakage_check_status=passed`。
 - Day6 acceptance: `status=ok`, `checks=24`, `failed=[]`, `feed_mode=replay_simulated_not_live_market_data`, `raw_events_written=137`, `flink_jobs_ready=5`, `realtime_factor_rows=162`, `online_feature_rows=36`, `diff_report.max_abs_diff=0.0`。
 - Day7 acceptance: `status=ok`, `checks=18`, `failed=[]`, `text_model_status=lexicon_finbert_compatible_baseline_ready`, `event_factor_rows=29400`, `market_regime_rows=100`, `enhanced_feature_rows=1960`, `ablation_status=lightgbm_smoke_trained`。
-- 完整测试：`39 passed, 24 warnings`。
+- Day8 acceptance: `status=ok`, `checks=17`, `failed=[]`, `edge_rows=990`, `relation_type_count=8`, `relation_factor_rows=1960`, `enhanced_feature_rows=1960`, `networkx_status=networkx_centrality_ready`, `hist_trsr_adapter_status=hist_trsr_relation_inputs_ready`。
+- 完整测试：`43 passed, 24 warnings`。
 - 前端路由：`route_count=21`。
 - Next.js production build：23 个静态页面生成成功。
 
@@ -46,6 +48,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - FastAPI / Uvicorn
 - Pandas / PyArrow / DuckDB
 - Polars
+- NetworkX
 - PySpark 3.5.3
 - SQLAlchemy / Alembic
 - pytest
@@ -79,6 +82,7 @@ data/                            Bronze/Silver/Gold/ADS/样例数据/隔离数�
 feature_store/                   Feature registry 与 point-in-time join
 factors/                         离线因子计算引擎
 frontend/                        Next.js research console
+graph/                           Day8 股票关系图、关系传播因子和图模型 adapter
 lakehouse/                       DuckDB 查询、Iceberg/Delta PoC 相关入口
 models/                          Day5 研究闭环、Day7 事件/市场环境因子与 ablation
 quality/                         Day3 数据质量、防泄漏、血缘与可信度逻辑
@@ -149,6 +153,16 @@ warehouse_schema/                元数据仓库 SQL migration
 - 严格区分 `ex_ante_regime_feature` 与 `ex_post_regime_label`，并保留 publish/available/prediction time 以避免新闻公告时间泄漏。
 - 输出 Day7 增强特征矩阵和 `event_regime_ablation_report`，当前 ablation 状态为 `lightgbm_smoke_trained`。
 
+### 8. Day8 股票关系图与关系传播因子
+
+- 生成 `stock_relation_edge`，覆盖 industry_same、concept_same、index_member_same、price_corr、lead_lag、news_co_mention、supply_chain_upstream/downstream 等关系类型。
+- `spark/jobs/build_day8_price_corr_edges.py` 生成 Spark-compatible 价格相关边；本地 PoC 不依赖真实集群，但保留可迁移边界。
+- NetworkX 计算 degree centrality、PageRank 和 community，并输出 `reports/day8/graph_summary.json`。
+- `factor_relation_panel` 输出 neighbor_return_5m/1d、neighbor_volume_shock、neighbor_sentiment_1h、industry/concept/supply-chain spillover、lead_lag_signal、centrality_score、community_momentum、correlation_cluster_momentum 等关系因子。
+- `model_feature_matrix_wide_day8` 在 Day7 增强特征矩阵之上加入关系传播因子，并继续保留 point-in-time 时间语义和 `research_boundary`。
+- `data/gold/graph_model_adapters/hist_trsr` 已生成 stock_id_mapping、relation_type_mapping、relation_matrix、concept_matrix、stock_feature_tensor、label_tensor，作为 HIST/TRSR 关系图模型输入 adapter。
+- `relation_factor_ablation_report` 覆盖 base_day7、base_plus_relation_graph、full_minus_relation_graph；结果仍标记为 `not_approved_research_candidate_only`，不能视为实盘信号。
+
 ## Web Research Console
 
 前端位于 `frontend/`，当前包含 21 条业务路由，覆盖：
@@ -157,7 +171,7 @@ warehouse_schema/                元数据仓库 SQL migration
 - `/scores`：横截面评分与候选池
 - `/backtests`：回测与风险/容量结果
 - `/experiments`：实验记录器与 artifact manifest
-- `/factors`：Day4 因子库、Feature Store、Day7 事件/市场环境因子
+- `/factors`：Day4 因子库、Feature Store、Day7 事件/市场环境因子、Day8 关系图因子
 - `/spark-jobs`：Spark 因子物化与一致性校验
 - `/data-quality`：Day3 数据质量与防泄漏摘要
 - `/lineage`：数据血缘
@@ -165,7 +179,8 @@ warehouse_schema/                元数据仓库 SQL migration
 - `/settings/licenses`：数据源许可证治理
 - `/realtime`：Day6 replay simulated realtime factor PoC
 - `/flink-jobs`：Day6 Flink-style job status
-- `/rag`、`/graph`、`/models`、`/simulation`、`/reports` 等研究扩展页面
+- `/graph`：Day8 股票关系图、关系传播因子、HIST/TRSR adapter 和 ablation 状态
+- `/rag`、`/models`、`/simulation`、`/reports` 等研究扩展页面
 
 ## 快速开始
 
@@ -218,6 +233,7 @@ curl http://127.0.0.1:8000/health
 /api/realtime
 /api/flink-jobs
 /api/event-regime
+/api/graph
 ```
 
 ### 前端

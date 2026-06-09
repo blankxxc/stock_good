@@ -11,13 +11,14 @@ from backend.app.services.day4_catalog import factor_payload, feature_payload, s
 from backend.app.services.day5_catalog import backtests_payload, dashboard_day5_payload, experiments_payload, scores_payload
 from backend.app.services.day6_catalog import flink_jobs_payload, realtime_payload
 from backend.app.services.day7_catalog import event_regime_payload
+from backend.app.services.day8_catalog import relation_graph_payload
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day7",
+    version="0.1.0-day8",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -39,7 +40,7 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day7",
+        "version": "0.1.0-day8",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
@@ -60,6 +61,9 @@ def health() -> dict[str, Any]:
             "clickhouse": "day6_clickhouse_adapter_reserved_sqlite_sink_ready",
             "event_regime": "day7_event_market_regime_ablation_ready",
             "financial_text": "day7_finbert_compatible_lexicon_baseline_ready",
+            "relation_graph": "day8_stock_relation_graph_ready",
+            "graph_factors": "day8_relation_spillover_factor_ready",
+            "hist_trsr_adapter": "day8_hist_trsr_relation_inputs_ready",
             "rag": "claim_schema_ready",
             "audit": "metadata_table_ready",
         },
@@ -108,6 +112,8 @@ def route_payload(module: str) -> dict[str, Any]:
         return factor_payload(RESEARCH_BOUNDARY)
     if module == "event-regime":
         return event_regime_payload(RESEARCH_BOUNDARY)
+    if module == "graph":
+        return relation_graph_payload(RESEARCH_BOUNDARY)
     if module == "features":
         return feature_payload(RESEARCH_BOUNDARY)
     if module == "spark-jobs":
