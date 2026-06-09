@@ -46,16 +46,17 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - 前端路由：`route_count=28`。
 - Next.js production build：30 个静态页面生成成功。
 
-最新 Day8/Day9/Day10/Day11 复验快照（2026-06-09）：
+最新 Day10/Day11 复验与 GitHub 上传快照（2026-06-09 18:02 +0800）：
 
-- Day8：`scripts/check_day8_acceptance.py` 返回 `status=ok`、`checks=17`、`failed=[]`、`edge_rows=990`、`relation_type_count=8`、`relation_factor_rows=1960`、`enhanced_feature_rows=1960`、`spark_price_corr_status=spark_compatible_price_corr_edges_ready`、`hist_trsr_adapter_status=hist_trsr_relation_inputs_ready`。
-- Day9：`scripts/check_day9_acceptance.py` 返回 `status=ok`、`checks=16`、`failed=[]`、`model_count=4`、`prediction_rows=1620`、`approval_status=research_candidate_only_not_approved`、`leakage_check_status=passed`。
+- Day10 提交：`e823e7e feat: implement day10 rag evidence system`。
+- Day11 提交：`831f9bd feat: productize day11 research site`。
 - Day10：`scripts/check_day10_acceptance.py` 返回 `status=ok`、`checks=18`、`failed=[]`、`document_count=11`、`claim_count=11`、`eval_status=ok`、`time_leakage_rate=0.0`、`license_gate_status=passed`。
-- Day10 focused tests：`tests/test_day10_rag_evidence.py` 共 `3 passed`。
-- Day11：`scripts/check_day11_acceptance.py` 返回 `status=ok`、`checks=16`、`failed=[]`、`public_route_count=7`、`console_route_count=20`、`artifact_backed_pages=20`。
-- 完整测试：`52 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day11。
-- API smoke：`/health`、`/api/site`、`/api/dashboard`、`/api/lakehouse`、`/api/spark-jobs`、`/api/realtime`、`/api/flink-jobs`、`/api/rag`、`/api/models` 均返回 200；其中 `/api/site` 为 `day11_site_productized_ready`。
-- 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=28`；`npm run build` 生成 30 个静态页面。
+- Day10 focused tests：`tests/test_day10_rag_evidence.py` 共 `3 passed`；Day10+Day11 focused tests 合计 `6 passed`。
+- Day11：`scripts/check_day11_acceptance.py` 返回 `status=ok`、`checks=16`、`failed=[]`、`public_route_count=7`、`console_route_count=20`、`artifact_backed_pages=20`、`visual_system=professional_research_saas_light`。
+- 完整测试：`52 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day10/Day11。
+- API smoke：`/health`、`/api/rag`、`/api/site`、`/api/dashboard`、`/api/lakehouse`、`/api/spark-jobs`、`/api/realtime`、`/api/flink-jobs`、`/api/models`、`/api/experiments` 均返回 200；其中 `/api/rag` 为 `day10_rag_evidence_ready`，`/api/site` 为 `day11_site_productized_ready`。
+- 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=28`；`npm run build` 编译成功并生成 30 个静态页面。
+- GitHub 同步：本节随 README docs 提交一起推送到 `origin/main`，以远端 `main` HEAD 为准。
 
 ## 技术栈
 
