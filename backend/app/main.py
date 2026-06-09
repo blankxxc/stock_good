@@ -10,13 +10,14 @@ from backend.app.services.day2_catalog import data_quality_payload, lakehouse_pa
 from backend.app.services.day4_catalog import factor_payload, feature_payload, spark_jobs_payload
 from backend.app.services.day5_catalog import backtests_payload, dashboard_day5_payload, experiments_payload, scores_payload
 from backend.app.services.day6_catalog import flink_jobs_payload, realtime_payload
+from backend.app.services.day7_catalog import event_regime_payload
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day6",
+    version="0.1.0-day7",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -38,7 +39,7 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day6",
+        "version": "0.1.0-day7",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
@@ -57,6 +58,8 @@ def health() -> dict[str, Any]:
             "flink": "day6_event_time_factor_jobs_ready",
             "redpanda_kafka": "day6_standard_topics_replay_ready",
             "clickhouse": "day6_clickhouse_adapter_reserved_sqlite_sink_ready",
+            "event_regime": "day7_event_market_regime_ablation_ready",
+            "financial_text": "day7_finbert_compatible_lexicon_baseline_ready",
             "rag": "claim_schema_ready",
             "audit": "metadata_table_ready",
         },
@@ -74,6 +77,7 @@ ROUTE_MODULES = {
     "realtime": "Kafka topic、实时数据延迟、在线特征和实时评分状态",
     "flink-jobs": "Flink event-time、watermark、window、late-data job 状态",
     "factors": "离线/实时/事件/市场环境/关系因子库",
+    "event-regime": "新闻/公告/事件因子、金融文本 baseline、market regime 与 ablation 状态",
     "features": "Feature Store、feature view、point-in-time join 和 materialization job",
     "graph": "行业/概念/供应链/共现/价格相关关系图",
     "models": "Qlib、LightGBM、MASTER、StockMixer、HIST、TRSR 适配器",
@@ -102,6 +106,8 @@ def route_payload(module: str) -> dict[str, Any]:
         return lineage_payload(RESEARCH_BOUNDARY)
     if module == "factors":
         return factor_payload(RESEARCH_BOUNDARY)
+    if module == "event-regime":
+        return event_regime_payload(RESEARCH_BOUNDARY)
     if module == "features":
         return feature_payload(RESEARCH_BOUNDARY)
     if module == "spark-jobs":

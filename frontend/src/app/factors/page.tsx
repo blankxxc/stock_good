@@ -1,59 +1,62 @@
 export default function Page() {
   return (
     <section className="card">
-      <span className="badge">Day 4 L2 offline factor store ready</span>
+      <span className="badge">Day 7 event/regime factors ready</span>
       <h1>因子库</h1>
       <p>
-        Day 4 已把离线因子从路线图占位推进到可验收 artifact：Polars 优先的本地因子引擎、
-        configs/factor/factor_spec.yaml、feature_store/feature_registry.yaml、point-in-time join、
-        Spark materialization consistency check、单因子分析报告和风险模型输入全部生成。
+        Day 7 已在 Day 4 离线因子库之上增加新闻/公告/事件因子、金融文本 baseline、market regime、
+        增强版 model_feature_matrix_wide_day7 和 LightGBM smoke ablation。所有事件特征显式保留
+        publish_time / available_time / prediction_time，避免把未来文本或事后 regime 标签喂给模型。
       </p>
       <div className="grid">
         <div className="card">
-          <strong>74 个离线因子</strong>
+          <strong>Day 4：74 个离线因子</strong>
           <p>
-            覆盖收益、动量、反转、波动率、流动性、价量结构、均线偏离、风格代理、行业中性和横截面标准化；
-            每个因子都有经济假设、公式、lookback、缺失处理、标准化/中性化和泄漏风险说明。
+            收益、动量、反转、波动率、流动性、价量结构、均线偏离、风格代理、行业中性和横截面标准化仍保留；
+            point_in_time_violations=0，作为 Day 7 增强矩阵的 base price/volume/fundamental factors。
           </p>
         </div>
         <div className="card">
-          <strong>Feature Store</strong>
+          <strong>事件因子</strong>
           <p>
-            feature_registry.yaml、day4_factor_daily_view.yaml 与 day4_materialize_feature_matrix.yaml 已就绪；
-            data/gold/model_feature_matrix_wide 是按 symbol + trade_date + prediction_time 生成的宽表特征矩阵。
+            factor_news_sentiment_panel 输出 news_sentiment_1d/3d/5d、announcement_sentiment、event_count、
+            negative_event_count、source_weighted_sentiment、novelty_score、event_authority_score、
+            event_decay_5m/1h/1d/5d、policy_event_score 和 macro_event_score。
           </p>
         </div>
         <div className="card">
-          <strong>Point-in-time join</strong>
+          <strong>金融文本 baseline</strong>
           <p>
-            build_model_feature_matrix.py 验证 available_time &lt;= prediction_time，当前 point_in_time_violations=0，
-            避免用未来数据生成训练特征。
+            FinBERT-compatible lexicon baseline 与 keyword event classifier 已可运行；FinGPT/LLM 只作为摘要、抽取、
+            RAG 和辅助标签工具，不能直接产出买卖建议或未经回测的交易信号。
           </p>
         </div>
         <div className="card">
-          <strong>Spark / Polars 一致性</strong>
+          <strong>market regime</strong>
           <p>
-            spark/jobs/day4_factor_materialization.py 已用 PySpark 重新物化核心因子，并和 Polars 输出逐因子比较；
-            reports/day4/spark_factor_materialization_report.json 显示 consistency_status=passed。
+            factor_market_regime_panel 输出 market_breadth、market_ret_1d/5d/20d、market_vol_20d、drawdown、
+            amount_percentile_252d、small_vs_large_return、growth_vs_value_return、industry_dispersion、
+            northbound_flow_zscore、liquidity_regime 和 risk_appetite_proxy。
           </p>
         </div>
         <div className="card">
-          <strong>单因子报告</strong>
+          <strong>Regime 时间语义</strong>
           <p>
-            reports/day4/factors 下生成覆盖率、缺失率、异常率、换手、IC、RankIC、ICIR、HAC/Newey-West t 统计、
-            分位数组合、成本调整 spread、容量估计和多重检验风险字段。
+            ex_ante_regime_feature 是预测时点可用的模型特征；ex_post_regime_label 只用于事后复盘解释，
+            标记为 report_only_not_training_feature。
           </p>
         </div>
         <div className="card">
-          <strong>风险模型输入</strong>
+          <strong>Ablation</strong>
           <p>
-            risk_factor_exposure、risk_factor_covariance、specific_risk 已输出，包含 size、beta、value、momentum、
-            volatility、liquidity、quality、growth、residual_volatility 与行业暴露，供后续模型和回测控制风险。
+            reports/day7/event_regime_ablation_report.json 覆盖 Base、Base + market_regime、Base + news_event、
+            Full - market_regime、Full - news_event 等 smoke run。relation_spillover 在 Day 7 是占位，Day 8 图谱因子替换。
           </p>
         </div>
       </div>
       <p>
-        后端 API：/api/factors 返回 Day 4 因子库状态、artifact 路径、单因子报告摘要、风险输出和 Spark 一致性状态。
+        后端 API：/api/factors 返回 Day 4 因子库状态，并在 event_regime 字段展示 Day 7 事件因子、market regime、
+        latest_available_time、leakage_check_status 和 ablation 状态。
       </p>
     </section>
   );
