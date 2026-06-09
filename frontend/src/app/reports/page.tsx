@@ -1,12 +1,16 @@
+import { ArtifactStatusCard } from '../../components/ArtifactStatusCard';
+import { getConsolePage } from '../../lib/researchConsoleData';
+
+const config = getConsolePage('reports');
+
 export default function Page() {
   return (
-    <section className="card">
-      <span className="badge">Day 1 L1 route stub</span>
-      <h1>报告导出</h1>
-      <p>report state machine、license_gate、export_manifest 和 file_hash。</p>
+    <section className="card artifact-backed" data-api-prefix="/api/">
+      <ArtifactStatusCard config={config} />
       <div className="grid">
-        <div className="card"><strong>状态</strong><p>页面骨架已创建，等待后续 Day 接入真实 API。</p></div>
-        <div className="card"><strong>治理边界</strong><p>仅用于研究信号、排序、解释、回测和证据展示。</p></div>
+        <div className="card"><strong>真实数据入口</strong><p>API path prefix /api/；主卡片绑定 {config.apiPath} 与 {config.artifact}，data_mode={config.dataMode}。</p></div>
+        <div className="card"><strong>研究边界</strong><p>仅用于研究排序、解释、回测、状态监控和证据追溯，正式使用前需要复核。</p></div>
+        <div className="card"><strong>可追溯字段</strong><p>{config.fields.join(' · ')}</p></div>
       </div>
     </section>
   );

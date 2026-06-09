@@ -1,30 +1,18 @@
+import { ArtifactStatusCard } from '../../components/ArtifactStatusCard';
+import { getConsolePage } from '../../lib/researchConsoleData';
+
+const config = getConsolePage('backtests');
+
 export default function Page() {
   return (
-    <section className="card">
-      <span className="badge">Day 5 tradable backtest ready</span>
-      <h1>回测报告</h1>
-      <p>
-        Day 5 已生成可交易 TopK 研究回测：t+1 open 执行、固定滑点/交易成本、换手、净值曲线、
-        最大回撤、IC/RankIC、baseline 对比、风险归因和容量曲线。
-      </p>
+    <section className="card artifact-backed" data-api-prefix="/api/">
+      <ArtifactStatusCard config={config} />
       <div className="grid">
-        <div className="card">
-          <strong>回测 artifacts</strong>
-          <p>holdings.parquet / equity_curve.csv / risk_report.parquet / backtest_report.html 已落地到 reports/day5。</p>
-        </div>
-        <div className="card">
-          <strong>成本与容量</strong>
-          <p>transaction_cost_bp=10，slippage_model=fixed_bp，capacity_curve 覆盖 1%/5%/10%/20% ADV 情景。</p>
-        </div>
-        <div className="card">
-          <strong>风险归因</strong>
-          <p>portfolio_risk_report 包含 industry_attribution、style_attribution、transaction_cost_attribution、implementation_shortfall。</p>
-        </div>
-        <div className="card">
-          <strong>API</strong>
-          <p>/api/backtests 返回核心指标、baseline_metrics、curve_tail 和 artifact 路径。</p>
-        </div>
+        <div className="card"><strong>真实数据入口</strong><p>API path prefix /api/；主卡片绑定 {config.apiPath} 与 {config.artifact}，data_mode={config.dataMode}。</p></div>
+        <div className="card"><strong>研究边界</strong><p>仅用于研究排序、解释、回测、状态监控和证据追溯，正式使用前需要复核。</p></div>
+        <div className="card"><strong>可追溯字段</strong><p>{config.fields.join(' · ')}</p></div>
       </div>
+    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>Day 5 tradable backtest: /api/backtests TopK risk capacity cost adjusted metrics.</p></div>
     </section>
   );
 }

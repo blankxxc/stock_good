@@ -14,13 +14,14 @@ from backend.app.services.day7_catalog import event_regime_payload
 from backend.app.services.day8_catalog import relation_graph_payload
 from backend.app.services.day9_catalog import advanced_models_payload
 from backend.app.services.day10_catalog import rag_payload
+from backend.app.services.day11_catalog import site_payload
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day10",
+    version="0.1.0-day11",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -42,12 +43,13 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day10",
+        "version": "0.1.0-day11",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
             "backend": "stub_ready",
-            "frontend": "route_stubs_ready",
+            "frontend": "day11_productized_routes_ready",
+            "site": "day11_productized_research_console_ready",
             "lakehouse": "day2_parquet_duckdb_snapshot_ready",
             "data_quality": "day3_quality_quarantine_leakage_ready",
             "lineage": "day3_source_job_snapshot_report_ready",
@@ -74,6 +76,7 @@ def health() -> dict[str, Any]:
 
 
 ROUTE_MODULES = {
+    "site": "官网层、Research Console 全页面、统一视觉系统和 artifact-backed 主卡片",
     "auth": "认证、RBAC 与 action-level permission 占位",
     "dashboard": "研究平台 dashboard、最新 run、模型版本、质量状态和核心指标",
     "overview": "研究平台总览、数据 cutoff、模型版本和质量状态",
@@ -101,6 +104,8 @@ ROUTE_MODULES = {
 
 
 def route_payload(module: str) -> dict[str, Any]:
+    if module == "site":
+        return site_payload(RESEARCH_BOUNDARY)
     if module in {"dashboard", "overview"}:
         return dashboard_day5_payload(RESEARCH_BOUNDARY)
     if module == "licenses":

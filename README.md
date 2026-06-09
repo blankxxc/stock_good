@@ -1,6 +1,6 @@
 # stock_good — 智能选股研究平台
 
-stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 10 的本地闭环实现。
+stock_good 是一个面向量化研究与智能选股的本地全栈工程样例。项目以“可追溯数据、可复现实验、可验证因子、可回测模型、可解释研究证据、可视化研究工作台”为核心目标，当前已完成 Day 1 至 Day 11 的本地闭环实现。
 
 仓库地址：https://github.com/blankxxc/stock_good
 
@@ -30,6 +30,7 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 | Day 8 | 股票关系图、Spark-style 价格相关边、NetworkX centrality/community、关系传播因子、HIST/TRSR adapter、图谱页面/API | 已完成 L1/L2 PoC |
 | Day 9 | MASTER、StockMixer、HIST、TRSR 高级模型 adapter、小样本训练/推理、统一对比报告、模型页面/API | 已完成 L1 research candidate |
 | Day 10 | claim 级 RAG 证据系统、as_of/present/retrospective 检索、引用卡片、许可证门禁、RAG 页面/API | 已完成 L1/L2 claim evidence RAG |
+| Day 11 | 官网层、Research Console 全页面产品化、统一视觉系统、artifact-backed 主卡片、Spark/Lakehouse/Realtime 状态展示 | 已完成 Day11 site productized |
 
 最近本地验收结果：
 
@@ -40,19 +41,21 @@ stock_good 是一个面向量化研究与智能选股的本地全栈工程样例
 - Day8 acceptance: `status=ok`, `checks=17`, `failed=[]`, `edge_rows=990`, `relation_type_count=8`, `relation_factor_rows=1960`, `enhanced_feature_rows=1960`, `networkx_status=networkx_centrality_ready`, `hist_trsr_adapter_status=hist_trsr_relation_inputs_ready`。
 - Day9 acceptance: `status=ok`, `checks=16`, `failed=[]`, `model_count=4`, `prediction_rows=1620`, `approval_status=research_candidate_only_not_approved`, `leakage_check_status=passed`。
 - Day10 acceptance: `status=ok`, `checks=18`, `failed=[]`, `document_count=11`, `claim_count=11`, `eval_status=ok`, `time_leakage_rate=0.0`, `license_gate_status=passed`。
-- 完整测试：`49 passed, 24 warnings`。
-- 前端路由：`route_count=21`。
-- Next.js production build：23 个静态页面生成成功。
+- Day11 acceptance: `status=ok`, `checks=16`, `failed=[]`, `public_route_count=7`, `console_route_count=20`, `artifact_backed_pages=20`, `visual_system=professional_research_saas_light`。
+- 完整测试：`52 passed, 24 warnings`。
+- 前端路由：`route_count=28`。
+- Next.js production build：30 个静态页面生成成功。
 
-最新 Day8/Day9/Day10 复验快照（2026-06-09）：
+最新 Day8/Day9/Day10/Day11 复验快照（2026-06-09）：
 
 - Day8：`scripts/check_day8_acceptance.py` 返回 `status=ok`、`checks=17`、`failed=[]`、`edge_rows=990`、`relation_type_count=8`、`relation_factor_rows=1960`、`enhanced_feature_rows=1960`、`spark_price_corr_status=spark_compatible_price_corr_edges_ready`、`hist_trsr_adapter_status=hist_trsr_relation_inputs_ready`。
 - Day9：`scripts/check_day9_acceptance.py` 返回 `status=ok`、`checks=16`、`failed=[]`、`model_count=4`、`prediction_rows=1620`、`approval_status=research_candidate_only_not_approved`、`leakage_check_status=passed`。
 - Day10：`scripts/check_day10_acceptance.py` 返回 `status=ok`、`checks=18`、`failed=[]`、`document_count=11`、`claim_count=11`、`eval_status=ok`、`time_leakage_rate=0.0`、`license_gate_status=passed`。
 - Day10 focused tests：`tests/test_day10_rag_evidence.py` 共 `3 passed`。
-- 完整测试：`49 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day10。
-- API smoke：`/health`、`/api/rag`、`/api/models`、`/api/experiments` 均返回 200；其中 `/api/rag` 为 `day10_rag_evidence_ready`，`/api/models` 为 `day9_advanced_models_ready`。
-- 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=21`；`npm run build` 生成 23 个静态页面。
+- Day11：`scripts/check_day11_acceptance.py` 返回 `status=ok`、`checks=16`、`failed=[]`、`public_route_count=7`、`console_route_count=20`、`artifact_backed_pages=20`。
+- 完整测试：`52 passed, 24 warnings`；warnings 为 Day5 pandas FutureWarning，不影响 Day11。
+- API smoke：`/health`、`/api/site`、`/api/dashboard`、`/api/lakehouse`、`/api/spark-jobs`、`/api/realtime`、`/api/flink-jobs`、`/api/rag`、`/api/models` 均返回 200；其中 `/api/site` 为 `day11_site_productized_ready`。
+- 前端：`npm run validate:routes` 返回 `status=ok`、`route_count=28`；`npm run build` 生成 30 个静态页面。
 
 ## 技术栈
 
@@ -95,7 +98,7 @@ contracts/                       项目契约与治理约束
 data/                            Bronze/Silver/Gold/ADS/样例数据/隔离数据
 feature_store/                   Feature registry 与 point-in-time join
 factors/                         离线因子计算引擎
-frontend/                        Next.js research console
+frontend/                        Next.js 官网层 + research console
 graph/                           Day8 股票关系图、关系传播因子和图模型 adapter
 lakehouse/                       DuckDB 查询、Iceberg/Delta PoC 相关入口
 models/                          Day5 研究闭环、Day7 事件/市场环境因子与 ablation、Day9 高级模型 adapter
@@ -196,9 +199,18 @@ warehouse_schema/                元数据仓库 SQL migration
 - 回答约束为事实、推断、假设、支持证据、反对证据、适用条件；无引用拒答，不输出买入/卖出/持有/目标价/稳赚/确定上涨等交易指令。
 - RAG 评测覆盖 expected citations、time leakage、license gate、forbidden wording、abstention accuracy、citation support rate 和 Recall@5。
 
+
+### 11. Day11 网站全页面产品化
+
+- 新增官网层 7 个页面：能力介绍、方法论、数据与安全、回测与风控、RAG 证据、架构路线图、登录入口。
+- Research Console 20 个业务页面统一使用 `ArtifactStatusCard` 和 `researchConsoleData.ts`，主卡片绑定 `/api/*` 与本地 artifact / contract，并显式展示 `data_mode`。
+- `/api/site` 汇总 public route、console route、artifact-backed 页面数、禁用文案检查、Spark/Lakehouse/Realtime 状态入口和视觉系统状态。
+- `layout.tsx` 增加官网导航、Research Console 侧栏和固定研究边界提示；`globals.css` 升级为专业、克制、浅色研究 SaaS 风格。
+- `/spark-jobs`、`/lakehouse`、`/realtime`、`/flink-jobs` 均在导航、页面和 API smoke 中可见；页面不使用主流程纯静态假数据。
+
 ## Web Research Console
 
-前端位于 `frontend/`，当前包含 21 条业务路由，覆盖：
+前端位于 `frontend/`，当前包含 28 条路由：7 条官网层路由 + 20 条 Research Console 业务路由 + 首页，覆盖：
 
 - `/dashboard`：研究总览与 Day5 dashboard summary
 - `/scores`：横截面评分与候选池
@@ -216,6 +228,7 @@ warehouse_schema/                元数据仓库 SQL migration
 - `/models`：Day9 MASTER、StockMixer、HIST、TRSR 小样本 adapter、模型对比和 candidate 准入状态
 - `/rag`：Day10 claim 级 RAG 证据、as_of 检索、引用卡片、评测门禁和无引用拒答边界
 - `/simulation`、`/reports` 等研究扩展页面
+- 官网层：`/capabilities`、`/methodology`、`/data-security`、`/backtest-risk`、`/rag-evidence`、`/architecture-roadmap`、`/login`
 
 ## 快速开始
 
@@ -271,6 +284,7 @@ curl http://127.0.0.1:8000/health
 /api/graph
 /api/models
 /api/rag
+/api/site
 ```
 
 ### 前端
@@ -313,6 +327,7 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 ./.venv/Scripts/python.exe scripts/check_day8_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day9_acceptance.py
 ./.venv/Scripts/python.exe scripts/check_day10_acceptance.py
+./.venv/Scripts/python.exe scripts/check_day11_acceptance.py
 ```
 
 完整测试：
@@ -419,6 +434,19 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good
 
 Day10 验收会重新生成 document/chunk/claim 证据表、claim schema、RAG eval sets、answer/citation cards、RAG API 与 `/rag` 页面验证。当前 RAG 模块为 claim-level evidence research assistant，不生成交易指令。
 
+## Day11 常用命令
+
+```bash
+cd /c/Users/blankxxc/Desktop/work_space/stock_good
+./.venv/Scripts/python.exe scripts/check_day11_acceptance.py
+./.venv/Scripts/python.exe -m pytest tests/test_day11_site_productization.py -q
+cd frontend
+npm run validate:routes
+npm run build
+```
+
+Day11 验收会检查官网层路由、Research Console 全页面、artifact-backed 主卡片、禁用文案、Spark/Lakehouse/Realtime 页面入口、`/api/site` 和固定研究边界提示。
+
 ## 关键产物
 
 | 产物 | 路径 |
@@ -463,6 +491,9 @@ Day10 验收会重新生成 document/chunk/claim 证据表、claim schema、RAG 
 | Day10 RAG 证据报告 | `reports/day10/rag_evidence_report.json` |
 | Day10 RAG eval 报告 | `reports/day10/rag_eval_report.json` |
 | Day10 RAG answer/citation cards | `reports/day10/rag_answer_cards.json`, `reports/day10/rag_citation_cards.html` |
+| Day11 Site acceptance | `reports/day11/acceptance_report.json` |
+| Day11 frontend component | `frontend/src/components/ArtifactStatusCard.tsx` |
+| Day11 console data registry | `frontend/src/lib/researchConsoleData.ts` |
 
 ## 研究与合规边界
 
@@ -479,5 +510,5 @@ Day10 验收会重新生成 document/chunk/claim 证据表、claim schema、RAG 
 2. 准备官方 Qlib 数据目录，跑完整 Qlib workflow，而不只使用 minimal recorder。
 3. 扩展模型路线：XGBoost/CatBoost/LambdaRank、MASTER、StockMixer、HIST、Temporal Relational Stock Ranking。
 4. 把 Day10 本地 RAG adapter 替换/扩展为 Qdrant/Milvus/pgvector，并接入真实授权研报、公告和新闻源。
-5. 把 Web research console 从静态说明页升级为可筛选、可钻取、可下载的交互式研究工作台。
-6. Day11 起补 simulation、risk guard、report review gate 和网站交互层，把研究证据、模型候选和回测诊断打通。
+5. 把 Day11 页面从 artifact-backed 静态研究卡片继续升级为可筛选、可钻取、可下载的交互式研究工作台。
+6. Day12 起补 simulation、risk guard、report review gate、RBAC、审计和报告导出状态机，把研究证据、模型候选和回测诊断打通。
