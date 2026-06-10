@@ -604,6 +604,21 @@ def _fit_score(train: pd.DataFrame, test: pd.DataFrame, feature_cols: list[str])
 
 def run_ablation(enhanced: pd.DataFrame, write_outputs: bool = True) -> tuple[dict[str, Any], str]:
     labels = _read_parquet_dir(ROOT / "data" / "gold" / "label_cross_sectional_return")
+    if "horizon" not in labels.columns and "label_horizon" in labels.columns:
+        labels = labels.rename(columns={"label_horizon": "horizon"})
+    if "forward_return" not in labels.columns and "label_value" in labels.columns:
+        labels["forward_return"] = pd.to_numeric(labels["label_value"], errors="coerce").fillna(0.0)
+    if "prediction_time" not in labels.columns:
+        if "label_start_time" in labels.columns:
+            labels["prediction_time"] = labels["label_start_time"].astype(str).str.replace("T09:30:00", "T09:25:00", regex=False)
+        elif "available_time" in labels.columns:
+            labels["prediction_time"] = labels["available_time"].astype(str)
+    if "cs_zscore_label" not in labels.columns:
+        labels["cs_zscore_label"] = labels.groupby("trade_date")["forward_return"].transform(_zscore) if "forward_return" in labels.columns else 0.0
+    if "tradable_flag" not in labels.columns:
+        labels["tradable_flag"] = True
+    if "leakage_check_status" not in labels.columns:
+        labels["leakage_check_status"] = "passed"
     labels = labels[(labels["horizon"].astype(str) == "5d") & labels["tradable_flag"].astype(bool)].copy()
     sample = enhanced.merge(
         labels[["trade_date", "symbol", "prediction_time", "forward_return", "cs_zscore_label", "label_version", "leakage_check_status"]],

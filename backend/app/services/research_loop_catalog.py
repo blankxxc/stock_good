@@ -111,6 +111,16 @@ def experiments_payload(research_boundary: str) -> dict[str, Any]:
             "status": "research_loop_experiment_pending",
             "maturity": "L1-route-stub",
             "research_boundary": research_boundary,
+            "advanced_models": {
+                "status": "advanced_models_advanced_models_ready" if advanced.get("status") == "ok" else "advanced_models_advanced_models_pending",
+                "maturity": advanced.get("maturity"),
+                "run_id": advanced.get("run_id"),
+                "experiment_id": advanced.get("experiment_id"),
+                "model_count": len(advanced.get("models", {})),
+                "approval_status": advanced.get("approval_status"),
+                "leakage_check_status": advanced.get("leakage_check_status"),
+                "artifacts": advanced.get("artifacts", {}),
+            },
         }
     return {
         "module": "experiments",
