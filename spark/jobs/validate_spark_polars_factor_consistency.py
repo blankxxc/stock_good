@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from spark.jobs.day4_factor_materialization import run_job  # noqa: E402
+from spark.jobs.factor_store_factor_materialization import run_job  # noqa: E402
 
 
 def main() -> None:
@@ -24,7 +24,7 @@ def main() -> None:
         "max_abs_diff_by_factor": report.get("max_abs_diff_by_factor"),
         "research_boundary": report.get("research_boundary"),
     }
-    path = ROOT / "reports" / "day4" / "spark_polars_consistency_report.json"
+    path = ROOT / "reports" / "factor_store" / "spark_polars_consistency_report.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(validation_report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(validation_report, ensure_ascii=False, indent=2))

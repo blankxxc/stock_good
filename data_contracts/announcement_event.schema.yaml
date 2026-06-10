@@ -1,7 +1,7 @@
 table: dwd_announcement_event
 layer: DWD
 schema_version: v0.1.0
-description: Day 1 contract stub with point-in-time metadata and license governance.
+description: foundation contract stub with point-in-time metadata and license governance.
 primary_key: [event_id]
 unique_key: [event_id]
 fields:

@@ -1,4 +1,4 @@
--- Day 1 stub: Day 4 turns this into executable DuckDB/Spark SQL.
+-- foundation stub: factor_store turns this into executable DuckDB/Spark SQL.
 select *
 from model_training_sample s
 join factor_daily_panel f

@@ -17,26 +17,26 @@ if str(ROOT) not in sys.path:
 ICEBERG_VERSION = os.getenv("ICEBERG_VERSION", "1.11.0")
 ICEBERG_PACKAGE = f"org.apache.iceberg:iceberg-spark-runtime-3.5_2.12:{ICEBERG_VERSION}"
 CATALOG_NAME = "local"
-NAMESPACE = "day2"
+NAMESPACE = "lakehouse"
 TABLE_NAME = "dwd_stock_daily_bar_iceberg"
 TABLE_IDENTIFIER = f"{CATALOG_NAME}.{NAMESPACE}.{TABLE_NAME}"
 WAREHOUSE = ROOT / "lakehouse" / "iceberg" / "warehouse"
-REPORT = ROOT / "reports" / "day2" / "iceberg_table_format_acceptance.json"
-LEGACY_MANIFEST = ROOT / "lakehouse" / "delta" / "day2_delta_poc_manifest.json"
+REPORT = ROOT / "reports" / "lakehouse" / "iceberg_table_format_acceptance.json"
+LEGACY_MANIFEST = ROOT / "lakehouse" / "delta" / "lakehouse_delta_poc_manifest.json"
 
 
 def _spark_uri(path: Path) -> str:
     return path.resolve().as_uri()
 
 
-def _ensure_day2_source() -> Path:
+def _ensure_lakehouse_source() -> Path:
     source = ROOT / "data" / "silver" / "dwd_stock_daily_bar"
     if not any(source.glob("**/*.parquet")):
-        from lakehouse.day2_pipeline import run_pipeline
+        from lakehouse.lakehouse_pipeline import run_pipeline
 
         result = run_pipeline()
         if result.get("status") != "ok":
-            raise RuntimeError(f"Day2 pipeline did not prepare source parquet data: {result}")
+            raise RuntimeError(f"lakehouse pipeline did not prepare source parquet data: {result}")
     if not any(source.glob("**/*.parquet")):
         raise FileNotFoundError(f"Missing source parquet files under {source}")
     return source
@@ -45,7 +45,7 @@ def _ensure_day2_source() -> Path:
 def _build_spark() -> SparkSession:
     return (
         SparkSession.builder.master("local[*]")
-        .appName("stock-good-day2-real-iceberg-poc")
+        .appName("stock-good-lakehouse-real-iceberg-poc")
         .config("spark.ui.enabled", "false")
         .config("spark.sql.shuffle.partitions", "2")
         .config("spark.jars.packages", ICEBERG_PACKAGE)
@@ -64,7 +64,7 @@ def _build_spark() -> SparkSession:
 
 
 def run_iceberg_poc() -> dict[str, Any]:
-    source = _ensure_day2_source()
+    source = _ensure_lakehouse_source()
     table_path = WAREHOUSE / NAMESPACE / TABLE_NAME
     shutil.rmtree(table_path, ignore_errors=True)
     WAREHOUSE.mkdir(parents=True, exist_ok=True)
@@ -76,7 +76,7 @@ def run_iceberg_poc() -> dict[str, Any]:
         if row_count <= 0:
             raise RuntimeError(f"Source parquet table is empty: {source}")
 
-        source_df.createOrReplaceTempView("day2_dwd_stock_daily_bar_source")
+        source_df.createOrReplaceTempView("lakehouse_dwd_stock_daily_bar_source")
         spark.sql(f"CREATE NAMESPACE IF NOT EXISTS {CATALOG_NAME}.{NAMESPACE}")
         spark.sql(f"DROP TABLE IF EXISTS {TABLE_IDENTIFIER}")
         spark.sql(
@@ -110,7 +110,7 @@ def run_iceberg_poc() -> dict[str, Any]:
                 trace_id,
                 adj_close,
                 'iceberg_v1_initial_write' AS iceberg_write_note
-            FROM day2_dwd_stock_daily_bar_source
+            FROM lakehouse_dwd_stock_daily_bar_source
             """
         )
         spark.sql(
@@ -173,12 +173,12 @@ def write_reports(report: dict[str, Any]) -> None:
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    # Compatibility for the original Day2 table-format manifest path.  The content now
+    # Compatibility for the original lakehouse table-format manifest path.  The content now
     # states the actual successful table format instead of pretending Delta succeeded.
     LEGACY_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
     legacy = {
         **report,
-        "legacy_manifest_note": "Original Day2 manifest path retained; table_format is now real Iceberg.",
+        "legacy_manifest_note": "Original lakehouse manifest path retained; table_format is now real Iceberg.",
         "iceberg_acceptance_report": str(REPORT),
     }
     LEGACY_MANIFEST.write_text(json.dumps(legacy, ensure_ascii=False, indent=2), encoding="utf-8")

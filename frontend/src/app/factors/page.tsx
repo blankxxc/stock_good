@@ -12,7 +12,7 @@ export default function Page() {
         <div className="card"><strong>研究边界</strong><p>仅用于研究排序、解释、回测、状态监控和证据追溯，正式使用前需要复核。</p></div>
         <div className="card"><strong>可追溯字段</strong><p>{config.fields.join(' · ')}</p></div>
       </div>
-    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>Day 4 factor store: 74 个离线因子 point_in_time_violations=0 /api/factors. Day 7 事件因子 market regime publish_time / available_time event/regime ablation.</p></div>
+    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>factor_store factor_store: 74 个离线因子 point_in_time_violations=0 /api/factors. event_regime 事件因子 market regime publish_time / available_time event/regime ablation.</p></div>
     </section>
   );
 }

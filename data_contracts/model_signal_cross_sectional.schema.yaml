@@ -1,7 +1,7 @@
 table: model_signal_cross_sectional
 layer: ADS
 schema_version: v0.1.0
-description: Day 1 contract stub with point-in-time metadata and license governance.
+description: foundation contract stub with point-in-time metadata and license governance.
 primary_key: [signal_time, symbol, model_name, model_version, horizon]
 unique_key: [signal_time, symbol, model_name, model_version, horizon]
 fields:

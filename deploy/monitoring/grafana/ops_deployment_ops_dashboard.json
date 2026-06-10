@@ -1,0 +1,57 @@
+{
+  "title": "ops_deployment Stock Good Ops Dashboard",
+  "tags": [
+    "ops_deployment",
+    "orchestration",
+    "observability",
+    "research-boundary"
+  ],
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Pipeline success/failure status",
+      "targets": [
+        {
+          "expr": "stock_good_task_success"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Data latency / coverage / missingness",
+      "targets": [
+        {
+          "expr": "stock_good_data_latency_minutes"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis health",
+      "targets": [
+        {
+          "expr": "stock_good_component_health"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "API latency P50/P95/P99 and error rate",
+      "targets": [
+        {
+          "expr": "stock_good_api_latency_ms"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Backfill progress and snapshot manifest",
+      "targets": [
+        {
+          "expr": "stock_good_backfill_progress"
+        }
+      ]
+    }
+  ]
+}

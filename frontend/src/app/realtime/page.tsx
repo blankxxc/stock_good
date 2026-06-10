@@ -12,7 +12,7 @@ export default function Page() {
         <div className="card"><strong>研究边界</strong><p>仅用于研究排序、解释、回测、状态监控和证据追溯，正式使用前需要复核。</p></div>
         <div className="card"><strong>可追溯字段</strong><p>{config.fields.join(' · ')}</p></div>
       </div>
-    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>Day 6 realtime: /api/realtime PoC / not formal signal replay_simulated_not_live_market_data online feature.</p></div>
+    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>realtime_streaming realtime: /api/realtime PoC / not formal signal replay_simulated_not_live_market_data online feature.</p></div>
     </section>
   );
 }

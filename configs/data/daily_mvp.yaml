@@ -1,11 +1,34 @@
-dataset_bundle: daily_mvp
+dataset_bundle: csi300_daily_recent_3y
 calendar: cn_stock_trade_calendar
+universe_id: csi300_recent_3y
+time_window:
+  mode: rolling
+  lookback_years: 3
+  end_date: latest_available_trade_date
 partitioning: [trade_date]
+primary_frequency: daily
+enabled_frequencies: [daily]
+deferred_frequencies:
+  - frequency: minute
+    reason: 当前本地存储优先保证日频闭环，分钟数据量较大，暂不落库处理。
+  - frequency: tick
+    reason: 逐笔和盘口数据需要更大存储与供应商授权，暂不进入 MVP。
 data_sources:
   - dataset_name: market_daily_ohlcv
     layer: bronze_to_gold
     license_id: license_market_authorized
     freshness_slo_minutes: 1440
+    required_fields: [symbol, trade_date, open, high, low, close, volume, amount]
+  - dataset_name: adjustment_factor
+    layer: reference
+    license_id: license_market_authorized
+    freshness_slo_minutes: 1440
+    required_fields: [symbol, trade_date, adj_factor]
+  - dataset_name: index_membership_history
+    layer: reference
+    license_id: license_reference_authorized
+    freshness_slo_minutes: 1440
+    required_fields: [index_code, symbol, start_date, end_date]
   - dataset_name: reference_industry_index
     layer: reference
     license_id: license_reference_authorized

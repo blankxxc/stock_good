@@ -1,7 +1,7 @@
 table: portfolio_backtest_result
 layer: ADS
 schema_version: v0.1.0
-description: Day 1 contract stub with point-in-time metadata and license governance.
+description: foundation contract stub with point-in-time metadata and license governance.
 primary_key: [experiment_id, trade_date, portfolio_id]
 unique_key: [experiment_id, trade_date, portfolio_id]
 fields:

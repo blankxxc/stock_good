@@ -12,7 +12,7 @@ export default function Page() {
         <div className="card"><strong>研究边界</strong><p>仅用于研究排序、解释、回测、状态监控和证据追溯，正式使用前需要复核。</p></div>
         <div className="card"><strong>可追溯字段</strong><p>{config.fields.join(' · ')}</p></div>
       </div>
-    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>Day 9 advanced models: /api/models MASTER StockMixer HIST TRSR research candidate approval_status.</p></div>
+    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>advanced_models advanced_models: /api/models MASTER StockMixer HIST TRSR research candidate approval_status.</p></div>
     </section>
   );
 }

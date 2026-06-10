@@ -6,11 +6,11 @@ from pathlib import Path
 from pyspark.sql import SparkSession, functions as F
 
 ROOT = Path(__file__).resolve().parents[2]
-REPORT = ROOT / "reports" / "day2" / "spark_silver_to_gold_base_panels_report.json"
+REPORT = ROOT / "reports" / "lakehouse" / "spark_silver_to_gold_base_panels_report.json"
 
 
 def main() -> None:
-    spark = SparkSession.builder.master("local[*]").appName("stock-good-day2-silver-to-gold-panels").getOrCreate()
+    spark = SparkSession.builder.master("local[*]").appName("stock-good-lakehouse-silver-to-gold-panels").getOrCreate()
     try:
         daily = spark.read.parquet(str(ROOT / "data" / "silver" / "dwd_stock_daily_bar"))
         factor = daily.select(

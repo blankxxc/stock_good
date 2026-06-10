@@ -1,4 +1,4 @@
-label_version: day1-label-contract-v0
+label_version: foundation-label-contract-v0
 prediction_task: cross_sectional_return_prediction
 horizons: [5d, 10d]
 label_fields:

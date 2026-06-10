@@ -6,25 +6,25 @@ from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.services.day2_catalog import data_quality_payload, lakehouse_payload, license_payload, lineage_payload
-from backend.app.services.day4_catalog import factor_payload, feature_payload, spark_jobs_payload
-from backend.app.services.day5_catalog import backtests_payload, dashboard_day5_payload, experiments_payload, scores_payload
-from backend.app.services.day6_catalog import flink_jobs_payload, realtime_payload
-from backend.app.services.day7_catalog import event_regime_payload
-from backend.app.services.day8_catalog import relation_graph_payload
-from backend.app.services.day9_catalog import advanced_models_payload
-from backend.app.services.day10_catalog import rag_payload
-from backend.app.services.day11_catalog import site_payload
-from backend.app.services.day12_catalog import admin_payload, audit_payload, licenses_day12_payload, reports_payload, simulation_payload
-from ops.day13_ops import build_day13_artifacts
-from ops.day14_final import build_day14_final_artifacts
+from backend.app.services.lakehouse_catalog import data_quality_payload, lakehouse_payload, license_payload, lineage_payload
+from backend.app.services.factor_store_catalog import factor_payload, feature_payload, spark_jobs_payload
+from backend.app.services.research_loop_catalog import backtests_payload, dashboard_research_loop_payload, experiments_payload, scores_payload
+from backend.app.services.realtime_streaming_catalog import flink_jobs_payload, realtime_payload
+from backend.app.services.event_regime_catalog import event_regime_payload
+from backend.app.services.relation_graph_catalog import relation_graph_payload
+from backend.app.services.advanced_models_catalog import advanced_models_payload
+from backend.app.services.rag_evidence_catalog import rag_payload
+from backend.app.services.research_site_catalog import site_payload
+from backend.app.services.governance_simulation_catalog import admin_payload, audit_payload, licenses_governance_simulation_payload, reports_payload, simulation_payload
+from ops.ops_deployment_ops import build_ops_deployment_artifacts
+from ops.final_acceptance_final import build_final_acceptance_final_artifacts
 
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 app = FastAPI(
     title="Intelligent Stock Research Platform",
-    version="0.1.0-day14",
+    version="0.1.0-final_acceptance",
     description=(
         "Research console for cross-sectional ranking, factor diagnostics, "
         "backtest reports, risk explanation, and RAG-cited research notes. "
@@ -46,48 +46,48 @@ def health() -> dict[str, Any]:
     return {
         "status": "ok",
         "service": SERVICE_NAME,
-        "version": "0.1.0-day14",
+        "version": "0.1.0-final_acceptance",
         "time": datetime.now(timezone.utc).isoformat(),
         "research_boundary": RESEARCH_BOUNDARY,
         "modules": {
             "backend": "stub_ready",
-            "frontend": "day11_productized_routes_ready",
-            "site": "day11_productized_research_console_ready",
-            "lakehouse": "day2_parquet_duckdb_snapshot_ready",
-            "data_quality": "day3_quality_quarantine_leakage_ready",
-            "lineage": "day3_source_job_snapshot_report_ready",
-            "spark": "day4_factor_materialization_consistency_ready",
-            "factor_store": "day4_offline_factor_store_ready",
-            "labels": "day5_cross_sectional_labels_ready",
-            "scores": "day5_lightgbm_scores_ready",
-            "backtests": "day5_tradable_backtest_risk_capacity_ready",
-            "experiments": "day5_experiment_recorder_ready",
-            "realtime": "day6_replay_kafka_online_feature_ready",
-            "flink": "day6_event_time_factor_jobs_ready",
-            "redpanda_kafka": "day6_standard_topics_replay_ready",
-            "clickhouse": "day6_clickhouse_adapter_reserved_sqlite_sink_ready",
-            "event_regime": "day7_event_market_regime_ablation_ready",
-            "financial_text": "day7_finbert_compatible_lexicon_baseline_ready",
-            "relation_graph": "day8_stock_relation_graph_ready",
-            "graph_factors": "day8_relation_spillover_factor_ready",
-            "hist_trsr_adapter": "day8_hist_trsr_relation_inputs_ready",
-            "advanced_models": "day9_research_candidate_adapters_ready",
-            "rag": "day10_claim_evidence_rag_ready",
-            "simulation": "day12_paper_simulation_governance_ready",
-            "rbac": "day12_rbac_duties_ready",
-            "reports": "day12_report_export_manifest_ready",
-            "license_policy": "day12_license_policy_engine_ready",
-            "audit": "day12_append_only_audit_ready",
-            "orchestration": "day13_prefect_local_dag_ready",
-            "config_hash": "day13_resolved_config_hash_ready",
-            "backfill": "day13_backfill_dry_run_ready",
-            "dataset_snapshots": "day13_recoverable_snapshot_manifest_ready",
-            "observability": "day13_ops_metrics_ready",
-            "ci_cd": "day13_quality_gates_ready",
-            "deployment": "day13_compose_proxy_k8s_ready",
-            "backup_restore": "day13_backup_restore_smoke_ready",
-            "final_acceptance": "day14_final_acceptance_ready",
-            "documentation": "day14_docs_demo_coverage_ready",
+            "frontend": "research_site_productized_routes_ready",
+            "site": "research_site_productized_research_console_ready",
+            "lakehouse": "lakehouse_parquet_duckdb_snapshot_ready",
+            "data_quality": "data_trust_quality_quarantine_leakage_ready",
+            "lineage": "data_trust_source_job_snapshot_report_ready",
+            "spark": "factor_store_factor_materialization_consistency_ready",
+            "factor_store": "factor_store_offline_factor_store_ready",
+            "labels": "research_loop_cross_sectional_labels_ready",
+            "scores": "research_loop_lightgbm_scores_ready",
+            "backtests": "research_loop_tradable_backtest_risk_capacity_ready",
+            "experiments": "research_loop_experiment_recorder_ready",
+            "realtime": "realtime_streaming_replay_kafka_online_feature_ready",
+            "flink": "realtime_streaming_event_time_factor_jobs_ready",
+            "redpanda_kafka": "realtime_streaming_standard_topics_replay_ready",
+            "clickhouse": "realtime_streaming_clickhouse_adapter_reserved_sqlite_sink_ready",
+            "event_regime": "event_regime_event_market_regime_ablation_ready",
+            "financial_text": "event_regime_finbert_compatible_lexicon_baseline_ready",
+            "relation_graph": "relation_graph_stock_relation_graph_ready",
+            "graph_factors": "relation_graph_relation_spillover_factor_ready",
+            "hist_trsr_adapter": "relation_graph_hist_trsr_relation_inputs_ready",
+            "advanced_models": "advanced_models_research_candidate_adapters_ready",
+            "rag": "rag_evidence_claim_evidence_rag_ready",
+            "simulation": "governance_simulation_paper_simulation_governance_ready",
+            "rbac": "governance_simulation_rbac_duties_ready",
+            "reports": "governance_simulation_report_export_manifest_ready",
+            "license_policy": "governance_simulation_license_policy_engine_ready",
+            "audit": "governance_simulation_append_only_audit_ready",
+            "orchestration": "ops_deployment_prefect_local_dag_ready",
+            "config_hash": "ops_deployment_resolved_config_hash_ready",
+            "backfill": "ops_deployment_backfill_dry_run_ready",
+            "dataset_snapshots": "ops_deployment_recoverable_snapshot_manifest_ready",
+            "observability": "ops_deployment_ops_metrics_ready",
+            "ci_cd": "ops_deployment_quality_gates_ready",
+            "deployment": "ops_deployment_compose_proxy_k8s_ready",
+            "backup_restore": "ops_deployment_backup_restore_smoke_ready",
+            "final_acceptance": "final_acceptance_final_acceptance_ready",
+            "documentation": "final_acceptance_docs_demo_coverage_ready",
         },
     }
 
@@ -116,12 +116,12 @@ ROUTE_MODULES = {
     "simulation": "模拟账户、模拟订单、模拟持仓和风控约束",
     "admin": "用户、角色、权限、系统配置管理",
     "audit": "审计日志和治理事件查询",
-    "ops": "Day13 任务编排、配置哈希、回填、可观测性、CI/CD、部署和备份恢复",
+    "ops": "ops_deployment 任务编排、配置哈希、回填、可观测性、CI/CD、部署和备份恢复",
     "orchestration": "Prefect local DAG、MVP pipeline 和扩展 DAG dry-run",
     "backfill": "backfill_request、dry-run 影响范围和新 snapshot",
     "observability": "数据/任务/模型/系统指标和 Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis 状态",
     "deployment": "Docker Compose、反向代理、K8s 草案、CI/CD 和 backup/restore smoke",
-    "final-acceptance": "Day14 全量联调、最终验收、覆盖矩阵、文档和演示资产",
+    "final-acceptance": "final_acceptance 全量联调、最终验收、覆盖矩阵、文档和演示资产",
     "licenses": "数据许可证、可展示范围和 license_gate",
 }
 
@@ -130,9 +130,9 @@ def route_payload(module: str) -> dict[str, Any]:
     if module == "site":
         return site_payload(RESEARCH_BOUNDARY)
     if module in {"dashboard", "overview"}:
-        return dashboard_day5_payload(RESEARCH_BOUNDARY)
+        return dashboard_research_loop_payload(RESEARCH_BOUNDARY)
     if module == "licenses":
-        return licenses_day12_payload(RESEARCH_BOUNDARY)
+        return licenses_governance_simulation_payload(RESEARCH_BOUNDARY)
     if module == "admin":
         return admin_payload(RESEARCH_BOUNDARY)
     if module == "audit":
@@ -142,21 +142,21 @@ def route_payload(module: str) -> dict[str, Any]:
     if module == "simulation":
         return simulation_payload(RESEARCH_BOUNDARY)
     if module == "ops":
-        return build_day13_artifacts()
+        return build_ops_deployment_artifacts()
     if module == "orchestration":
-        payload = build_day13_artifacts()
-        return {"status": "day13_orchestration_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, **payload["orchestration"]}
+        payload = build_ops_deployment_artifacts()
+        return {"status": "ops_deployment_orchestration_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, **payload["orchestration"]}
     if module == "backfill":
-        payload = build_day13_artifacts()
-        return {"status": "day13_backfill_dry_run_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "backfill_request": payload["backfill_request"], "dataset_snapshot_manifest": payload["dataset_snapshot_manifest"]}
+        payload = build_ops_deployment_artifacts()
+        return {"status": "ops_deployment_backfill_dry_run_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "backfill_request": payload["backfill_request"], "dataset_snapshot_manifest": payload["dataset_snapshot_manifest"]}
     if module == "observability":
-        payload = build_day13_artifacts()
-        return {"status": "day13_observability_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, **payload["observability"]}
+        payload = build_ops_deployment_artifacts()
+        return {"status": "ops_deployment_observability_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, **payload["observability"]}
     if module == "deployment":
-        payload = build_day13_artifacts()
-        return {"status": "day13_deployment_backup_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "ci_cd": payload["ci_cd"], **payload["deployment"]}
+        payload = build_ops_deployment_artifacts()
+        return {"status": "ops_deployment_deployment_backup_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "ci_cd": payload["ci_cd"], **payload["deployment"]}
     if module == "final-acceptance":
-        return build_day14_final_artifacts()
+        return build_final_acceptance_final_artifacts()
     if module == "lakehouse":
         return lakehouse_payload(RESEARCH_BOUNDARY)
     if module == "data-quality":
@@ -189,7 +189,7 @@ def route_payload(module: str) -> dict[str, Any]:
         return rag_payload(RESEARCH_BOUNDARY)
     return {
         "module": module,
-        "status": "day2_contract_ready" if module in {"overview", "spark-jobs", "reports"} else "day1_placeholder_ready",
+        "status": "lakehouse_contract_ready" if module in {"overview", "spark-jobs", "reports"} else "foundation_placeholder_ready",
         "description": ROUTE_MODULES[module],
         "maturity": "L1-contract-and-route-stub",
         "research_boundary": RESEARCH_BOUNDARY,

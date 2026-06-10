@@ -1,9 +1,9 @@
-schema_version: v0.2.0-day2
-registry_name: day2_source_license_registry
+schema_version: v0.2.0-lakehouse
+registry_name: lakehouse_source_license_registry
 research_boundary: research_signals_only_not_investment_advice
 sources:
 - dataset_name: trading_calendar
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -11,9 +11,9 @@ sources:
   display_policy: display_allowed
   export_policy: export_allowed
   sample_scope: synthetic_contract_sample
-  notes: 交易日历：Day2 使用本地合成样例验证时间语义。
+  notes: 交易日历：lakehouse 使用本地合成样例验证时间语义。
 - dataset_name: stock_list
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -23,7 +23,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: 股票列表：本地小 universe，不代表真实股票池。
 - dataset_name: listing_status
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -33,7 +33,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: 上市/退市状态样例。
 - dataset_name: st_status
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -43,7 +43,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: ST 状态样例。
 - dataset_name: suspension_status
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -53,7 +53,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: 停牌状态样例。
 - dataset_name: limit_rules
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -63,7 +63,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: 涨跌停规则样例。
 - dataset_name: market_daily_ohlcv
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: batch_market
   priority: 1
   license_status: authorized
@@ -71,9 +71,9 @@ sources:
   display_policy: display_allowed
   export_policy: export_allowed
   sample_scope: synthetic_contract_sample
-  notes: 日频 OHLCV：Day2 稳定离线样例。
+  notes: 日频 OHLCV：lakehouse 稳定离线样例。
 - dataset_name: adjustment_factor
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: batch_market
   priority: 1
   license_status: authorized
@@ -83,7 +83,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: 复权因子样例。
 - dataset_name: industry_classification_history
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -93,7 +93,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: 行业历史分类样例，带 as_of_date。
 - dataset_name: index_constituent_history
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -103,7 +103,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: 指数历史成分样例，避免未来成分泄漏。
 - dataset_name: concept_classification
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: reference
   priority: 1
   license_status: authorized
@@ -113,7 +113,7 @@ sources:
   sample_scope: synthetic_contract_sample
   notes: 基础概念分类样例。
 - dataset_name: financial_statement_basic
-  source_name: synthetic_day2
+  source_name: synthetic_lakehouse
   source_type: fundamental
   priority: 1
   license_status: authorized
@@ -131,7 +131,7 @@ sources:
   display_policy: aggregate_only
   export_policy: export_blocked
   sample_scope: schema_only_placeholder
-  notes: 分钟实时行情需要供应商授权；Day2 仅保留 schema/adapter。
+  notes: 分钟实时行情需要供应商授权；lakehouse 仅保留 schema/adapter。
 - dataset_name: market_tick_rt
   source_name: external_vendor
   source_type: realtime_market
@@ -171,7 +171,7 @@ sources:
   display_policy: citation_required
   export_policy: export_blocked
   sample_scope: schema_only_placeholder
-  notes: 公告原文/摘要依赖授权；Day2 只保存事件契约。
+  notes: 公告原文/摘要依赖授权；lakehouse 只保存事件契约。
 - dataset_name: news_event
   source_name: news_vendor
   source_type: event
@@ -181,7 +181,7 @@ sources:
   display_policy: citation_required
   export_policy: export_blocked
   sample_scope: schema_only_placeholder
-  notes: 新闻正文受版权限制；Day2 只保留哈希/标题样例。
+  notes: 新闻正文受版权限制；lakehouse 只保留哈希/标题样例。
 - dataset_name: macro_event
   source_name: public_or_vendor
   source_type: macro

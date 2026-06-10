@@ -1,7 +1,7 @@
 table: factor_daily_panel
 layer: DWS
 schema_version: v0.1.0
-description: Day 1 contract stub with point-in-time metadata and license governance.
+description: foundation contract stub with point-in-time metadata and license governance.
 primary_key: [trade_date, symbol, factor_name, factor_version]
 unique_key: [trade_date, symbol, factor_name, factor_version]
 fields:

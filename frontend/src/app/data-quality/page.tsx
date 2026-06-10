@@ -12,7 +12,7 @@ export default function Page() {
         <div className="card"><strong>研究边界</strong><p>仅用于研究排序、解释、回测、状态监控和证据追溯，正式使用前需要复核。</p></div>
         <div className="card"><strong>可追溯字段</strong><p>{config.fields.join(' · ')}</p></div>
       </div>
-    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>Day 3 data trust: reports/data_quality_report.json quarantine leakage_check_status missingness outliers coverage.</p></div>
+    <div className="card compatibility-checkpoints"><strong>验收兼容说明</strong><p>data_trust data_trust: reports/data_quality_report.json quarantine leakage_check_status missingness outliers coverage.</p></div>
     </section>
   );
 }

@@ -7,14 +7,14 @@
 ```bash
 cd /c/Users/blankxxc/Desktop/work_space/stock_good
 uv run pytest tests -q
-uv run python scripts/check_day14_acceptance.py
+uv run python scripts/check_final_acceptance_acceptance.py
 cd frontend && npm run validate:routes && npm run build
 cd ..
 docker compose -f deploy/docker/docker-compose.yml config --services
-sh deploy/backup/backup_day13.sh --smoke
-sh deploy/backup/restore_day13.sh --smoke
+sh deploy/backup/backup_ops_deployment.sh --smoke
+sh deploy/backup/restore_ops_deployment.sh --smoke
 ```
 
 ## Stack
 
-FastAPI backend、Next.js frontend、PostgreSQL、Redis、Qdrant、Redpanda、Flink、Spark、ClickHouse、Prometheus、Grafana。K8s manifest 是 Day13 部署草案，MVP 默认 Docker Compose / 单机运行。
+FastAPI backend、Next.js frontend、PostgreSQL、Redis、Qdrant、Redpanda、Flink、Spark、ClickHouse、Prometheus、Grafana。K8s manifest 是 ops deployment 部署草案，MVP 默认 Docker Compose / 单机运行。

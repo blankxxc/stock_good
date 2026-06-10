@@ -1,7 +1,7 @@
 export default function Page() {
   return (
     <section className="hero artifact-backed">
-      <span className="badge">官网层 · Day11 productized</span>
+      <span className="badge">官网层 · research_site productized</span>
       <h1>智能选股研究平台</h1>
       <p className="lead">量化研究控制台 · 投研实验工作台 · 横截面评分与回测分析平台</p>
       <p>

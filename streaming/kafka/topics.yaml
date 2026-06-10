@@ -1,5 +1,5 @@
 schema_version: v0.1.0
-day1_status: topic_contract_ready
+foundation_status: topic_contract_ready
 idempotent_key: symbol + event_time + factor_name + window
 required_message_fields:
   - event_time

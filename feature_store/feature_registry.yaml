@@ -1,9 +1,9 @@
 schema_version: v0.4.0
-registry_name: day4_offline_feature_registry
-feature_set_version: feature_set_day4_v001
+registry_name: factor_store_offline_feature_registry
+feature_set_version: feature_set_factor_store_v001
 research_boundary: research_signals_only_not_investment_advice
 grain: symbol + trade_date + prediction_time
-generated_at: '2026-06-08T14:32:43+00:00'
+generated_at: '2026-06-10T02:54:16+00:00'
 features:
 - feature_name: return_1d
   feature_group: price_return
@@ -14,7 +14,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -23,7 +23,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -37,7 +37,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 5d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -46,7 +46,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -60,7 +60,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 10d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -69,7 +69,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -83,7 +83,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -92,7 +92,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -106,7 +106,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -115,7 +115,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -129,7 +129,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 120d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -138,7 +138,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -152,7 +152,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -161,7 +161,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -175,7 +175,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -184,7 +184,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -198,7 +198,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 120d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -207,7 +207,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -222,7 +222,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -231,7 +231,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -246,7 +246,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 5d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -255,7 +255,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -270,7 +270,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 10d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -279,7 +279,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -293,7 +293,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 5d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -302,7 +302,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -316,7 +316,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 10d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -325,7 +325,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -339,7 +339,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -348,7 +348,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -362,7 +362,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -371,7 +371,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -385,7 +385,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 120d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -394,7 +394,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -408,7 +408,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -417,7 +417,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -432,7 +432,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -441,7 +441,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -455,7 +455,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -464,7 +464,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -478,7 +478,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -487,7 +487,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -501,7 +501,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -510,7 +510,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -525,7 +525,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -534,7 +534,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -548,7 +548,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -557,7 +557,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -571,7 +571,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -580,7 +580,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -594,7 +594,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 5d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -603,7 +603,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -617,7 +617,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 5d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -626,7 +626,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -640,7 +640,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 5d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -649,7 +649,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -663,7 +663,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -672,7 +672,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -686,7 +686,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -695,7 +695,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -709,7 +709,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -718,7 +718,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -732,7 +732,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -741,7 +741,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -755,7 +755,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -764,7 +764,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -778,7 +778,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -787,7 +787,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -801,7 +801,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -810,7 +810,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -824,7 +824,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -833,7 +833,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -847,7 +847,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -856,7 +856,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -870,7 +870,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -879,7 +879,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -893,7 +893,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -902,7 +902,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -916,7 +916,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -925,7 +925,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -939,7 +939,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -948,7 +948,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -962,7 +962,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -971,7 +971,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -985,7 +985,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -994,7 +994,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1008,7 +1008,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1017,7 +1017,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1031,7 +1031,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1040,7 +1040,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1054,7 +1054,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1063,7 +1063,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1077,7 +1077,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1086,7 +1086,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1100,7 +1100,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1109,7 +1109,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1123,7 +1123,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 5d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1132,7 +1132,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1146,7 +1146,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1155,7 +1155,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1169,7 +1169,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1178,7 +1178,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1192,7 +1192,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1201,7 +1201,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1215,7 +1215,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 5d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1224,7 +1224,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1238,7 +1238,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 10d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1247,7 +1247,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1261,7 +1261,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1270,7 +1270,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1284,7 +1284,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1293,7 +1293,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1307,7 +1307,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 120d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1316,7 +1316,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1330,7 +1330,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1339,7 +1339,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1354,7 +1354,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1363,7 +1363,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1377,7 +1377,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1386,7 +1386,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1400,7 +1400,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1409,7 +1409,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1423,7 +1423,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 60d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1432,7 +1432,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1446,7 +1446,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1455,7 +1455,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: high
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1470,7 +1470,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1479,7 +1479,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: high
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1494,7 +1494,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1503,7 +1503,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: high
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1517,7 +1517,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1526,7 +1526,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1540,7 +1540,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1549,7 +1549,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1563,7 +1563,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 1d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1572,7 +1572,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1586,7 +1586,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1595,7 +1595,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1609,7 +1609,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1618,7 +1618,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1632,7 +1632,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1641,7 +1641,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1655,7 +1655,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1664,7 +1664,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1678,7 +1678,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1687,7 +1687,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -1701,7 +1701,7 @@ features:
   input_datasets:
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
-    by Day3 leakage checks
+    by data_trust leakage checks
   lookback_window: 20d
   fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1710,7 +1710,7 @@ features:
   factor_version: factor_v004
   leakage_risk_level: low
   unit_tests:
-  - tests/test_day4_factor_store.py
+  - tests/test_factor_store_factor_store.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values

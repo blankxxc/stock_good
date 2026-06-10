@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </aside>
           <main>{children}</main>
           <div className="fixed-disclaimer">研究用途：仅输出研究排序、解释、回测报告和引用证据；正式使用前必须经过样本外验证、风控复核和人工审批。</div>
-          <footer>Day13 运维闭环：Research Console + Ops 编排 + 可观测性 + backup/restore smoke。</footer>
+          <footer>ops_deployment 运维闭环：Research Console + Ops 编排 + 可观测性 + backup/restore smoke。</footer>
         </div>
       </body>
     </html>

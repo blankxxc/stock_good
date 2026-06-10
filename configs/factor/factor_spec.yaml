@@ -1,8 +1,8 @@
 schema_version: v0.4.0
 factor_version: factor_v004
-feature_set_version: feature_set_day4_v001
+feature_set_version: feature_set_factor_store_v001
 research_boundary: research_signals_only_not_investment_advice
-generated_at: '2026-06-08T14:32:43+00:00'
+generated_at: '2026-06-10T02:54:16+00:00'
 factors:
   return_1d:
     category: price_return
@@ -11,7 +11,7 @@ factors:
     formula: close / close.shift(1) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -27,8 +27,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -51,7 +51,7 @@ factors:
     formula: close / close.shift(5) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -67,8 +67,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -91,7 +91,7 @@ factors:
     formula: close / close.shift(10) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -107,8 +107,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -131,7 +131,7 @@ factors:
     formula: close / close.shift(20) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -147,8 +147,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -171,7 +171,7 @@ factors:
     formula: close / close.shift(60) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -187,8 +187,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -211,7 +211,7 @@ factors:
     formula: close / close.shift(120) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -227,8 +227,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -251,7 +251,7 @@ factors:
     formula: close / close.shift(20) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -267,8 +267,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -291,7 +291,7 @@ factors:
     formula: close / close.shift(60) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -307,8 +307,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -331,7 +331,7 @@ factors:
     formula: close / close.shift(120) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -347,8 +347,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -371,7 +371,7 @@ factors:
     formula: -return_1d
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -387,8 +387,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -411,7 +411,7 @@ factors:
     formula: -return_5d
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -427,8 +427,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -451,7 +451,7 @@ factors:
     formula: -return_10d
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -467,8 +467,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -490,7 +490,7 @@ factors:
     formula: rolling_std(return_1d, 5)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -506,8 +506,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -529,7 +529,7 @@ factors:
     formula: rolling_std(return_1d, 10)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -545,8 +545,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -568,7 +568,7 @@ factors:
     formula: rolling_std(return_1d, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -584,8 +584,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -607,7 +607,7 @@ factors:
     formula: rolling_std(return_1d, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -623,8 +623,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -646,7 +646,7 @@ factors:
     formula: rolling_std(return_1d, 120)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -662,8 +662,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -685,7 +685,7 @@ factors:
     formula: rolling_std(min(return_1d, 0), 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -701,8 +701,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -725,7 +725,7 @@ factors:
     formula: rolling_mean((high-low)/close, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -741,8 +741,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -764,7 +764,7 @@ factors:
     formula: rolling_skew(return_1d, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -780,8 +780,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -803,7 +803,7 @@ factors:
     formula: rolling_kurt(return_1d, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -819,8 +819,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -842,7 +842,7 @@ factors:
     formula: rolling_std(min(return_1d, 0), 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -858,8 +858,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -882,7 +882,7 @@ factors:
     formula: rolling_mean((high-low)/close, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -898,8 +898,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -921,7 +921,7 @@ factors:
     formula: rolling_skew(return_1d, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -937,8 +937,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -960,7 +960,7 @@ factors:
     formula: rolling_kurt(return_1d, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -976,8 +976,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -999,7 +999,7 @@ factors:
     formula: volume / rolling_mean(volume, 5)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1015,8 +1015,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1039,7 +1039,7 @@ factors:
     formula: rolling_mean(amount, 5)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1055,8 +1055,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1078,7 +1078,7 @@ factors:
     formula: rolling_mean(volume, 5)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1094,8 +1094,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1117,7 +1117,7 @@ factors:
     formula: volume / rolling_mean(volume, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1133,8 +1133,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1157,7 +1157,7 @@ factors:
     formula: rolling_mean(amount, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1173,8 +1173,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1196,7 +1196,7 @@ factors:
     formula: rolling_mean(volume, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1212,8 +1212,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1235,7 +1235,7 @@ factors:
     formula: volume / rolling_mean(volume, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1251,8 +1251,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1275,7 +1275,7 @@ factors:
     formula: rolling_mean(amount, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1291,8 +1291,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1314,7 +1314,7 @@ factors:
     formula: rolling_mean(volume, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1330,8 +1330,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1353,7 +1353,7 @@ factors:
     formula: rolling_mean(abs(return_1d)/(amount+eps), 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1369,8 +1369,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1392,7 +1392,7 @@ factors:
     formula: rolling_mean(volume<=0, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1408,8 +1408,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1432,7 +1432,7 @@ factors:
     formula: rolling_percentile_rank(amount, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1448,8 +1448,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1471,7 +1471,7 @@ factors:
     formula: rolling_mean(abs(return_1d)/(amount+eps), 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1487,8 +1487,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1510,7 +1510,7 @@ factors:
     formula: rolling_mean(volume<=0, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1526,8 +1526,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1550,7 +1550,7 @@ factors:
     formula: rolling_percentile_rank(amount, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1566,8 +1566,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1590,7 +1590,7 @@ factors:
     formula: cross_sectional_zscore(log1p(amount_mean_20d))
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1606,8 +1606,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1629,7 +1629,7 @@ factors:
     formula: close / (amount/volume) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1645,8 +1645,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1669,7 +1669,7 @@ factors:
     formula: (high-close)/(high-low)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1685,8 +1685,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1708,7 +1708,7 @@ factors:
     formula: (close-low)/(high-low)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1724,8 +1724,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1747,7 +1747,7 @@ factors:
     formula: close/open - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1763,8 +1763,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1787,7 +1787,7 @@ factors:
     formula: open/previous_close - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1803,8 +1803,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1826,7 +1826,7 @@ factors:
     formula: (high-low)/close
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1842,8 +1842,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1865,7 +1865,7 @@ factors:
     formula: (close-low)/(high-low)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1881,8 +1881,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1904,7 +1904,7 @@ factors:
     formula: volume/rolling_mean(volume,5) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1920,8 +1920,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1943,7 +1943,7 @@ factors:
     formula: volume/rolling_mean(volume,20) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1959,8 +1959,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -1982,7 +1982,7 @@ factors:
     formula: rolling_corr(return_1d, volume_pct_change, 20)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1998,8 +1998,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2021,7 +2021,7 @@ factors:
     formula: rolling_corr(return_1d, volume_pct_change, 60)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2037,8 +2037,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2060,7 +2060,7 @@ factors:
     formula: close/rolling_mean(close,5) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2076,8 +2076,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2099,7 +2099,7 @@ factors:
     formula: close/rolling_mean(close,10) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2115,8 +2115,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2138,7 +2138,7 @@ factors:
     formula: close/rolling_mean(close,20) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2154,8 +2154,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2177,7 +2177,7 @@ factors:
     formula: close/rolling_mean(close,60) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2193,8 +2193,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2216,7 +2216,7 @@ factors:
     formula: close/rolling_mean(close,120) - 1
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2232,8 +2232,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2255,7 +2255,7 @@ factors:
     formula: log1p(amount_mean_20d)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2271,8 +2271,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2295,7 +2295,7 @@ factors:
     formula: close * volume_mean_20d
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2311,8 +2311,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2334,7 +2334,7 @@ factors:
     formula: 0.8 * market_cap_proxy
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2350,8 +2350,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2373,7 +2373,7 @@ factors:
     formula: rolling_cov(return_1d, market_return)/rolling_var(market_return), 20
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2389,8 +2389,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2412,7 +2412,7 @@ factors:
     formula: rolling_cov(return_1d, market_return)/rolling_var(market_return), 60
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2428,8 +2428,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2452,7 +2452,7 @@ factors:
     formula: -cross_sectional_zscore(close)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2468,8 +2468,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2492,7 +2492,7 @@ factors:
     formula: close_position_in_range - high_low_range
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2508,8 +2508,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2532,7 +2532,7 @@ factors:
     formula: return_20d
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2548,8 +2548,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2572,7 +2572,7 @@ factors:
     formula: -volatility_20d
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2588,8 +2588,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2611,7 +2611,7 @@ factors:
     formula: -amihud_20d
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2627,8 +2627,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2650,7 +2650,7 @@ factors:
     formula: mean(return_1d) within industry and date
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2666,8 +2666,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2689,7 +2689,7 @@ factors:
     formula: return_20d - industry_mean(return_20d)
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2705,8 +2705,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2728,7 +2728,7 @@ factors:
     formula: rank_pct(return_20d) within industry and date
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2744,8 +2744,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2767,7 +2767,7 @@ factors:
     formula: zscore(return_20d) within trade_date
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2783,8 +2783,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2806,7 +2806,7 @@ factors:
     formula: rank_pct(return_20d) within trade_date
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2822,8 +2822,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2845,7 +2845,7 @@ factors:
     formula: zscore(log1p(amount_mean_20d)) within trade_date
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2861,8 +2861,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
@@ -2884,7 +2884,7 @@ factors:
     formula: zscore(log1p(amount_mean_20d)) within industry and date
     input_tables:
     - data/samples/synthetic_mini_market
-    - data/quarantine/day3_synthetic_market
+    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -2900,8 +2900,8 @@ factors:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from Day3 synthetic mini market; factor
-      value never uses future rows
+    prediction_time: source prediction_time from data_trust synthetic mini market;
+      factor value never uses future rows
     universe: eligible_universe and non-delist clean synthetic mini market rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training

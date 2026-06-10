@@ -1,4 +1,4 @@
-name: stock-good-day1
+name: stock-good-foundation
 services:
   postgres:
     image: postgres:16-alpine
@@ -54,9 +54,9 @@ services:
     build:
       context: ../..
       dockerfile: deploy/docker/Dockerfile.backend
-    command: ["python", "-m", "backend.app.workers.day1_worker"]
+    command: ["python", "-m", "backend.app.workers.foundation_worker"]
     environment:
-      WORKER_ROLE: day1-scaffold-worker
+      WORKER_ROLE: foundation-scaffold-worker
     depends_on: [postgres, redis, redpanda, qdrant, clickhouse]
   frontend:
     build:

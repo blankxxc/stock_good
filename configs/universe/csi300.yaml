@@ -1,0 +1,10 @@
+universe_id: csi300_recent_3y
+name: CSI300 recent three-year daily research universe
+membership_mode: point_in_time
+selection_policy:
+  include_indexes: [CSI300]
+  exclude_flags: [ST, suspended, delisted]
+  min_listing_days: 120
+  max_single_industry_weight: 0.30
+  require_index_membership_history: true
+  notes: 默认只处理沪深300成分股的点时间历史成分，避免使用未来成分股造成幸存者偏差。

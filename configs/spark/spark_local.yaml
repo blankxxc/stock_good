@@ -1,6 +1,6 @@
-spark_profile: spark_local_day13
+spark_profile: spark_local_ops_deployment
 master: local[*]
-app_name: stock_good_day13_ops
+app_name: stock_good_ops_deployment_ops
 shuffle_partitions: 4
 output_format: parquet
 smoke_jobs:

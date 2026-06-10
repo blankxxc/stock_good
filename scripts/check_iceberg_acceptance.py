@@ -8,8 +8,8 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT_PYTHON = (ROOT / ".venv" / "Scripts" / "python.exe") if (ROOT / ".venv" / "Scripts" / "python.exe").exists() else Path(sys.executable)
-REPORT = ROOT / "reports" / "day2" / "iceberg_table_format_acceptance.json"
-ACCEPTANCE_REPORT = ROOT / "reports" / "day2" / "iceberg_acceptance_report.json"
+REPORT = ROOT / "reports" / "lakehouse" / "iceberg_table_format_acceptance.json"
+ACCEPTANCE_REPORT = ROOT / "reports" / "lakehouse" / "iceberg_acceptance_report.json"
 
 
 def _run_job() -> dict[str, Any]:

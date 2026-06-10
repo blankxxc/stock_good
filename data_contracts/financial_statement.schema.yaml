@@ -1,7 +1,7 @@
 table: ods_financial_statement_raw
 layer: ODS
 schema_version: v0.1.0
-description: Day 1 contract stub with point-in-time metadata and license governance.
+description: foundation contract stub with point-in-time metadata and license governance.
 primary_key: [symbol, report_period, item_name]
 unique_key: [symbol, report_period, item_name]
 fields:

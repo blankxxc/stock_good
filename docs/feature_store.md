@@ -12,4 +12,4 @@ Feature join 必须使用 available_time 和 prediction_time，禁止使用未�
 
 ## Online store PoC
 
-Day6/Day13 输出 online_feature_snapshot，Redis/Feast adapter 保留为后续生产化路线。
+realtime streaming/ops deployment 输出 online_feature_snapshot，Redis/Feast adapter 保留为后续生产化路线。

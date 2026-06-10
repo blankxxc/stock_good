@@ -6,7 +6,7 @@
 
 行业、size、beta、value、momentum、volatility、liquidity、quality、growth、residual volatility、单票权重、行业集中度、turnover、tracking error、drawdown。
 
-## Day12 风控 gate
+## governance simulation 风控 gate
 
 组合必须通过单票权重、行业权重、ST/停牌/涨跌停、ADV participation、最大回撤、style exposure、tracking error、TopK concentration 等检查。
 

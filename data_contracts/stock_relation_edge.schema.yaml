@@ -1,7 +1,7 @@
 table: stock_relation_edge
 layer: DWS
 schema_version: v0.1.0
-description: Day 1 contract stub with point-in-time metadata and license governance.
+description: foundation contract stub with point-in-time metadata and license governance.
 primary_key: [as_of_date, src_symbol, dst_symbol, relation_type]
 unique_key: [as_of_date, src_symbol, dst_symbol, relation_type]
 fields:

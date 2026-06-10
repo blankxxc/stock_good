@@ -1,7 +1,7 @@
 table: rag_claim
 layer: RAG
 schema_version: v0.10.0
-description: Day 10 claim-level RAG evidence schema with point-in-time retrieval,
+description: rag_evidence claim-level RAG evidence schema with point-in-time retrieval,
   citation spans, license gates, and index metadata.
 primary_key:
 - claim_id

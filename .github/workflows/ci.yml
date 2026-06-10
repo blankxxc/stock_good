@@ -1,4 +1,4 @@
-name: day13-ci
+name: ops_deployment-ci
 on:
   push:
     branches: [main]
@@ -23,21 +23,21 @@ jobs:
       - name: pytest
         run: pytest tests -q
       - name: schema_validation
-        run: python scripts/check_day13_acceptance.py
+        run: python scripts/check_ops_deployment_acceptance.py
       - name: leakage_tests
-        run: pytest tests/test_day3_data_trust.py -q
+        run: pytest tests/test_data_trust_data_trust.py -q
       - name: synthetic_mini_market_tests
-        run: pytest tests/test_day2_batch_lakehouse.py -q
+        run: pytest tests/test_lakehouse_batch_lakehouse.py -q
       - name: spark_job_smoke
-        run: pytest tests/test_day4_factor_store.py -q
+        run: pytest tests/test_factor_store_factor_store.py -q
       - name: flink_job_smoke
-        run: pytest tests/test_day6_realtime_streaming.py -q
+        run: pytest tests/test_realtime_streaming_realtime_streaming.py -q
       - name: small_sample_training_smoke
-        run: pytest tests/test_day9_advanced_models.py -q
+        run: pytest tests/test_advanced_models_advanced_models.py -q
       - name: small_sample_backtest_smoke
-        run: pytest tests/test_day5_research_loop.py -q
+        run: pytest tests/test_research_loop_research_loop.py -q
       - name: rag_citation_rule_test
-        run: pytest tests/test_day10_rag_evidence.py -q
+        run: pytest tests/test_rag_evidence_rag_evidence.py -q
       - name: frontend_lint
         working-directory: frontend
         run: npm ci && npm run validate:routes
@@ -45,8 +45,8 @@ jobs:
         working-directory: frontend
         run: npm run build
       - name: api_smoke
-        run: python scripts/check_day13_acceptance.py
+        run: python scripts/check_ops_deployment_acceptance.py
       - name: docker_build
         run: docker compose -f deploy/docker/docker-compose.yml config --services
       - name: database_migration_dry_run
-        run: alembic upgrade head --sql > /tmp/day13_migration_dry_run.sql
+        run: alembic upgrade head --sql > /tmp/ops_deployment_migration_dry_run.sql

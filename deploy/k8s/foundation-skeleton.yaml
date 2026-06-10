@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stock-good-foundation-skeleton
+data:
+  maturity: L1-contract-only
+  note: Kubernetes manifests are intentionally draft-only on foundation; Docker Compose/local smoke is the active path.

@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
-try:  # The Day4 local research path is Polars-first, with pandas used for mature rolling stats.
+try:  # The factor_store local research path is Polars-first, with pandas used for mature rolling stats.
     import polars as pl  # type: ignore
 
     POLARS_AVAILABLE = True
@@ -22,12 +22,12 @@ except Exception:  # pragma: no cover - verified by acceptance report, not unit 
     POLARS_AVAILABLE = False
 
 ROOT = Path(__file__).resolve().parents[2]
-DAY4_VERSION = "day4_v001"
+factor_store_VERSION = "factor_store_v001"
 SOURCE_VERSION = "synthetic_mini_market_v001"
 SCHEMA_VERSION = "v0.4.0"
 FACTOR_VERSION = "factor_v004"
-FEATURE_SET_VERSION = "feature_set_day4_v001"
-RUN_ID = "day4_offline_factor_store_v001"
+FEATURE_SET_VERSION = "feature_set_factor_store_v001"
+RUN_ID = "factor_store_offline_factor_store_v001"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 SOURCE_DIR = ROOT / "data" / "samples" / "synthetic_mini_market"
@@ -39,12 +39,12 @@ SPECIFIC_RISK_DIR = ROOT / "data" / "gold" / "specific_risk"
 
 FACTOR_SPEC_PATH = ROOT / "configs" / "factor" / "factor_spec.yaml"
 FEATURE_REGISTRY_PATH = ROOT / "feature_store" / "feature_registry.yaml"
-FEATURE_VIEW_PATH = ROOT / "feature_store" / "feature_views" / "day4_factor_daily_view.yaml"
-MATERIALIZATION_JOB_PATH = ROOT / "feature_store" / "materialization_jobs" / "day4_materialize_feature_matrix.yaml"
-REPORT_DIR = ROOT / "reports" / "day4"
+FEATURE_VIEW_PATH = ROOT / "feature_store" / "feature_views" / "factor_store_factor_daily_view.yaml"
+MATERIALIZATION_JOB_PATH = ROOT / "feature_store" / "materialization_jobs" / "factor_store_materialize_feature_matrix.yaml"
+REPORT_DIR = ROOT / "reports" / "factor_store"
 FACTOR_REPORT_DIR = REPORT_DIR / "factors"
-FACTOR_REPORT_JSON = REPORT_DIR / "day4_factor_report.json"
-FACTOR_REPORT_HTML = REPORT_DIR / "day4_factor_report.html"
+FACTOR_REPORT_JSON = REPORT_DIR / "factor_store_factor_report.json"
+FACTOR_REPORT_HTML = REPORT_DIR / "factor_store_factor_report.html"
 
 
 @dataclass(frozen=True)
@@ -206,11 +206,11 @@ def _rolling_beta_by_symbol(df: pd.DataFrame, window: int) -> pd.Series:
 
 def _read_source() -> tuple[pd.DataFrame, str]:
     if not SOURCE_DIR.exists() or not list(SOURCE_DIR.glob("*.parquet")):
-        from quality.day3_data_trust import run_day3_data_trust
+        from quality.data_trust_data_trust import run_data_trust_data_trust
 
-        report = run_day3_data_trust()
+        report = run_data_trust_data_trust()
         if report.get("status") != "ok":
-            raise RuntimeError(f"Day3 synthetic mini market could not be generated: {report}")
+            raise RuntimeError(f"data_trust synthetic mini market could not be generated: {report}")
 
     paths = sorted(SOURCE_DIR.glob("*.parquet"))
     frames: list[pd.DataFrame] = []
@@ -436,14 +436,14 @@ def _factor_spec_yaml() -> dict[str, Any]:
             "category": item.category,
             "economic_hypothesis": item.economic_hypothesis,
             "formula": item.formula,
-            "input_tables": ["data/samples/synthetic_mini_market", "data/quarantine/day3_synthetic_market"],
+            "input_tables": ["data/samples/synthetic_mini_market", "data/quarantine/data_trust_synthetic_market"],
             "required_fields": ["trade_date", "symbol", "open", "high", "low", "close", "volume", "amount", "available_time", "prediction_time"],
             "time_semantics": {
                 "event_time": "market close or original source event_time",
                 "publish_time": "source publish_time must be <= available_time",
                 "available_time": "feature row visible only when available_time <= prediction_time",
             },
-            "prediction_time": "source prediction_time from Day3 synthetic mini market; factor value never uses future rows",
+            "prediction_time": "source prediction_time from data_trust synthetic mini market; factor value never uses future rows",
             "universe": "eligible_universe and non-delist clean synthetic mini market rows",
             "horizon": "validation label uses 5d forward return only for reports",
             "winsorization": item.winsorization,
@@ -467,7 +467,7 @@ def _factor_spec_yaml() -> dict[str, Any]:
 def _feature_registry_yaml() -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
-        "registry_name": "day4_offline_feature_registry",
+        "registry_name": "factor_store_offline_feature_registry",
         "feature_set_version": FEATURE_SET_VERSION,
         "research_boundary": RESEARCH_BOUNDARY,
         "grain": "symbol + trade_date + prediction_time",
@@ -481,7 +481,7 @@ def _feature_registry_yaml() -> dict[str, Any]:
                 "grain": "symbol + trade_date + prediction_time",
                 "formula_ref": f"configs/factor/factor_spec.yaml#/factors/{item.name}",
                 "input_datasets": ["data/samples/synthetic_mini_market"],
-                "available_time_rule": "available_time <= prediction_time; future rows are excluded by Day3 leakage checks",
+                "available_time_rule": "available_time <= prediction_time; future rows are excluded by data_trust leakage checks",
                 "lookback_window": item.lookback_window,
                 "fill_policy": item.missing_value_rule,
                 "winsorize_policy": item.winsorization,
@@ -489,7 +489,7 @@ def _feature_registry_yaml() -> dict[str, Any]:
                 "neutralize_policy": item.neutralization,
                 "factor_version": FACTOR_VERSION,
                 "leakage_risk_level": item.leakage_risk_level,
-                "unit_tests": ["tests/test_day4_factor_store.py"],
+                "unit_tests": ["tests/test_factor_store_factor_store.py"],
                 "data_quality_checks": ["non_null_when_lookback_available", "finite_values", "available_time_not_after_prediction_time"],
             }
             for item in FACTOR_DEFS
@@ -506,7 +506,7 @@ def _write_yaml_files() -> None:
     FEATURE_VIEW_PATH.write_text(
         yaml.safe_dump(
             {
-                "feature_view": "day4_factor_daily_view",
+                "feature_view": "factor_store_factor_daily_view",
                 "entity": "symbol",
                 "timestamp_field": "prediction_time",
                 "online": False,
@@ -524,7 +524,7 @@ def _write_yaml_files() -> None:
     MATERIALIZATION_JOB_PATH.write_text(
         yaml.safe_dump(
             {
-                "job_name": "day4_materialize_feature_matrix",
+                "job_name": "factor_store_materialize_feature_matrix",
                 "runtime": "local_polars_pandas_then_spark_materialization",
                 "inputs": ["data/samples/synthetic_mini_market", "configs/factor/factor_spec.yaml", "feature_store/feature_registry.yaml"],
                 "outputs": ["data/gold/factor_daily_panel_long", "data/gold/model_feature_matrix_wide"],
@@ -605,7 +605,7 @@ def _factor_reports(wide: pd.DataFrame) -> tuple[list[dict[str, Any]], list[Path
             "ICIR": None if len(ic.dropna()) < 2 or ic.std(ddof=1) == 0 else float(ic.mean() / ic.std(ddof=1) * math.sqrt(len(ic.dropna()))),
             "Newey_West_IC_t_stat": _t_stat(ic),
             "HAC_t_stat": _t_stat(ic),
-            "RankIC_decay_by_horizon": {"5d": None if rank_ic.empty else float(rank_ic.mean()), "10d": "todo_day5_label_extension"},
+            "RankIC_decay_by_horizon": {"5d": None if rank_ic.empty else float(rank_ic.mean()), "10d": "todo_research_loop_label_extension"},
             "quantile_return_monotonicity": monotonic,
             "top_bottom_spread": spread,
             "cost_adjusted_spread": None if spread is None else float(spread - 0.0011),
@@ -617,9 +617,9 @@ def _factor_reports(wide: pd.DataFrame) -> tuple[list[dict[str, Any]], list[Path
             "correlation_with_existing_factors": {},
             "failure_cases": [],
             "multiple_testing_risk": {
-                "FDR": "todo_report_field_day4",
-                "Deflated_Sharpe": "todo_report_field_day4",
-                "White_Reality_Check_or_SPA": "todo_report_field_day4",
+                "FDR": "todo_report_field_factor_store",
+                "Deflated_Sharpe": "todo_report_field_factor_store",
+                "White_Reality_Check_or_SPA": "todo_report_field_factor_store",
             },
         }
         # correlation scan against first 25 available factors to avoid huge reports.
@@ -637,13 +637,13 @@ def _factor_reports(wide: pd.DataFrame) -> tuple[list[dict[str, Any]], list[Path
         html_path.write_text(
             "\n".join(
                 [
-                    "<!doctype html><html><head><meta charset='utf-8'><title>Day4 Factor Report</title></head><body>",
+                    "<!doctype html><html><head><meta charset='utf-8'><title>factor_store Factor Report</title></head><body>",
                     f"<h1>{factor_name}</h1>",
                     f"<p>category={item['category']} | version={FACTOR_VERSION} | research_boundary={RESEARCH_BOUNDARY}</p>",
                     "<h2>Metrics</h2><pre>",
                     json.dumps(item, ensure_ascii=False, indent=2),
                     "</pre>",
-                    "<p>Not investment advice. Synthetic Day4 factor admission artifact.</p>",
+                    "<p>Not investment advice. Synthetic factor_store factor admission artifact.</p>",
                     "</body></html>",
                 ]
             ),
@@ -733,10 +733,10 @@ def _write_summary_html(report: dict[str, Any]) -> None:
     )
     FACTOR_REPORT_HTML.write_text(
         f"""<!doctype html>
-<html><head><meta charset="utf-8"><title>Day4 Factor Store Report</title>
+<html><head><meta charset="utf-8"><title>factor_store Factor Store Report</title>
 <style>body{{font-family:Arial,sans-serif;background:#0b1020;color:#e5e7eb;padding:24px}}.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}}.card{{border:1px solid #334155;border-radius:12px;padding:14px;background:#111827}}.badge{{color:#67e8f9}}</style></head>
 <body>
-<span class="badge">Day 4 L2 offline factor store ready</span>
+<span class="badge">factor_store L2 offline factor_store ready</span>
 <h1>Offline Factors / Feature Store / Risk Inputs</h1>
 <p>factor_count={report['factor_count']} feature_matrix_rows={report['feature_matrix_rows']} risk_exposure_rows={report['risk_outputs']['risk_factor_exposure_rows']}</p>
 <p>{RESEARCH_BOUNDARY}</p>
@@ -766,7 +766,7 @@ def materialize_factor_store(write_outputs: bool = True) -> dict[str, Any]:
         "status": "ok",
         "day": 4,
         "maturity": "L2-offline-factor-store-local-artifacts",
-        "data_version": DAY4_VERSION,
+        "data_version": factor_store_VERSION,
         "source_version": SOURCE_VERSION,
         "schema_version": SCHEMA_VERSION,
         "factor_version": FACTOR_VERSION,

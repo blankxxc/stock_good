@@ -73,7 +73,7 @@ volumes/
 
 # Generated lakehouse and research data artifacts
 # Keep code/config under lakehouse/, configs/, spark/, backend/, frontend/ tracked;
-# regenerate these outputs via scripts/run_day2_pipeline.py or scripts/run_day3_data_trust.py.
+# regenerate these outputs via scripts/run_lakehouse_pipeline.py or scripts/run_data_trust_data_trust.py.
 data/bronze/
 data/silver/
 data/gold/

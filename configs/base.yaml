@@ -1,5 +1,5 @@
 project: stock_good
-version: 0.1.0-day13
+version: 0.1.0-ops_deployment
 research_boundary: research_signals_only_not_investment_advice
 orchestrator: prefect-local
 run:
@@ -8,7 +8,7 @@ run:
 paths:
   data_root: data
   report_root: reports
-  artifact_root: reports/day13
+  artifact_root: reports/ops_deployment
 quality_gates:
   require_leakage_check: true
   require_license_gate: true

@@ -1,5 +1,5 @@
 model=HIST
-run_id=day9_hist_small_sample_v001
+run_id=advanced_models_hist_small_sample_v001
 python=3.11.15
 platform=Windows-10-10.0.26200-SP0
 machine=AMD64

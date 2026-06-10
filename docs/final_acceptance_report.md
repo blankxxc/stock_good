@@ -4,7 +4,7 @@
 
 ## 完成状态
 
-Day 1 到 Day 14 已形成本地可运行、可测试、可演示的研究平台闭环。Day 14 的目标是全量联调、验收、演示、文档、风险复盘、覆盖矩阵复核，已通过 `scripts/check_day14_acceptance.py` 固化。
+foundation 到 final acceptance 已形成本地可运行、可测试、可演示的研究平台闭环。final acceptance 的目标是全量联调、验收、演示、文档、风险复盘、覆盖矩阵复核，已通过 `scripts/check_final_acceptance_acceptance.py` 固化。
 
 ## 成熟度
 

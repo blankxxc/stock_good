@@ -10,9 +10,9 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 FACTOR_LONG_DIR = ROOT / "data" / "gold" / "factor_daily_panel_long"
 FEATURE_WIDE_DIR = ROOT / "data" / "gold" / "model_feature_matrix_wide"
-REPORT_PATH = ROOT / "reports" / "day4" / "point_in_time_join_report.json"
-FEATURE_SET_VERSION = "feature_set_day4_v001"
-RUN_ID = "day4_offline_factor_store_v001"
+REPORT_PATH = ROOT / "reports" / "factor_store" / "point_in_time_join_report.json"
+FEATURE_SET_VERSION = "feature_set_factor_store_v001"
+RUN_ID = "factor_store_offline_factor_store_v001"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 FEATURE_REGISTRY_PATH = ROOT / "feature_store" / "feature_registry.yaml"
 

@@ -1,7 +1,7 @@
 [project]
 name = "stock-good"
 version = "0.1.0"
-description = "Day 2 local lakehouse, batch ingestion, and research-console slice for an intelligent stock-selection platform."
+description = "Local full-stack intelligent stock-selection research platform with daily CSI300 research data, factor pipelines, backtesting, RAG evidence, governance, and web console."
 requires-python = ">=3.11"
 dependencies = [
     "fastapi",

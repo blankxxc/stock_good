@@ -13,10 +13,10 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_SQLITE_URL = f"sqlite:///{(ROOT / 'data' / 'snapshots' / 'day1_alembic_metadata.sqlite').as_posix()}"
+DEFAULT_SQLITE_URL = f"sqlite:///{(ROOT / 'data' / 'snapshots' / 'foundation_alembic_metadata.sqlite').as_posix()}"
 config.set_main_option(
     "sqlalchemy.url",
-    os.getenv("DAY1_ALEMBIC_DATABASE_URL", config.get_main_option("sqlalchemy.url") or DEFAULT_SQLITE_URL),
+    os.getenv("foundation_ALEMBIC_DATABASE_URL", config.get_main_option("sqlalchemy.url") or DEFAULT_SQLITE_URL),
 )
 
 target_metadata = None
