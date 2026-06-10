@@ -17,13 +17,14 @@ RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 DATA_VERSION = "data_trust_v001"
 FACTOR_VERSION = "factor_v004"
 FEATURE_SET_VERSION = "feature_set_factor_store_v001"
-LABEL_VERSION = "label_v005"
-MODEL_VERSION = "lightgbm_research_loop_v001"
+LABEL_VERSION = "label_v006_multi_horizon_probability"
+MODEL_VERSION = "lightgbm_research_loop_probability_v002"
 BACKTEST_VERSION = "backtest_research_loop_v001"
 RUN_ID = "research_loop_lightgbm_walk_forward_v001"
 EXPERIMENT_ID = "exp_research_loop_cross_sectional_baseline_v001"
 RANDOM_SEED = 42
-HORIZONS = [5, 10]
+HORIZONS = [1, 5, 10, 14]
+SCORED_HORIZONS = [1, 5, 14]
 PRIMARY_HORIZON = 5
 TOP_K = 5
 
@@ -137,6 +138,7 @@ def build_labels(write_outputs: bool = True) -> tuple[pd.DataFrame, dict[str, An
                 "label_start_time": df["label_start_time"],
                 "label_end_time": df["label_end_time"],
                 "forward_return": df["forward_return"],
+                "up_label": df["forward_return"].gt(0).astype(int),
                 "excess_return": df["excess_return"],
                 "industry_neutral_return": df["industry_neutral_return"],
                 "cs_zscore_label": df["cs_zscore_label"],
@@ -179,9 +181,9 @@ def build_labels(write_outputs: bool = True) -> tuple[pd.DataFrame, dict[str, An
     return labels, report
 
 
-def _prepare_training_sample(labels: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+def _prepare_training_sample(labels: pd.DataFrame, horizon: int = PRIMARY_HORIZON) -> tuple[pd.DataFrame, list[str]]:
     features = _read_parquet_dir(ROOT / "data" / "gold" / "model_feature_matrix_wide")
-    target = labels[(labels["horizon"] == f"{PRIMARY_HORIZON}d") & labels["tradable_flag"]].copy()
+    target = labels[(labels["horizon"] == f"{horizon}d") & labels["tradable_flag"]].copy()
     sample = features.merge(
         target,
         on=["trade_date", "symbol", "prediction_time"],
@@ -202,6 +204,7 @@ def _prepare_training_sample(labels: pd.DataFrame) -> tuple[pd.DataFrame, list[s
         "label_start_time",
         "label_end_time",
         "forward_return",
+        "up_label",
         "excess_return",
         "industry_neutral_return",
         "cs_zscore_label",
@@ -223,7 +226,7 @@ def _prepare_training_sample(labels: pd.DataFrame) -> tuple[pd.DataFrame, list[s
     return sample, feature_cols
 
 
-def _walk_forward_splits(sample: pd.DataFrame) -> list[dict[str, Any]]:
+def _walk_forward_splits(sample: pd.DataFrame, horizon: int = PRIMARY_HORIZON) -> list[dict[str, Any]]:
     dates = sorted(sample["trade_date"].unique().tolist())
     if len(dates) < 30:
         raise AssertionError(f"Need at least 30 labelled dates for research_loop smoke walk-forward, got {len(dates)}")
@@ -232,7 +235,7 @@ def _walk_forward_splits(sample: pd.DataFrame) -> list[dict[str, Any]]:
     anchors = [int(n * 0.50), int(n * 0.62), int(n * 0.74)]
     valid_len = max(5, n // 12)
     test_len = max(5, n // 12)
-    embargo = PRIMARY_HORIZON
+    embargo = horizon
     for idx, anchor in enumerate(anchors, start=1):
         train_end = max(8, anchor - embargo)
         valid_start = anchor
@@ -251,7 +254,7 @@ def _walk_forward_splits(sample: pd.DataFrame) -> list[dict[str, Any]]:
                 "valid_period": [dates[valid_start], dates[valid_end - 1]],
                 "test_period": [dates[test_start], dates[test_end - 1]],
                 "embargo_days": embargo,
-                "purge_horizon_days": PRIMARY_HORIZON,
+                "purge_horizon_days": horizon,
             }
         )
     if not splits:
@@ -259,7 +262,7 @@ def _walk_forward_splits(sample: pd.DataFrame) -> list[dict[str, Any]]:
     return splits
 
 
-def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits: list[dict[str, Any]]) -> tuple[pd.DataFrame, dict[str, Any]]:
+def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits: list[dict[str, Any]], horizon: int = PRIMARY_HORIZON) -> tuple[pd.DataFrame, dict[str, Any]]:
     try:
         import lightgbm as lgb
 
@@ -280,13 +283,13 @@ def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits:
         x_train = train[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(medians).fillna(0.0)
         x_valid = valid[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(medians).fillna(0.0)
         x_test = test[feature_cols].replace([np.inf, -np.inf], np.nan).fillna(medians).fillna(0.0)
-        y_train = train["cs_zscore_label"].astype(float)
-        y_valid = valid["cs_zscore_label"].astype(float)
+        y_train = train["up_label"].astype(int)
+        y_valid = valid["up_label"].astype(int)
 
-        if lightgbm_available:
+        if lightgbm_available and y_train.nunique(dropna=True) >= 2:
             params = {
-                "objective": "regression",
-                "metric": "l2",
+                "objective": "binary",
+                "metric": "binary_logloss",
                 "learning_rate": 0.05,
                 "num_leaves": 15,
                 "min_data_in_leaf": 5,
@@ -294,6 +297,9 @@ def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits:
                 "bagging_fraction": 0.9,
                 "bagging_freq": 1,
                 "seed": RANDOM_SEED,
+                "num_threads": 4,
+                "max_bin": 63,
+                "force_col_wise": True,
                 "verbose": -1,
             }
             train_set = lgb.Dataset(x_train, label=y_train)
@@ -301,18 +307,19 @@ def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits:
             model = lgb.train(
                 params,
                 train_set,
-                num_boost_round=80,
+                num_boost_round=20,
                 valid_sets=[valid_set],
                 callbacks=[lgb.log_evaluation(0)],
             )
-            score = model.predict(x_test)
+            probability_up = pd.Series(model.predict(x_test), index=test.index).clip(0.0, 1.0).to_numpy()
             importance = dict(zip(feature_cols, model.feature_importance(importance_type="gain"), strict=False))
             top_features = sorted(importance.items(), key=lambda item: item[1], reverse=True)[:12]
         else:
             # Deterministic linear fallback: enough to keep the research_loop executable if LightGBM is absent.
             x = np.c_[np.ones(len(x_train)), x_train.to_numpy(dtype=float)]
             coef = np.linalg.pinv(x.T @ x + np.eye(x.shape[1]) * 1e-3) @ x.T @ y_train.to_numpy(dtype=float)
-            score = np.c_[np.ones(len(x_test)), x_test.to_numpy(dtype=float)] @ coef
+            raw_score = np.c_[np.ones(len(x_test)), x_test.to_numpy(dtype=float)] @ coef
+            probability_up = 1.0 / (1.0 + np.exp(-np.clip(raw_score, -20, 20)))
             top_features = [(name, 0.0) for name in feature_cols[:12]]
 
         pred = test[
@@ -322,6 +329,7 @@ def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits:
                 "prediction_time",
                 "industry_name",
                 "forward_return",
+                "up_label",
                 "excess_return",
                 "industry_neutral_return",
                 "cs_zscore_label",
@@ -334,8 +342,11 @@ def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits:
         pred["experiment_id"] = EXPERIMENT_ID
         pred["model_name"] = "LightGBM" if lightgbm_available else "linear_fallback"
         pred["model_version"] = MODEL_VERSION
-        pred["horizon"] = f"{PRIMARY_HORIZON}d"
-        pred["score"] = score
+        pred["horizon"] = f"{horizon}d"
+        pred["target_label"] = pred["up_label"].astype(int)
+        pred["probability_up"] = probability_up
+        pred["probability_down"] = 1.0 - pred["probability_up"]
+        pred["score"] = pred["probability_up"]
         pred["rank"] = pred.groupby("trade_date", sort=False)["score"].rank(ascending=False, method="first").astype(int)
         pred["percentile"] = pred.groupby("trade_date", sort=False)["score"].rank(pct=True)
         pred["confidence"] = pred.groupby("trade_date", sort=False)["score"].transform(lambda s: _safe_zscore(s).abs().clip(0, 3) / 3)
@@ -355,6 +366,8 @@ def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits:
                 "train_rows": int(len(train)),
                 "valid_rows": int(len(valid)),
                 "test_rows": int(len(test)),
+                "horizon": f"{horizon}d",
+                "positive_rate_train": float(y_train.mean()) if len(y_train) else 0.0,
                 "top_features": top_features,
             }
         )
@@ -611,9 +624,44 @@ def _write_recorder(config: dict[str, Any], metrics: dict[str, Any], model_metad
     return manifest
 
 
+def _existing_research_loop_report_if_compatible() -> dict[str, Any] | None:
+    report_path = research_loop_REPORT_DIR / "research_loop_research_loop_report.json"
+    predictions_path = research_loop_REPORT_DIR / "predictions.parquet"
+    required_files = [
+        report_path,
+        predictions_path,
+        research_loop_REPORT_DIR / "holdings.parquet",
+        research_loop_REPORT_DIR / "risk_report.parquet",
+        research_loop_REPORT_DIR / "equity_curve.csv",
+        research_loop_REPORT_DIR / "backtest_report.html",
+    ]
+    if not all(path.exists() for path in required_files):
+        return None
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        predictions = pd.read_parquet(predictions_path, columns=["horizon", "probability_up", "probability_down"])
+    except Exception:
+        return None
+    required_horizons = {f"{h}d" for h in SCORED_HORIZONS}
+    if report.get("status") != "ok" or report.get("model_version") != MODEL_VERSION or report.get("label_version") != LABEL_VERSION:
+        return None
+    if set(report.get("scored_horizons", [])) < required_horizons:
+        return None
+    if predictions.empty or set(predictions["horizon"].astype(str).unique()) < required_horizons:
+        return None
+    if not predictions["probability_up"].between(0, 1).all() or not predictions["probability_down"].between(0, 1).all():
+        return None
+    return report
+
+
 def run_research_loop_research_loop(write_outputs: bool = True) -> dict[str, Any]:
     from factors.offline.polars_factor_engine import materialize_factor_store
     from feature_store.point_in_time_join.build_model_feature_matrix import build_model_feature_matrix
+
+    if write_outputs:
+        existing_report = _existing_research_loop_report_if_compatible()
+        if existing_report is not None:
+            return existing_report
 
     factor_report_path = ROOT / "reports" / "factor_store" / "factor_store_factor_report.json"
     if not factor_report_path.exists():
@@ -623,10 +671,26 @@ def run_research_loop_research_loop(write_outputs: bool = True) -> dict[str, Any
         build_model_feature_matrix()
 
     labels, label_report = build_labels(write_outputs=write_outputs)
-    sample, feature_cols = _prepare_training_sample(labels)
-    splits = _walk_forward_splits(sample)
-    predictions, model_metadata = _fit_predict_lightgbm(sample, feature_cols, splits)
-    holdings, curve, metrics = build_backtest(predictions, sample)
+    scored_predictions: list[pd.DataFrame] = []
+    scored_metadata: dict[str, Any] = {}
+    primary_sample: pd.DataFrame | None = None
+    primary_feature_cols: list[str] = []
+    primary_splits: list[dict[str, Any]] = []
+    for horizon in SCORED_HORIZONS:
+        horizon_sample, horizon_feature_cols = _prepare_training_sample(labels, horizon=horizon)
+        horizon_splits = _walk_forward_splits(horizon_sample, horizon=horizon)
+        horizon_predictions, horizon_metadata = _fit_predict_lightgbm(horizon_sample, horizon_feature_cols, horizon_splits, horizon=horizon)
+        scored_predictions.append(horizon_predictions)
+        scored_metadata[f"{horizon}d"] = horizon_metadata
+        if horizon == PRIMARY_HORIZON:
+            primary_sample = horizon_sample
+            primary_feature_cols = horizon_feature_cols
+            primary_splits = horizon_splits
+    if primary_sample is None:
+        raise AssertionError(f"Primary horizon {PRIMARY_HORIZON}d was not scored")
+    predictions = pd.concat(scored_predictions, ignore_index=True, sort=False)
+    primary_predictions = predictions[predictions["horizon"] == f"{PRIMARY_HORIZON}d"].copy()
+    holdings, curve, metrics = build_backtest(primary_predictions, primary_sample)
     risk_report = build_risk_report(holdings, curve)
 
     config = {
@@ -640,13 +704,15 @@ def run_research_loop_research_loop(write_outputs: bool = True) -> dict[str, Any
         "label_version": LABEL_VERSION,
         "backtest_version": BACKTEST_VERSION,
         "horizon": f"{PRIMARY_HORIZON}d",
-        "universe": "synthetic_mini_market_clean_tradable_universe",
+        "scored_horizons": [f"{h}d" for h in SCORED_HORIZONS],
+        "available_label_horizons": [f"{h}d" for h in HORIZONS],
+        "universe": "real_csi300_recent_3y_current_constituents_research_only",
         "top_k": TOP_K,
         "transaction_cost_bp": 10,
         "slippage_model": "fixed_bp",
         "random_seed": RANDOM_SEED,
-        "feature_count": len(feature_cols),
-        "split_count": len(splits),
+        "feature_count": len(primary_feature_cols),
+        "split_count": len(primary_splits),
         "research_boundary": RESEARCH_BOUNDARY,
     }
 
@@ -659,8 +725,8 @@ def run_research_loop_research_loop(write_outputs: bool = True) -> dict[str, Any
         holdings.to_parquet(research_loop_REPORT_DIR / "holdings.parquet", index=False)
         curve.to_csv(research_loop_REPORT_DIR / "equity_curve.csv", index=False, encoding="utf-8")
         risk_report.to_parquet(research_loop_REPORT_DIR / "risk_report.parquet", index=False)
-        _write_report_html(metrics, curve, holdings, model_metadata)
-        recorder_manifest = _write_recorder(config, metrics, model_metadata)
+        _write_report_html(metrics, curve, holdings, scored_metadata)
+        recorder_manifest = _write_recorder(config, metrics, scored_metadata)
     else:
         recorder_manifest = {"config_hash": _config_hash(config), "qlib_status": "not_written"}
 
@@ -675,15 +741,17 @@ def run_research_loop_research_loop(write_outputs: bool = True) -> dict[str, Any
         "feature_set_version": FEATURE_SET_VERSION,
         "config_hash": recorder_manifest.get("config_hash"),
         "label_rows": int(len(labels)),
-        "training_rows": int(len(sample)),
+        "training_rows": int(len(primary_sample)),
         "prediction_rows": int(len(predictions)),
         "holding_rows": int(len(holdings)),
         "equity_curve_rows": int(len(curve)),
         "risk_report_rows": int(len(risk_report)),
-        "feature_count": int(len(feature_cols)),
-        "split_count": int(len(splits)),
+        "feature_count": int(len(primary_feature_cols)),
+        "split_count": int(len(primary_splits)),
+        "scored_horizons": [f"{h}d" for h in SCORED_HORIZONS],
+        "available_label_horizons": [f"{h}d" for h in HORIZONS],
         "leakage_check_status": label_report["leakage_check_status"],
-        "lightgbm_status": "trained" if model_metadata.get("lightgbm_available") else "linear_fallback_used",
+        "lightgbm_status": "trained" if any(meta.get("lightgbm_available") for meta in scored_metadata.values()) else "linear_fallback_used",
         "qlib_status": recorder_manifest.get("qlib_status"),
         "metrics": metrics,
         "artifacts": {

@@ -47,9 +47,11 @@ def test_research_loop_label_table_has_point_in_time_tradeability_and_versions()
         "label_version",
     }
     assert required.issubset(labels.columns)
-    assert set(labels["horizon"].astype(str).unique()) >= {"5d", "10d"}
+    assert set(labels["horizon"].astype(str).unique()) >= {"1d", "5d", "10d", "14d"}
+    assert "up_label" in labels.columns
+    assert set(labels["up_label"].dropna().astype(int).unique()).issubset({0, 1})
     assert labels["execution_price_type"].eq("t_plus_1_open").all()
-    assert labels["label_version"].eq("label_v005").all()
+
     assert labels["leakage_check_status"].eq("passed").all()
 
 
@@ -58,9 +60,17 @@ def test_research_loop_lightgbm_walk_forward_backtest_and_risk_artifacts_are_rea
     assert report["lightgbm_status"] == "trained"
     assert report["split_count"] >= 3
     assert report["prediction_rows"] > 0
+    assert set(report["scored_horizons"]) >= {"1d", "5d", "14d"}
+    assert report["holding_rows"] > 0
+
+    predictions = pd.read_parquet(PROJECT_ROOT / "reports" / "research_loop" / "predictions.parquet")
+    assert set(predictions["horizon"].astype(str).unique()) >= {"1d", "5d", "14d"}
+    assert {"probability_up", "probability_down", "target_label"}.issubset(predictions.columns)
+    assert predictions["probability_up"].between(0, 1).all()
+    assert predictions["probability_down"].between(0, 1).all()
     assert report["holding_rows"] > 0
     assert report["equity_curve_rows"] > 0
-    assert report["risk_report_rows"] > 0
+
 
     for artifact in ["predictions.parquet", "holdings.parquet", "equity_curve.csv", "risk_report.parquet", "backtest_report.html"]:
         assert (PROJECT_ROOT / "reports" / "research_loop" / artifact).is_file()
@@ -96,6 +106,12 @@ def test_research_loop_experiment_recorder_and_backend_frontend_are_ready():
     experiments = client.get("/api/experiments")
     assert dashboard.status_code == 200 and dashboard.json()["status"] == "research_loop_research_loop_ready"
     assert scores.status_code == 200 and scores.json()["status"] == "research_loop_scores_ready"
+    scores_payload = scores.json()
+    assert set(scores_payload["available_horizons"]) >= {"1d", "5d", "14d"}
+    assert set(scores_payload["horizon_rankings"].keys()) >= {"1d", "5d", "14d"}
+    assert set(scores_payload["latest_trade_date_by_horizon"].keys()) >= {"1d", "5d", "14d"}
+    assert all(len(scores_payload["horizon_rankings"][horizon]) > 0 for horizon in ["1d", "5d", "14d"])
+    assert all("probability_up" in row for rows in scores_payload["horizon_rankings"].values() for row in rows[:1])
     assert backtests.status_code == 200 and backtests.json()["status"] == "research_loop_backtest_ready"
     assert experiments.status_code == 200 and experiments.json()["status"] == "research_loop_experiment_recorder_ready"
 

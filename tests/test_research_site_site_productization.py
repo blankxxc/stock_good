@@ -86,6 +86,17 @@ def test_research_site_research_console_pages_have_artifact_backed_main_cards():
         assert f"{route}/page.tsx" in validate_script
 
 
+def test_scores_page_surfaces_multi_horizon_probability_table_contract():
+    page = _read_page("scores")
+    config = (PROJECT_ROOT / "frontend" / "src" / "lib" / "researchConsoleData.ts").read_text(encoding="utf-8")
+    assert "HorizonProbabilityTable" in page
+    assert "未来1d" in page and "保留5d" in page and "未来14d" in page
+    assert "available_horizons" in page
+    assert "horizon_rankings" in page
+    assert "probability_up" in page
+    assert "1d" in config and "5d" in config and "14d" in config
+
+
 def test_research_site_site_api_acceptance_and_status_payload_are_ready():
     from backend.app.main import app
     from scripts.check_research_site_acceptance import run_acceptance

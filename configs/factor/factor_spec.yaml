@@ -2,7 +2,7 @@ schema_version: v0.4.0
 factor_version: factor_v004
 feature_set_version: feature_set_factor_store_v001
 research_boundary: research_signals_only_not_investment_advice
-generated_at: '2026-06-10T02:54:16+00:00'
+generated_at: '2026-06-10T06:37:05+00:00'
 factors:
   return_1d:
     category: price_return

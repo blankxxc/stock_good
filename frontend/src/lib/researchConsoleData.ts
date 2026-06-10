@@ -24,14 +24,14 @@ export const consolePages: Record<string, ConsolePageConfig> = {
   },
   scores: {
     route: '/scores',
-    title: 'Scores 横截面评分',
-    eyebrow: 'artifact-backed · LightGBM score',
+    title: 'Scores 横截面概率评分',
+    eyebrow: 'artifact-backed · LightGBM probability',
     apiPath: '/api/scores',
     artifact: 'reports/research_loop/predictions.parquet',
-    dataMode: 'artifact-backed model score',
-    status: 'cross_sectional_rank_ready',
-    description: '展示 score、rank、percentile、行业、模型版本、数据时间和风险标签。',
-    fields: ['symbol', 'score', 'rank', 'percentile', 'industry_name', 'model_version', 'risk_tags']
+    dataMode: 'artifact-backed multi-horizon model score',
+    status: 'cross_sectional_probability_rank_ready',
+    description: '展示 1d、5d、14d 的 probability_up、score、rank、percentile、行业、模型版本、数据时间和风险标签。',
+    fields: ['symbol', 'probability_up', 'score', 'rank', 'percentile', 'horizon', '1d', '5d', '14d']
   },
   candidates: {
     route: '/candidates',

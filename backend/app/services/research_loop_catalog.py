@@ -46,10 +46,20 @@ def scores_payload(research_boundary: str) -> dict[str, Any]:
             "research_boundary": research_boundary,
         }
     latest_date = str(predictions["trade_date"].max())
-    latest = predictions[predictions["trade_date"].astype(str) == latest_date].sort_values("rank").head(20)
-    rows = latest[
-        ["trade_date", "symbol", "industry_name", "score", "rank", "percentile", "horizon", "model_version", "confidence", "leakage_check_status"]
-    ].to_dict(orient="records")
+    base_cols = [
+        "trade_date", "symbol", "industry_name", "score", "probability_up", "probability_down", "rank", "percentile", "horizon", "model_version", "confidence", "leakage_check_status"
+    ]
+    available_horizons = sorted(predictions["horizon"].astype(str).unique().tolist(), key=lambda h: int(h.rstrip("d")) if h.rstrip("d").isdigit() else 999)
+    horizon_rankings: dict[str, list[dict[str, Any]]] = {}
+    latest_trade_date_by_horizon: dict[str, str] = {}
+    for horizon in available_horizons:
+        horizon_frame = predictions[predictions["horizon"].astype(str) == horizon].copy()
+        horizon_latest_date = str(horizon_frame["trade_date"].max())
+        latest_trade_date_by_horizon[horizon] = horizon_latest_date
+        latest = horizon_frame[horizon_frame["trade_date"].astype(str) == horizon_latest_date].sort_values("rank").head(20)
+        horizon_rankings[horizon] = latest[[col for col in base_cols if col in latest.columns]].to_dict(orient="records")
+    rows = horizon_rankings.get("5d") or next(iter(horizon_rankings.values()), [])
+
     return {
         "module": "scores",
         "status": "research_loop_scores_ready",
@@ -58,12 +68,15 @@ def scores_payload(research_boundary: str) -> dict[str, Any]:
         "run_id": report.get("run_id"),
         "experiment_id": report.get("experiment_id"),
         "latest_trade_date": latest_date,
+        "latest_trade_date_by_horizon": latest_trade_date_by_horizon,
         "prediction_rows": report.get("prediction_rows"),
+        "available_horizons": available_horizons,
         "model_version": report.get("model_version"),
         "label_version": report.get("label_version"),
         "factor_version": report.get("factor_version"),
         "horizon": "5d",
         "top_scores": rows,
+        "horizon_rankings": horizon_rankings,
         "api_note": "research ranking only; not investment advice or trading instruction",
     }
 

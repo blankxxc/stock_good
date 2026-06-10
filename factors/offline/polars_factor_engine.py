@@ -31,6 +31,7 @@ RUN_ID = "factor_store_offline_factor_store_v001"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
 SOURCE_DIR = ROOT / "data" / "samples" / "synthetic_mini_market"
+REAL_CSI300_SOURCE_DIR = ROOT / "data" / "real" / "csi300_daily"
 FACTOR_LONG_DIR = ROOT / "data" / "gold" / "factor_daily_panel_long"
 FEATURE_WIDE_DIR = ROOT / "data" / "gold" / "model_feature_matrix_wide"
 RISK_EXPOSURE_DIR = ROOT / "data" / "gold" / "risk_factor_exposure"
@@ -205,6 +206,11 @@ def _rolling_beta_by_symbol(df: pd.DataFrame, window: int) -> pd.Series:
 
 
 def _read_source() -> tuple[pd.DataFrame, str]:
+    real_paths = sorted(REAL_CSI300_SOURCE_DIR.glob("**/*.parquet"))
+    if real_paths:
+        frames = [pd.read_parquet(path) for path in real_paths]
+        return pd.concat(frames, ignore_index=True, sort=False), "real_csi300_recent_3y_daily_parquet"
+
     if not SOURCE_DIR.exists() or not list(SOURCE_DIR.glob("*.parquet")):
         from quality.data_trust_data_trust import run_data_trust_data_trust
 
