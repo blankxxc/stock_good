@@ -30,6 +30,14 @@ def _feature_names_from_registry(long: pd.DataFrame) -> list[str]:
 def _read_factor_long() -> pd.DataFrame:
     files = list(FACTOR_LONG_DIR.glob("**/*.parquet"))
     if not files:
+        from factors.offline.polars_factor_engine import materialize_factor_store
+
+        # Clean CI checkouts intentionally do not commit generated data/gold artifacts.
+        # Build the deterministic synthetic factor store on demand instead of relying
+        # on local workspace residue from a previous validation run.
+        materialize_factor_store(write_outputs=True)
+        files = list(FACTOR_LONG_DIR.glob("**/*.parquet"))
+    if not files:
         raise FileNotFoundError(f"Missing factor long parquet files under {FACTOR_LONG_DIR}")
     return pd.concat([pd.read_parquet(path) for path in files], ignore_index=True)
 

@@ -87,10 +87,14 @@ def _ensure_event_regime_feature() -> pd.DataFrame:
     if "industry_name" not in feature.columns:
         labels_dir = ROOT / "data" / "gold" / "label_cross_sectional_return"
         if list(labels_dir.glob("**/*.parquet")):
-            labels = _read_parquet_dir(labels_dir)[["trade_date", "symbol", "industry_name"]].drop_duplicates()
-            labels["trade_date"] = labels["trade_date"].astype(str)
-            labels["symbol"] = labels["symbol"].astype(str)
-            feature = feature.merge(labels, on=["trade_date", "symbol"], how="left")
+            labels = _read_parquet_dir(labels_dir)
+            if {"trade_date", "symbol", "industry_name"}.issubset(labels.columns):
+                labels = labels[["trade_date", "symbol", "industry_name"]].drop_duplicates()
+                labels["trade_date"] = labels["trade_date"].astype(str)
+                labels["symbol"] = labels["symbol"].astype(str)
+                feature = feature.merge(labels, on=["trade_date", "symbol"], how="left")
+            else:
+                feature["industry_name"] = "未知行业"
         else:
             feature["industry_name"] = "未知行业"
     feature["industry_name"] = feature["industry_name"].fillna("未知行业")
@@ -398,6 +402,8 @@ def build_hist_trsr_adapter(feature: pd.DataFrame, edges: pd.DataFrame, write_ou
         label_tensor = tensor[tensor["feature_name"].eq("return_1d")].rename(columns={"feature_value": "label_value"})
         label_tensor["horizon"] = "5d"
     else:
+        if "horizon" not in labels.columns and "label_horizon" in labels.columns:
+            labels = labels.rename(columns={"label_horizon": "horizon"})
         labels = labels[labels["symbol"].isin(symbols) & labels["horizon"].astype(str).eq("5d")].copy()
         labels["stock_id"] = labels["symbol"].map(stock_id)
         label_tensor = labels[["stock_id", "symbol", "trade_date", "horizon", "cs_zscore_label"]].rename(columns={"cs_zscore_label": "label_value"})
@@ -428,6 +434,8 @@ def build_relation_ablation(feature: pd.DataFrame, write_outputs: bool = True) -
         target = feature[["trade_date", "symbol"]].copy()
         target["cs_zscore_label"] = 0.0
     else:
+        if "horizon" not in labels.columns and "label_horizon" in labels.columns:
+            labels = labels.rename(columns={"label_horizon": "horizon"})
         target = labels[labels["horizon"].astype(str).eq("5d")][["trade_date", "symbol", "cs_zscore_label"]]
         target["trade_date"] = target["trade_date"].astype(str)
         target["symbol"] = target["symbol"].astype(str)

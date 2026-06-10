@@ -1,0 +1,10 @@
+environment: staging
+service_urls:
+  backend: https://stock-good-staging.example.invalid
+  frontend: https://stock-good-console.example.invalid
+  prometheus: https://stock-good-metrics.example.invalid
+  grafana: https://stock-good-grafana.example.invalid
+staging_runtime:
+  container_registry: ghcr.io/blankxxc/stock_good
+  release_channel: staging-gated
+  secret_source: external_secret_store_placeholder

@@ -1,0 +1,10 @@
+environment: local
+service_urls:
+  backend: http://127.0.0.1:8000
+  frontend: http://127.0.0.1:3000
+  prometheus: http://127.0.0.1:9090
+  grafana: http://127.0.0.1:3001
+local_runtime:
+  docker_compose_file: deploy/docker/docker-compose.yml
+  compose_profile: local
+  secret_source: environment_only_not_git

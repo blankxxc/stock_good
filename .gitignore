@@ -82,10 +82,15 @@ data/ads/
 data/samples/
 data/quarantine/
 data/snapshots/*.json
-lakehouse/delta/
-lakehouse/iceberg/
-lakehouse/hudi/
+lakehouse/delta/*
+!lakehouse/delta/.gitkeep
+lakehouse/iceberg/*
+!lakehouse/iceberg/.gitkeep
+lakehouse/hudi/*
+!lakehouse/hudi/.gitkeep
 lakehouse/warehouse/
+!configs/env/
+!configs/env/**
 
 # Generated reports; keep markdown summaries trackable.
 reports/**/*.json
