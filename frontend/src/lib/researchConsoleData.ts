@@ -30,8 +30,8 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     artifact: 'reports/research_loop/predictions.parquet',
     dataMode: 'artifact-backed multi-horizon model score',
     status: 'cross_sectional_probability_rank_ready',
-    description: '展示 1d、5d、14d 的 probability_up、score、rank、percentile、行业、模型版本、数据时间和风险标签。',
-    fields: ['symbol', 'probability_up', 'score', 'rank', 'percentile', 'horizon', '1d', '5d', '14d']
+    description: '展示 1d、5d、14d 的 probability_up、score、rank、percentile，并在同页生成研究候选池 Top20。',
+    fields: ['symbol', 'probability_up', 'score', 'rank', 'percentile', 'horizon', 'candidate_pool', 'candidate_summary', '1d', '5d', '14d']
   },
   candidates: {
     route: '/candidates',
@@ -41,8 +41,8 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     artifact: 'reports/research_loop/holdings.parquet',
     dataMode: 'artifact-backed topk holdings',
     status: 'topk_candidate_pool_ready',
-    description: 'Top50/100/200、行业分布、风格暴露、剔除原因和回测入口。',
-    fields: ['top_k', 'industry_exposure', 'style_exposure', 'exclusion_reason', 'backtest_run_id']
+    description: '候选池功能已合并到 /scores：由 candidate_pool / candidate_summary 展示 Top20 研究候选、入池原因和回测风险入口。',
+    fields: ['candidate_pool', 'candidate_summary', 'probability_up', 'rank', 'score', 'backtest_risk_entry']
   },
   backtests: {
     route: '/backtests',
@@ -52,8 +52,8 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     artifact: 'reports/research_loop/risk_report.parquet',
     dataMode: 'artifact-backed backtest report',
     status: 'tradable_backtest_ready',
-    description: '净值、回撤、baseline 对比、成本敏感性、风险归因和 capacity curve。',
-    fields: ['nav', 'drawdown', 'baseline_comparison', 'cost_sensitivity', 'risk_attribution', 'capacity_curve']
+    description: '净值、回撤、baseline 对比、成本敏感性、风险旗标、主动风险、风格/行业归因和 capacity curve。',
+    fields: ['nav', 'drawdown', 'risk_summary', 'risk_flags', 'active_risk', 'cost_sensitivity', 'risk_attribution', 'capacity_curve']
   },
   factors: {
     route: '/factors',

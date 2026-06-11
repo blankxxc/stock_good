@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Callable
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.services.lakehouse_catalog import data_quality_payload, lakehouse_payload, license_payload, lineage_payload
 from backend.app.services.factor_store_catalog import factor_payload, feature_payload, spark_jobs_payload
-from backend.app.services.research_loop_catalog import backtests_payload, dashboard_research_loop_payload, experiments_payload, scores_payload
+from backend.app.services.research_loop_catalog import backtests_payload, condition_screen_payload, dashboard_research_loop_payload, experiments_payload, market_overview_payload, scores_payload, stock_detail_payload
 from backend.app.services.realtime_streaming_catalog import flink_jobs_payload, realtime_payload
 from backend.app.services.event_regime_catalog import event_regime_payload
 from backend.app.services.relation_graph_catalog import relation_graph_payload
@@ -60,6 +60,7 @@ def health() -> dict[str, Any]:
             "factor_store": "factor_store_offline_factor_store_ready",
             "labels": "research_loop_cross_sectional_labels_ready",
             "scores": "research_loop_lightgbm_scores_ready",
+            "condition_screen": "research_loop_condition_screen_ready",
             "backtests": "research_loop_tradable_backtest_risk_capacity_ready",
             "experiments": "research_loop_experiment_recorder_ready",
             "realtime": "realtime_streaming_replay_kafka_online_feature_ready",
@@ -109,6 +110,8 @@ ROUTE_MODULES = {
     "graph": "行业/概念/供应链/共现/价格相关关系图",
     "models": "Qlib、LightGBM、MASTER、StockMixer、HIST、TRSR 适配器",
     "scores": "横截面模型分数、rank、percentile、置信度和研究边界",
+    "condition-screen": "自定义条件选股测试：沪深300全量最新截面、条件是/否判断、可扩展技术与金融因子列",
+    "market": "沪深300股票全景、最新行情、涨跌幅、成交额和个股详情入口",
     "experiments": "MLflow/Qlib Recorder 实验记录",
     "backtests": "TopK、long-short、risk/cost/capacity 回测报告",
     "rag": "claim 级证据、as-of 检索、引用和评测",
@@ -126,74 +129,76 @@ ROUTE_MODULES = {
 }
 
 
+def _ops_section_payload(status: str, *sections: str, flatten_single: bool = False) -> dict[str, Any]:
+    payload = build_ops_deployment_artifacts()
+    base = {"status": status, "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY}
+    if flatten_single and len(sections) == 1:
+        return {**base, **payload[sections[0]]}
+    return {**base, **{key: payload[key] for key in sections}}
+
+
+def _deployment_payload() -> dict[str, Any]:
+    payload = build_ops_deployment_artifacts()
+    return {
+        "status": "ops_deployment_deployment_backup_ready",
+        "version": payload["version"],
+        "research_boundary": RESEARCH_BOUNDARY,
+        "ci_cd": payload["ci_cd"],
+        **payload["deployment"],
+    }
+
+
+ROUTE_PAYLOAD_FACTORIES: dict[str, Callable[[], dict[str, Any]]] = {
+    "site": lambda: site_payload(RESEARCH_BOUNDARY),
+    "dashboard": lambda: dashboard_research_loop_payload(RESEARCH_BOUNDARY),
+    "overview": lambda: dashboard_research_loop_payload(RESEARCH_BOUNDARY),
+    "licenses": lambda: licenses_governance_simulation_payload(RESEARCH_BOUNDARY),
+    "admin": lambda: admin_payload(RESEARCH_BOUNDARY),
+    "audit": lambda: audit_payload(RESEARCH_BOUNDARY),
+    "reports": lambda: reports_payload(RESEARCH_BOUNDARY),
+    "simulation": lambda: simulation_payload(RESEARCH_BOUNDARY),
+    "ops": build_ops_deployment_artifacts,
+    "orchestration": lambda: _ops_section_payload("ops_deployment_orchestration_ready", "orchestration", flatten_single=True),
+    "backfill": lambda: _ops_section_payload("ops_deployment_backfill_dry_run_ready", "backfill_request", "dataset_snapshot_manifest"),
+    "observability": lambda: _ops_section_payload("ops_deployment_observability_ready", "observability", flatten_single=True),
+    "deployment": _deployment_payload,
+    "final-acceptance": build_final_acceptance_final_artifacts,
+    "lakehouse": lambda: lakehouse_payload(RESEARCH_BOUNDARY),
+    "data-quality": lambda: data_quality_payload(RESEARCH_BOUNDARY),
+    "lineage": lambda: lineage_payload(RESEARCH_BOUNDARY),
+    "factors": lambda: factor_payload(RESEARCH_BOUNDARY),
+    "event-regime": lambda: event_regime_payload(RESEARCH_BOUNDARY),
+    "graph": lambda: relation_graph_payload(RESEARCH_BOUNDARY),
+    "features": lambda: feature_payload(RESEARCH_BOUNDARY),
+    "spark-jobs": lambda: spark_jobs_payload(RESEARCH_BOUNDARY),
+    "realtime": lambda: realtime_payload(RESEARCH_BOUNDARY),
+    "flink-jobs": lambda: flink_jobs_payload(RESEARCH_BOUNDARY),
+    "scores": lambda: scores_payload(RESEARCH_BOUNDARY),
+    "condition-screen": lambda: condition_screen_payload(RESEARCH_BOUNDARY),
+    "market": lambda: market_overview_payload(RESEARCH_BOUNDARY),
+    "backtests": lambda: backtests_payload(RESEARCH_BOUNDARY),
+    "experiments": lambda: experiments_payload(RESEARCH_BOUNDARY),
+    "models": lambda: advanced_models_payload(RESEARCH_BOUNDARY),
+    "rag": lambda: rag_payload(RESEARCH_BOUNDARY),
+}
+
+
 def route_payload(module: str) -> dict[str, Any]:
-    if module == "site":
-        return site_payload(RESEARCH_BOUNDARY)
-    if module in {"dashboard", "overview"}:
-        return dashboard_research_loop_payload(RESEARCH_BOUNDARY)
-    if module == "licenses":
-        return licenses_governance_simulation_payload(RESEARCH_BOUNDARY)
-    if module == "admin":
-        return admin_payload(RESEARCH_BOUNDARY)
-    if module == "audit":
-        return audit_payload(RESEARCH_BOUNDARY)
-    if module == "reports":
-        return reports_payload(RESEARCH_BOUNDARY)
-    if module == "simulation":
-        return simulation_payload(RESEARCH_BOUNDARY)
-    if module == "ops":
-        return build_ops_deployment_artifacts()
-    if module == "orchestration":
-        payload = build_ops_deployment_artifacts()
-        return {"status": "ops_deployment_orchestration_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, **payload["orchestration"]}
-    if module == "backfill":
-        payload = build_ops_deployment_artifacts()
-        return {"status": "ops_deployment_backfill_dry_run_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "backfill_request": payload["backfill_request"], "dataset_snapshot_manifest": payload["dataset_snapshot_manifest"]}
-    if module == "observability":
-        payload = build_ops_deployment_artifacts()
-        return {"status": "ops_deployment_observability_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, **payload["observability"]}
-    if module == "deployment":
-        payload = build_ops_deployment_artifacts()
-        return {"status": "ops_deployment_deployment_backup_ready", "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY, "ci_cd": payload["ci_cd"], **payload["deployment"]}
-    if module == "final-acceptance":
-        return build_final_acceptance_final_artifacts()
-    if module == "lakehouse":
-        return lakehouse_payload(RESEARCH_BOUNDARY)
-    if module == "data-quality":
-        return data_quality_payload(RESEARCH_BOUNDARY)
-    if module == "lineage":
-        return lineage_payload(RESEARCH_BOUNDARY)
-    if module == "factors":
-        return factor_payload(RESEARCH_BOUNDARY)
-    if module == "event-regime":
-        return event_regime_payload(RESEARCH_BOUNDARY)
-    if module == "graph":
-        return relation_graph_payload(RESEARCH_BOUNDARY)
-    if module == "features":
-        return feature_payload(RESEARCH_BOUNDARY)
-    if module == "spark-jobs":
-        return spark_jobs_payload(RESEARCH_BOUNDARY)
-    if module == "realtime":
-        return realtime_payload(RESEARCH_BOUNDARY)
-    if module == "flink-jobs":
-        return flink_jobs_payload(RESEARCH_BOUNDARY)
-    if module == "scores":
-        return scores_payload(RESEARCH_BOUNDARY)
-    if module == "backtests":
-        return backtests_payload(RESEARCH_BOUNDARY)
-    if module == "experiments":
-        return experiments_payload(RESEARCH_BOUNDARY)
-    if module == "models":
-        return advanced_models_payload(RESEARCH_BOUNDARY)
-    if module == "rag":
-        return rag_payload(RESEARCH_BOUNDARY)
+    factory = ROUTE_PAYLOAD_FACTORIES.get(module)
+    if factory:
+        return factory()
     return {
         "module": module,
-        "status": "lakehouse_contract_ready" if module in {"overview", "spark-jobs", "reports"} else "foundation_placeholder_ready",
+        "status": "foundation_placeholder_ready",
         "description": ROUTE_MODULES[module],
         "maturity": "L1-contract-and-route-stub",
         "research_boundary": RESEARCH_BOUNDARY,
     }
+
+
+@app.get("/api/stocks/{symbol}")
+def get_stock_detail(symbol: str) -> dict[str, Any]:
+    return stock_detail_payload(symbol, RESEARCH_BOUNDARY)
 
 
 for module_name in ROUTE_MODULES:

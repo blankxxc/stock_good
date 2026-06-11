@@ -58,6 +58,10 @@ logs/
 *.tmp
 *.temp
 
+# Local agent/task workspaces
+.hermes/
+.maister/
+
 # Local databases / caches
 *.sqlite
 *.sqlite3
