@@ -111,6 +111,68 @@ def test_factor_store_backend_apis_and_frontend_factor_page_are_ready():
     assert "/api/factors" in page
 
 
+def test_factor_library_api_and_frontend_have_interactive_catalog_contract():
+    from backend.app.main import app
+
+    client = TestClient(app)
+    factors = client.get("/api/factors")
+    assert factors.status_code == 200
+    payload = factors.json()
+    assert payload["factor_count"] >= 70
+    assert payload["factor_catalog_summary"]["total_factors"] == payload["factor_count"]
+    assert payload["factor_catalog_summary"]["point_in_time_violations"] == 0
+    assert payload["factor_catalog_summary"]["admission_ready_count"] >= 1
+    assert len(payload["category_summary"]) >= 6
+    assert {"price_return", "momentum", "volatility", "liquidity"}.issubset({row["category"] for row in payload["category_summary"]})
+    assert len(payload["factor_catalog"]) == payload["factor_count"]
+    first = payload["factor_catalog"][0]
+    required_fields = {
+        "factor_name",
+        "category",
+        "formula",
+        "economic_hypothesis",
+        "coverage",
+        "missing_rate",
+        "ic_mean",
+        "rank_ic_mean",
+        "icir",
+        "turnover",
+        "capacity_estimate",
+        "admission_status",
+        "risk_notes",
+        "detail_anchor",
+    }
+    assert required_fields.issubset(first)
+    assert {row["admission_status"] for row in payload["factor_catalog"]} & {"research_ready", "needs_review", "proxy_only"}
+    assert len(payload["top_factors_by_icir"]) >= 5
+    assert payload["factor_ui_hints"]["default_sort"] == "ICIR_desc"
+
+    page = (PROJECT_ROOT / "frontend" / "src" / "app" / "factors" / "page.tsx").read_text(encoding="utf-8")
+    component = (PROJECT_ROOT / "frontend" / "src" / "components" / "FactorLibraryDashboard.tsx").read_text(encoding="utf-8")
+    factor_ui = page + component
+    assert "因子搜索" in factor_ui
+    assert "分类筛选" in factor_ui
+    assert "准入状态" in factor_ui
+    assert "ICIR 排序" in factor_ui
+    assert "覆盖率" in factor_ui
+    assert "因子详情" in factor_ui
+    assert "因子库研究控制台" not in component
+    assert "factor-help-panel" not in component
+    assert "factor-education-card" not in component
+    assert "因子是什么" not in component
+    assert "干什么用" not in component
+    assert "IC / RankIC 怎么看" not in component
+    assert "factor-description" not in component
+    assert "factor-usage" not in component
+    assert "factor-compatibility-note" not in page
+    assert "terminal-strip" not in component
+    assert "data-api-path" not in component
+    assert "point_in_time_violations=0" not in factor_ui
+    assert "market regime publish_time / available_time" not in factor_ui
+    assert "long panel" not in component
+    assert "wide matrix" not in component
+
+
 def test_factor_store_acceptance_script_reports_ok():
     from scripts.check_factor_store_acceptance import run_acceptance
 

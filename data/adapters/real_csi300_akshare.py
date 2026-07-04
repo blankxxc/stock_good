@@ -6,6 +6,7 @@ import shutil
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
@@ -101,9 +102,31 @@ def fetch_current_csi300_constituents_akshare() -> pd.DataFrame:
     else:
         raise RuntimeError("Unable to fetch CSI300 constituents via akshare; " + " | ".join(errors))
 
-    code_col = next((c for c in raw.columns if "代码" in str(c) or str(c).lower() in {"code", "品种代码"}), raw.columns[0])
-    name_col = next((c for c in raw.columns if "名称" in str(c) or str(c).lower() in {"name", "品种名称"}), None)
-    out = pd.DataFrame({"symbol": raw[code_col].astype(str).map(_symbol_with_suffix)})
+    code_col = next(
+        (
+            c
+            for c in raw.columns
+            if str(c) in {"成分券代码", "成份券代码", "品种代码", "证券代码"}
+            or str(c).lower() in {"code", "symbol", "constituent_code"}
+        ),
+        next((c for c in raw.columns if "代码" in str(c) and "指数" not in str(c)), raw.columns[0]),
+    )
+    name_col = next(
+        (
+            c
+            for c in raw.columns
+            if str(c) in {"成分券名称", "成份券名称", "品种名称", "证券名称"}
+            or str(c).lower() in {"name", "stock_name", "constituent_name"}
+        ),
+        next((c for c in raw.columns if "名称" in str(c) and "指数" not in str(c) and "英文" not in str(c)), None),
+    )
+    exchange_col = next((c for c in raw.columns if str(c) in {"交易所", "交易市场", "市场"}), None)
+    symbols = raw[code_col].astype(str).str.extract(r"(\d{6})", expand=False).fillna(raw[code_col].astype(str))
+    out = pd.DataFrame({"symbol": symbols.map(_symbol_with_suffix)})
+    if exchange_col:
+        exchange = raw[exchange_col].astype(str)
+        out.loc[exchange.str.contains("上海|SH", case=False, regex=True, na=False), "symbol"] = symbols.str.zfill(6) + ".SH"
+        out.loc[exchange.str.contains("深圳|SZ", case=False, regex=True, na=False), "symbol"] = symbols.str.zfill(6) + ".SZ"
     out["name"] = raw[name_col].astype(str).to_numpy() if name_col else out["symbol"]
     out = out.drop_duplicates("symbol").sort_values("symbol").reset_index(drop=True)
     return out
@@ -113,7 +136,10 @@ def fetch_current_csi300_constituents() -> pd.DataFrame:
     errors: list[str] = []
     for provider_name, fetcher in (("baostock", fetch_current_csi300_constituents_baostock), ("akshare", fetch_current_csi300_constituents_akshare)):
         try:
-            return fetcher()
+            constituents = fetcher()
+            if len(constituents) < 200:
+                raise RuntimeError(f"provider returned suspiciously small CSI300 universe: {len(constituents)}")
+            return constituents
         except Exception as exc:
             errors.append(f"{provider_name}: {type(exc).__name__}: {exc}")
     raise RuntimeError("Unable to fetch CSI300 constituents; " + " | ".join(errors))
@@ -185,6 +211,74 @@ def fetch_symbol_daily(symbol: str, start_date: str, end_date: str) -> pd.DataFr
         except Exception as exc:
             errors.append(f"{provider_name}: {type(exc).__name__}: {exc}")
     raise RuntimeError(f"Unable to fetch daily bars for {symbol}; " + " | ".join(errors))
+
+
+def _eastmoney_secid(symbol: str) -> str:
+    normalized = _symbol_with_suffix(symbol)
+    code, suffix = normalized.split(".", 1)
+    market = "1" if suffix == "SH" else "0"
+    return f"{market}.{code}"
+
+
+def _eastmoney_number(value: Any) -> Any:
+    return None if value in {None, "-", "--"} else value
+
+
+def _eastmoney_trade_date(row: dict[str, Any]) -> str:
+    timestamp = row.get("f124")
+    if timestamp in {None, "-", "--"}:
+        return datetime.now(ZoneInfo("Asia/Shanghai")).date().isoformat()
+    return datetime.fromtimestamp(int(timestamp), ZoneInfo("Asia/Shanghai")).date().isoformat()
+
+
+def fetch_eastmoney_quote_snapshot(symbols: list[str]) -> pd.DataFrame:
+    """Fetch one same-day Eastmoney quote snapshot for a symbol list.
+
+    This is a freshness bridge for the local research console. It is not a replacement for
+    adjusted historical daily bars used by strict backtests.
+    """
+
+    if not symbols:
+        return pd.DataFrame()
+
+    import requests
+
+    code_to_symbol = {_symbol_for_akshare(symbol): _symbol_with_suffix(symbol) for symbol in symbols}
+    rows: list[dict[str, Any]] = []
+    url = "https://push2.eastmoney.com/api/qt/ulist.np/get"
+    fields = "f12,f14,f2,f5,f6,f15,f16,f17,f18,f20,f21,f8,f124"
+    chunk_size = 50
+    for offset in range(0, len(symbols), chunk_size):
+        chunk = symbols[offset : offset + chunk_size]
+        params = {
+            "fltt": 2,
+            "invt": 2,
+            "fields": fields,
+            "secids": ",".join(_eastmoney_secid(symbol) for symbol in chunk),
+        }
+        response = requests.get(url, params=params, timeout=30)
+        response.raise_for_status()
+        payload = response.json()
+        for item in (payload.get("data") or {}).get("diff") or []:
+            code = str(item.get("f12", "")).zfill(6)
+            symbol = code_to_symbol.get(code)
+            if not symbol:
+                continue
+            rows.append(
+                {
+                    "trade_date": _eastmoney_trade_date(item),
+                    "symbol": symbol,
+                    "name": item.get("f14") or symbol,
+                    "open": _eastmoney_number(item.get("f17")),
+                    "high": _eastmoney_number(item.get("f15")),
+                    "low": _eastmoney_number(item.get("f16")),
+                    "close": _eastmoney_number(item.get("f2")),
+                    "volume": _eastmoney_number(item.get("f5")),
+                    "amount": _eastmoney_number(item.get("f6")),
+                    "turnover_rate": _eastmoney_number(item.get("f8")),
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def fetch_many_symbol_daily_baostock(symbols: list[str], start_date: str, end_date: str) -> tuple[list[pd.DataFrame], list[dict[str, str]]]:
@@ -268,17 +362,117 @@ def normalize_real_daily_frame(frame: pd.DataFrame, constituent_names: dict[str,
     return df
 
 
-def write_real_csi300_daily(max_symbols: int | None = None, start_date: str | None = None, end_date: str | None = None) -> dict[str, Any]:
-    start, end = (start_date, end_date) if start_date and end_date else default_date_window()
+def _existing_daily_parquet_path() -> Path:
+    return OUTPUT_DIR / "part-000.parquet"
+
+
+def _read_existing_daily() -> pd.DataFrame:
+    path = _existing_daily_parquet_path()
+    if not path.exists():
+        return pd.DataFrame()
+    return pd.read_parquet(path)
+
+
+def _incremental_start_date(existing: pd.DataFrame, requested_start: str, overlap_days: int) -> tuple[str, str | None]:
+    if existing.empty or "trade_date" not in existing.columns:
+        return requested_start, None
+    latest = pd.to_datetime(existing["trade_date"], errors="coerce").max()
+    if pd.isna(latest):
+        return requested_start, None
+    overlap_start = latest - timedelta(days=max(overlap_days, 0))
+    incremental_start = max(requested_start, overlap_start.strftime("%Y%m%d"))
+    return incremental_start, latest.strftime("%Y-%m-%d")
+
+
+def _merge_incremental_daily(existing: pd.DataFrame, refreshed: pd.DataFrame) -> pd.DataFrame:
+    if existing.empty:
+        return refreshed.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
+    if refreshed.empty:
+        return existing.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
+    merged = pd.concat([existing, refreshed], ignore_index=True, sort=False)
+    merged["trade_date"] = pd.to_datetime(merged["trade_date"]).dt.strftime("%Y-%m-%d")
+    merged["symbol"] = merged["symbol"].astype(str).map(_symbol_with_suffix)
+    for col in ["open", "high", "low", "close", "volume", "amount", "turnover_rate", "adj_factor"]:
+        if col in merged.columns:
+            merged[col] = pd.to_numeric(merged[col], errors="coerce")
+    return (
+        merged.sort_values(["symbol", "trade_date"])
+        .drop_duplicates(["symbol", "trade_date"], keep="last")
+        .reset_index(drop=True)
+    )
+
+
+def _constituents_from_existing_daily(existing: pd.DataFrame) -> pd.DataFrame:
+    if existing.empty or "symbol" not in existing.columns:
+        return pd.DataFrame()
+    latest_names = existing.sort_values(["symbol", "trade_date"]).drop_duplicates("symbol", keep="last")
+    names = latest_names["stock_name"] if "stock_name" in latest_names.columns else latest_names["symbol"]
+    return (
+        pd.DataFrame({"symbol": latest_names["symbol"].astype(str).map(_symbol_with_suffix), "name": names.astype(str)})
+        .drop_duplicates("symbol")
+        .sort_values("symbol")
+        .reset_index(drop=True)
+    )
+
+
+def _write_daily_parquet(output: pd.DataFrame) -> None:
+    temp_dir = OUTPUT_DIR.with_name(f"{OUTPUT_DIR.name}_tmp")
+    shutil.rmtree(temp_dir, ignore_errors=True)
+    temp_dir.mkdir(parents=True, exist_ok=True)
+    output.to_parquet(temp_dir / "part-000.parquet", index=False)
+    shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
+    temp_dir.replace(OUTPUT_DIR)
+
+
+def write_real_csi300_daily(
+    max_symbols: int | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+    incremental: bool = False,
+    overlap_days: int = 7,
+    use_snapshot: bool = False,
+) -> dict[str, Any]:
+    default_start, default_end = default_date_window()
+    start = start_date or default_start
+    end = end_date or default_end
+    existing = pd.DataFrame()
+    previous_latest_trade_date: str | None = None
+    requested_incremental_start_date = start
     try:
-        constituents = fetch_current_csi300_constituents()
+        if incremental:
+            existing = _read_existing_daily()
+            requested_incremental_start_date, previous_latest_trade_date = _incremental_start_date(existing, start, overlap_days)
+            start = requested_incremental_start_date
+
+        existing_constituents = _constituents_from_existing_daily(existing) if incremental and not existing.empty else pd.DataFrame()
+        try:
+            constituents = fetch_current_csi300_constituents()
+        except Exception:
+            constituents = existing_constituents
+        if constituents.empty:
+            constituents = existing_constituents
+        if not existing_constituents.empty:
+            missing_existing = existing_constituents[~existing_constituents["symbol"].isin(constituents["symbol"])]
+            if not missing_existing.empty:
+                constituents = pd.concat([constituents, missing_existing], ignore_index=True, sort=False).drop_duplicates("symbol").sort_values("symbol").reset_index(drop=True)
         if max_symbols:
             constituents = constituents.head(max_symbols).copy()
         frames: list[pd.DataFrame] = []
         failures: list[dict[str, str]] = []
+        used_snapshot = False
+        snapshot_row_count = 0
         names = dict(zip(constituents["symbol"], constituents["name"], strict=False))
         symbols = constituents["symbol"].astype(str).tolist()
-        if fetch_symbol_daily.__module__ == __name__ and fetch_symbol_daily.__name__ == "fetch_symbol_daily":
+        if incremental and use_snapshot:
+            try:
+                snapshot = fetch_eastmoney_quote_snapshot(symbols)
+                if not snapshot.empty:
+                    frames = [snapshot]
+                    snapshot_row_count = int(len(snapshot))
+                    used_snapshot = True
+            except Exception as exc:
+                failures.append({"symbol": "__eastmoney_snapshot__", "error": f"{type(exc).__name__}: {exc}"})
+        if not frames and not (incremental and use_snapshot) and fetch_symbol_daily.__module__ == __name__ and fetch_symbol_daily.__name__ == "fetch_symbol_daily":
             try:
                 frames, failures = fetch_many_symbol_daily_baostock(symbols, start, end)
             except Exception as exc:
@@ -292,21 +486,47 @@ def write_real_csi300_daily(max_symbols: int | None = None, start_date: str | No
                 except Exception as exc:
                     failures.append({"symbol": symbol, "error": f"{type(exc).__name__}: {exc}"})
         if not frames:
-            raise RuntimeError(f"No CSI300 daily rows fetched; failures={failures[:5]}")
-        normalized = normalize_real_daily_frame(pd.concat(frames, ignore_index=True, sort=False), names)
-        shutil.rmtree(OUTPUT_DIR, ignore_errors=True)
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-        normalized.to_parquet(OUTPUT_DIR / "part-000.parquet", index=False)
+            if incremental and not existing.empty:
+                normalized = pd.DataFrame()
+                output = existing.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
+            else:
+                raise RuntimeError(f"No CSI300 daily rows fetched; failures={failures[:5]}")
+        else:
+            normalized = normalize_real_daily_frame(pd.concat(frames, ignore_index=True, sort=False), names)
+            if used_snapshot:
+                normalized["source"] = "eastmoney_quote_snapshot_public_web"
+                normalized["source_version"] = "eastmoney_push2_quote_snapshot_v001"
+                normalized["license_id"] = "eastmoney_public_web_research_only"
+            output = _merge_incremental_daily(existing, normalized) if incremental else normalized
+
+        _write_daily_parquet(output)
+        latest_trade_date = None if output.empty else str(output["trade_date"].max())
+        latest_stock_count = 0
+        if latest_trade_date:
+            latest_stock_count = int(output[output["trade_date"].astype(str).eq(latest_trade_date)]["symbol"].nunique())
+        fetched_rows = int(0 if "normalized" not in locals() else len(normalized))
+        data_source_mode = "real_csi300_recent_3y_daily"
+        if incremental and not existing.empty:
+            data_source_mode = "real_csi300_daily_incremental_plus_eastmoney_snapshot" if used_snapshot else "real_csi300_daily_incremental"
         report = {
             "status": "ok",
-            "data_source_mode": "real_csi300_recent_3y_daily",
+            "data_source_mode": data_source_mode,
             "data_version": DATA_VERSION,
             "source_version": SOURCE_VERSION,
-            "row_count": int(len(normalized)),
-            "stock_count": int(normalized["symbol"].nunique()),
-            "start_date": str(normalized["trade_date"].min()),
-            "end_date": str(normalized["trade_date"].max()),
-            "requested_start_date": start,
+            "incremental_update": bool(incremental and not existing.empty),
+            "overlap_days": int(overlap_days),
+            "previous_row_count": int(len(existing)) if incremental and not existing.empty else 0,
+            "previous_latest_trade_date": previous_latest_trade_date,
+            "snapshot_row_count": snapshot_row_count,
+            "snapshot_caveat": "same-day quote snapshot for research-console freshness; replace with adjusted historical daily bars for strict backtests" if used_snapshot else None,
+            "fetched_row_count": fetched_rows,
+            "row_count": int(len(output)),
+            "stock_count": int(output["symbol"].nunique()) if "symbol" in output.columns else 0,
+            "latest_stock_count": latest_stock_count,
+            "start_date": str(output["trade_date"].min()) if not output.empty else None,
+            "end_date": latest_trade_date,
+            "requested_start_date": start_date or default_start,
+            "requested_incremental_start_date": requested_incremental_start_date,
             "requested_end_date": end,
             "constituent_method": "baostock current CSI300 constituents with akshare fallback; replace with point-in-time membership before production backtests",
             "failed_symbols": failures,

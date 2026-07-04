@@ -101,6 +101,7 @@ reports/**/*.json
 reports/**/*.html
 reports/**/*.yaml
 reports/**/*.yml
+reports/**/*.png
 !reports/**/*.md
 
 # Large model/vector artifacts

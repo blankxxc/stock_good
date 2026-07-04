@@ -50,16 +50,24 @@ def _latest_real_data_status() -> dict[str, Any]:
     }
 
 
-def run_daily_update(skip_fetch: bool = False) -> dict[str, Any]:
+def run_daily_update(skip_fetch: bool = False, full_refresh: bool = False, overlap_days: int = 7, use_snapshot: bool = True) -> dict[str, Any]:
     steps: list[dict[str, Any]] = []
 
     if skip_fetch:
         steps.append({"step": "fetch_real_csi300_daily", "status": "skipped", "reason": "--skip-fetch"})
     else:
-        from scripts.fetch_real_csi300_daily import main as fetch_real_csi300_daily
+        from data.adapters.real_csi300_akshare import write_real_csi300_daily
 
-        fetch_real_csi300_daily()
-        steps.append({"step": "fetch_real_csi300_daily", "status": "ok", "real_data": _latest_real_data_status()})
+        fetch_report = write_real_csi300_daily(incremental=not full_refresh, overlap_days=overlap_days, use_snapshot=use_snapshot and not full_refresh)
+        steps.append({
+            "step": "fetch_real_csi300_daily",
+            "status": fetch_report.get("status", "ok"),
+            "mode": "full_refresh" if full_refresh else "incremental",
+            "requested_incremental_start_date": fetch_report.get("requested_incremental_start_date"),
+            "snapshot_row_count": fetch_report.get("snapshot_row_count"),
+            "fetched_row_count": fetch_report.get("fetched_row_count"),
+            "real_data": _latest_real_data_status(),
+        })
 
     from factors.offline.polars_factor_engine import materialize_factor_store
     from models.research_loop_research_loop import build_labels
@@ -104,10 +112,13 @@ def run_daily_update(skip_fetch: bool = False) -> dict[str, Any]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Daily CSI300 real-data refresh plus factor/label/latest-score rebuild.")
+    parser = argparse.ArgumentParser(description="Daily CSI300 incremental real-data refresh plus factor/label/latest-score rebuild.")
     parser.add_argument("--skip-fetch", action="store_true", help="Do not call the upstream data adapter; rebuild derived artifacts from existing parquet.")
+    parser.add_argument("--full-refresh", action="store_true", help="Replace the 3-year daily parquet instead of doing the default incremental merge.")
+    parser.add_argument("--no-snapshot", action="store_true", help="Disable the default Eastmoney same-day quote snapshot bridge and use slower historical providers for incremental fetch.")
+    parser.add_argument("--overlap-days", type=int, default=7, help="Calendar-day overlap for default incremental fetch; refreshes partial latest dates.")
     args = parser.parse_args()
-    print(json.dumps(run_daily_update(skip_fetch=args.skip_fetch), ensure_ascii=False, indent=2, default=_json_default))
+    print(json.dumps(run_daily_update(skip_fetch=args.skip_fetch, full_refresh=args.full_refresh, overlap_days=args.overlap_days, use_snapshot=not args.no_snapshot), ensure_ascii=False, indent=2, default=_json_default))
 
 
 if __name__ == "__main__":

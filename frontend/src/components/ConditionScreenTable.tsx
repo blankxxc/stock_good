@@ -81,7 +81,7 @@ const COLUMN_LABELS: Record<string, string> = {
   cs_rank_return_20d: '截面收益排名',
 };
 
-const DEFAULT_FACTOR_COLUMNS = ['close', 'return_10d', 'estimated_market_cap_billion', 'value_proxy', 'quality_proxy', 'growth_proxy_20d', 'beta_20d', 'low_volatility_proxy'];
+const DEFAULT_FACTOR_COLUMNS = ['return_10d', 'momentum_20d', 'volatility_20d', 'value_proxy', 'quality_proxy', 'growth_proxy_20d', 'beta_20d', 'low_volatility_proxy'];
 
 function formatCell(column: string, value: unknown) {
   if (typeof value === 'boolean') return value ? '是' : '否';
@@ -188,32 +188,18 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
   };
 
   return (
-    <section className="condition-screen" data-api-prefix="/api/condition-screen">
-      {error ? <p className="muted">暂时无法读取 /api/condition-screen：{error}</p> : null}
+    <section className="condition-screen">
+      {error ? <p className="muted">暂时无法读取条件选股数据：{error}</p> : null}
       <div className="market-ticker-row">
         <div><strong>{payload?.row_count ?? rows.length}</strong><span>最新完整沪深300截面</span></div>
         <div><strong>{String(summary.matched_count ?? 0)}</strong><span>综合条件通过</span></div>
         <div><strong>{payload?.latest_trade_date ?? '加载中'}</strong><span>最新行情日期</span></div>
       </div>
 
-      <div className="condition-rule-grid">
-        {Object.entries(payload?.criteria ?? {}).map(([key, criterion]) => (
-          <div className="condition-rule-card" key={key}>
-            <strong>{criterion.label}</strong>
-            <p>{criterion.description}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="card st-rule-card">
-        <strong>ST / *ST 触发条件说明</strong>
-        {(payload?.st_star_rules ?? []).map((rule) => <p key={rule}>{rule}</p>)}
-      </div>
-
       <div className="card factor-column-picker">
         <div className="artifact-card__topline">
           <strong>从因子里面选择扩充列</strong>
-          <span className="muted">available_factor_columns：勾选后表格会实时增加/减少列，每列顶部都能单独筛选。</span>
+          <span className="muted">勾选后表格会实时增加/减少列，每列顶部都能单独筛选。</span>
         </div>
         <div className="factor-checkbox-grid">
           {availableFactors.map((factor) => (
@@ -318,7 +304,6 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
           </tbody>
         </table>
       </div>
-      <p className="muted">{payload?.api_note ?? 'research_signals_only_not_investment_advice：仅研究测试，不构成交易建议。'}</p>
     </section>
   );
 }

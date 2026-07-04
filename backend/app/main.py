@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from html import escape
 from typing import Any, Callable
 
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.services.lakehouse_catalog import data_quality_payload, lakehouse_payload, license_payload, lineage_payload
@@ -194,6 +196,208 @@ def route_payload(module: str) -> dict[str, Any]:
         "maturity": "L1-contract-and-route-stub",
         "research_boundary": RESEARCH_BOUNDARY,
     }
+
+
+def admin_overview_payload() -> dict[str, Any]:
+    health_payload = health()
+    modules = health_payload["modules"]
+    ready_modules = [name for name, status in modules.items() if str(status).endswith("ready")]
+    factor_data = factor_payload(RESEARCH_BOUNDARY)
+    critical_routes = [
+        {"path": "/health", "label": "服务健康", "method": "GET"},
+        {"path": "/api/site", "label": "用户站点边界", "method": "GET"},
+        {"path": "/api/factors", "label": "因子库", "method": "GET"},
+        {"path": "/api/scores", "label": "股票评分", "method": "GET"},
+        {"path": "/api/condition-screen", "label": "条件选股", "method": "GET"},
+        {"path": "/api/backtests", "label": "回测风险", "method": "GET"},
+        {"path": "/api/admin", "label": "RBAC 治理", "method": "GET"},
+        {"path": "/api/audit", "label": "审计日志", "method": "GET"},
+    ]
+    data_fabric_routes = [
+        {"path": "/api/dashboard", "label": "内部总览", "method": "GET"},
+        {"path": "/api/data-quality", "label": "数据质量", "method": "GET"},
+        {"path": "/api/lineage", "label": "数据血缘", "method": "GET"},
+        {"path": "/api/lakehouse", "label": "Lakehouse", "method": "GET"},
+        {"path": "/api/spark-jobs", "label": "Spark Jobs", "method": "GET"},
+        {"path": "/api/realtime", "label": "Realtime", "method": "GET"},
+        {"path": "/api/flink-jobs", "label": "Flink Jobs", "method": "GET"},
+        {"path": "/api/ops", "label": "Ops / 运行维护", "method": "GET"},
+    ]
+    return {
+        "status": "backend_admin_console_ready",
+        "framework": {
+            "name": "FastAPI",
+            "selection_reason": "项目已采用 FastAPI；它适合 Python 量化/AI 后端的 async API、自动 OpenAPI 文档、类型校验和快速管理控制台落地。",
+            "api_docs": "/docs",
+            "openapi_schema": "/openapi.json",
+        },
+        "service": {
+            "name": SERVICE_NAME,
+            "version": health_payload["version"],
+            "time": health_payload["time"],
+            "research_boundary": RESEARCH_BOUNDARY,
+        },
+        "module_summary": {
+            "total_modules": len(modules),
+            "ready_modules": len(ready_modules),
+            "pending_modules": len(modules) - len(ready_modules),
+        },
+        "factor_summary": {
+            "status": factor_data.get("status"),
+            "factor_count": factor_data.get("factor_count", 0),
+            "catalog_count": len(factor_data.get("factor_catalog", [])),
+            "category_count": len(factor_data.get("category_summary", [])),
+            "point_in_time_violations": factor_data.get("point_in_time_join", {}).get("point_in_time_violations"),
+            "admission_ready_count": factor_data.get("factor_catalog_summary", {}).get("admission_ready_count"),
+        },
+        "critical_routes": critical_routes,
+        "data_fabric": {
+            "visibility": "backend_admin_only",
+            "policy": "Data Fabric、数据质量、数据血缘、湖仓、Spark/Flink/Realtime 和运维信息只在后端管理界面展示，不进入用户选股导航。",
+            "internal_routes": data_fabric_routes,
+        },
+        "frontend_policy": {
+            "public_positioning": "user_stock_selection_platform",
+            "hide_data_fabric_from_user_nav": True,
+            "show_only_user_safe_selection_data": True,
+            "security_focus": ["最小暴露内部链路", "用户侧不展示血缘/湖仓/任务明细", "后台承接审计与权限控制"],
+        },
+        "documentation_links": [
+            {"path": "/docs", "label": "Swagger UI"},
+            {"path": "/redoc", "label": "ReDoc"},
+            {"path": "/openapi.json", "label": "OpenAPI Schema"},
+        ],
+        "module_statuses": modules,
+        "research_boundary_label": "仅研究排序、因子诊断、回测和治理监控；非投资建议。",
+    }
+
+
+def _render_admin_console(payload: dict[str, Any]) -> str:
+    modules = payload["module_statuses"]
+    critical_routes = payload["critical_routes"]
+    docs = payload["documentation_links"]
+    data_fabric_routes = payload["data_fabric"]["internal_routes"]
+    module_rows = "".join(
+        f"<tr><td>{escape(name)}</td><td><span class='status'>{escape(str(status))}</span></td></tr>"
+        for name, status in sorted(modules.items())
+    )
+    route_cards = "".join(
+        f"<a class='route-card' href='{escape(route['path'])}'><b>{escape(route['label'])}</b><span>{escape(route['method'])} {escape(route['path'])}</span></a>"
+        for route in critical_routes
+    )
+    data_fabric_cards = "".join(
+        f"<a class='route-card internal-card' href='{escape(route['path'])}'><b>{escape(route['label'])}</b><span>{escape(route['method'])} {escape(route['path'])}</span></a>"
+        for route in data_fabric_routes
+    )
+    doc_links = "".join(
+        f"<a href='{escape(item['path'])}'>{escape(item['label'])}</a>"
+        for item in docs
+    )
+    factor = payload["factor_summary"]
+    module_summary = payload["module_summary"]
+    service = payload["service"]
+    framework = payload["framework"]
+    return f"""
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FastAPI 后端控制台 · Stock Research Platform</title>
+  <style>
+    :root {{ color-scheme: dark; --bg:#050816; --panel:#0b1224; --line:#1f2a44; --text:#e5edf7; --muted:#94a3b8; --cyan:#38bdf8; --green:#22c55e; --gold:#fbbf24; --purple:#a78bfa; }}
+    * {{ box-sizing: border-box; }} body {{ margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: radial-gradient(circle at 20% 0%, rgba(56,189,248,.15), transparent 28%), radial-gradient(circle at 85% 10%, rgba(167,139,250,.18), transparent 30%), var(--bg); color:var(--text); }}
+    .shell {{ width:min(1280px, calc(100vw - 32px)); margin:0 auto; padding:32px 0 48px; }}
+    .hero, .card {{ border:1px solid rgba(148,163,184,.18); background:rgba(11,18,36,.82); border-radius:24px; box-shadow:0 18px 50px rgba(0,0,0,.28); }}
+    .hero {{ padding:28px; display:grid; grid-template-columns: minmax(0, 1.3fr) minmax(280px, .7fr); gap:20px; align-items:stretch; }}
+    .badge {{ display:inline-flex; align-items:center; gap:8px; padding:7px 10px; border:1px solid rgba(56,189,248,.28); color:#bae6fd; background:rgba(56,189,248,.10); border-radius:999px; font-weight:800; font-size:12px; letter-spacing:.08em; text-transform:uppercase; }}
+    h1 {{ margin:16px 0 10px; font-size:clamp(34px, 5vw, 68px); line-height:.95; letter-spacing:-.06em; }}
+    p {{ color:var(--muted); line-height:1.7; }}
+    .status-main {{ padding:22px; border-radius:20px; background:linear-gradient(145deg, rgba(34,197,94,.14), rgba(56,189,248,.08)); border:1px solid rgba(34,197,94,.25); }}
+    .status-main strong {{ display:block; margin:8px 0; color:#bbf7d0; font-size:28px; }}
+    .grid {{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px; margin-top:18px; }}
+    .card {{ padding:20px; }} .card span {{ color:var(--muted); font-size:12px; }} .card strong {{ display:block; margin-top:8px; font-size:30px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
+    .section {{ margin-top:20px; }} .section h2 {{ margin:0 0 12px; }}
+    .route-grid {{ display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; }}
+    .route-card {{ display:block; padding:16px; border-radius:18px; border:1px solid rgba(56,189,248,.20); background:rgba(56,189,248,.07); color:var(--text); text-decoration:none; }} .route-card:hover {{ border-color:var(--cyan); transform:translateY(-1px); }} .route-card span {{ display:block; margin-top:8px; color:var(--muted); font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; }}
+    .internal-card {{ border-color:rgba(251,191,36,.24); background:rgba(251,191,36,.08); }}
+    table {{ width:100%; border-collapse:collapse; overflow:hidden; }} th, td {{ padding:12px 10px; border-bottom:1px solid rgba(148,163,184,.14); text-align:left; }} th {{ color:#cbd5e1; font-size:12px; text-transform:uppercase; letter-spacing:.12em; }} .status {{ color:#bbf7d0; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
+    .docs {{ display:flex; gap:10px; flex-wrap:wrap; }} .docs a {{ color:#dbeafe; text-decoration:none; padding:10px 12px; border-radius:999px; border:1px solid rgba(167,139,250,.28); background:rgba(167,139,250,.10); }}
+    .warning {{ border-color:rgba(251,191,36,.26); background:rgba(251,191,36,.08); color:#fde68a; }}
+    @media (max-width: 900px) {{ .hero {{ grid-template-columns:1fr; }} }}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <span class="badge">{escape(framework['name'])} · backend admin</span>
+        <h1>FastAPI 后端控制台</h1>
+        <p>{escape(framework['selection_reason'])}</p>
+        <p>{escape(payload['research_boundary_label'])}</p>
+      </div>
+      <div class="status-main">
+        <span>console status</span>
+        <strong>{escape(payload['status'])}</strong>
+        <p>{escape(service['name'])} · {escape(service['version'])}</p>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card"><span>模块健康</span><strong>{module_summary['ready_modules']}/{module_summary['total_modules']}</strong><p>ready modules</p></div>
+      <div class="card"><span>因子总数</span><strong>{factor['factor_count']}</strong><p>factor catalog {factor['catalog_count']}</p></div>
+      <div class="card"><span>因子分类</span><strong>{factor['category_count']}</strong><p>category summary</p></div>
+      <div class="card"><span>点时间违规</span><strong>{factor['point_in_time_violations']}</strong><p>available_time ≤ prediction_time</p></div>
+    </section>
+
+    <section class="section card">
+      <h2>关键后端入口</h2>
+      <div class="route-grid">{route_cards}</div>
+    </section>
+
+    <section class="section card">
+      <h2>Data Fabric 内部管理</h2>
+      <p>{escape(payload['data_fabric']['policy'])}</p>
+      <div class="route-grid">{data_fabric_cards}</div>
+    </section>
+
+    <section class="section grid">
+      <div class="card">
+        <h2>因子库摘要</h2>
+        <p>状态：<span class="status">{escape(str(factor['status']))}</span></p>
+        <p>研究可复核因子：{escape(str(factor['admission_ready_count']))}</p>
+        <p>非投资建议：所有信号仅用于研究排序、回测和人工复核。</p>
+      </div>
+      <div class="card">
+        <h2>文档入口</h2>
+        <div class="docs">{doc_links}</div>
+        <p>FastAPI 自动生成 Swagger / ReDoc / OpenAPI，适合后端调试和接口验收。</p>
+      </div>
+    </section>
+
+    <section class="section card">
+      <h2>模块健康</h2>
+      <table><thead><tr><th>module</th><th>status</th></tr></thead><tbody>{module_rows}</tbody></table>
+    </section>
+
+    <section class="section card warning">
+      <b>研究边界</b>
+      <p>这是智能选股平台的后台管理区，不面向普通用户展示；正式对外使用前需要权限控制、审计、数据脱敏和人工复核。所有页面均为选股辅助，非投资建议。</p>
+    </section>
+  </main>
+</body>
+</html>
+"""
+
+
+@app.get("/api/admin/overview")
+def get_admin_overview() -> dict[str, Any]:
+    return admin_overview_payload()
+
+
+@app.get("/admin", response_class=HTMLResponse)
+def get_admin_console() -> HTMLResponse:
+    return HTMLResponse(_render_admin_console(admin_overview_payload()))
 
 
 @app.get("/api/stocks/{symbol}")

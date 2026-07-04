@@ -65,11 +65,7 @@ export function MarketOverviewBoard() {
   return (
     <section className="market-board artifact-backed" data-api-prefix="/api/market">
       <div className="market-board__hero">
-        <div>
-          <span className="badge">类似同花顺的沪深300股票全景</span>
-          <h1>沪深300股票全景</h1>
-          <p className="lead">首页直接展示所有股票，支持按股票代码、股票名称、行业搜索，并点击进入证券软件式个股面板。</p>
-        </div>
+        <h1>沪深300股票全景</h1>
         <div className="market-board__search">
           <label htmlFor="stock-search">搜索股票</label>
           <input id="stock-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="例如 000001、平安银行、银行" />
@@ -85,9 +81,6 @@ export function MarketOverviewBoard() {
         <div><strong>{breadth?.unknown_count ?? unknownCount}</strong><span>未定价/停牌</span></div>
         <div><strong>{formatAmount(totalAmount)}</strong><span>合计成交额</span></div>
       </div>
-      <p className="muted daily-update-note">
-        数据需要每日更新：{payload?.data_refresh_policy?.frequency ?? 'daily_after_market_close'}，建议 {payload?.data_refresh_policy?.recommended_time_cn ?? '交易日16:30后'} 执行 {payload?.data_refresh_policy?.command ?? 'scripts/update_daily_market_data.py'}。
-      </p>
       <div className="stock-table-shell">
         <table className="stock-table">
           <thead>
@@ -119,7 +112,6 @@ export function MarketOverviewBoard() {
           </tbody>
         </table>
       </div>
-      <p className="muted">{payload?.api_note ?? 'research_signals_only_not_investment_advice：仅研究展示，不构成交易建议。'}</p>
     </section>
   );
 }

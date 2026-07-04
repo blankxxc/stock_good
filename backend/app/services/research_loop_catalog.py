@@ -407,6 +407,41 @@ def _latest_complete_signal_universe(frame: pd.DataFrame) -> tuple[pd.DataFrame,
     return signal_universe, latest_complete_trade_date, raw_latest_trade_date, raw_latest_count, expected_symbol_count
 
 
+def _factor_daily_panel_wide(trade_date: str) -> tuple[pd.DataFrame, list[str], dict[str, str]]:
+    factor_path = project_root() / "data" / "gold" / "factor_daily_panel_long"
+    if not factor_path.exists():
+        return pd.DataFrame(), [], {}
+    try:
+        frame = pd.read_parquet(
+            factor_path,
+            columns=["trade_date", "symbol", "factor_name", "factor_value", "category"],
+            filters=[("trade_date", "=", trade_date)],
+        )
+    except Exception:
+        frame = _read_parquet(factor_path)
+        if not frame.empty:
+            frame = frame[frame["trade_date"].astype(str).eq(trade_date)].copy()
+    if frame.empty:
+        return pd.DataFrame(), [], {}
+    frame = frame.dropna(subset=["symbol", "factor_name"]).copy()
+    frame["symbol"] = frame["symbol"].astype(str).str.upper()
+    frame["trade_date"] = frame["trade_date"].astype(str)
+    frame["factor_name"] = frame["factor_name"].astype(str)
+    factor_columns = sorted(frame["factor_name"].unique().tolist())
+    catalog = {
+        str(row["factor_name"]): f"{row['category']} · {row['factor_name']}" if row.get("category") else str(row["factor_name"])
+        for _, row in frame.sort_values(["factor_name", "category"]).drop_duplicates("factor_name").iterrows()
+    }
+    wide = (
+        frame.sort_values(["symbol", "trade_date", "factor_name"])
+        .drop_duplicates(["symbol", "trade_date", "factor_name"], keep="last")
+        .pivot(index=["symbol", "trade_date"], columns="factor_name", values="factor_value")
+        .reset_index()
+    )
+    wide.columns = [str(column) for column in wide.columns]
+    return wide, factor_columns, catalog
+
+
 def condition_screen_payload(research_boundary: str) -> dict[str, Any]:
     frame = _daily_with_screening_factors()
     if frame.empty:
@@ -427,9 +462,14 @@ def condition_screen_payload(research_boundary: str) -> dict[str, Any]:
 
     frame["amount_billion"] = frame["amount"] / 100_000_000
     latest_universe, latest_trade_date, raw_latest_trade_date, raw_latest_count, expected_symbol_count = _latest_complete_signal_universe(frame)
+    factor_wide, factor_columns, factor_catalog = _factor_daily_panel_wide(latest_trade_date)
+    if not factor_wide.empty and factor_columns:
+        latest_universe = latest_universe.drop(columns=[column for column in factor_columns if column in latest_universe.columns], errors="ignore")
+        latest_universe = latest_universe.merge(factor_wide, on=["symbol", "trade_date"], how="left")
     displayed_trade_dates = sorted(latest_universe["trade_date"].astype(str).unique().tolist())
-    available_factor_columns = _existing_columns(latest_universe, CONDITION_FACTOR_COLUMNS)
-    output_columns = _existing_columns(latest_universe, [*CONDITION_BASE_COLUMNS, *CONDITION_FACTOR_COLUMNS])
+    available_factor_columns = _existing_columns(latest_universe, factor_columns or CONDITION_FACTOR_COLUMNS)
+    factor_column_catalog = {column: CONDITION_FACTOR_COLUMN_CATALOG.get(column, factor_catalog.get(column, column)) for column in available_factor_columns}
+    output_columns = _existing_columns(latest_universe, [*CONDITION_BASE_COLUMNS, *available_factor_columns])
     column_schema = _condition_column_schema(latest_universe, output_columns)
     matched_count = int(latest_universe["all_conditions_met"].sum()) if "all_conditions_met" in latest_universe.columns else 0
 
@@ -446,7 +486,7 @@ def condition_screen_payload(research_boundary: str) -> dict[str, Any]:
         "criteria": CONDITION_SCREEN_CRITERIA,
         "base_columns": CONDITION_BASE_COLUMNS,
         "available_factor_columns": available_factor_columns,
-        "factor_column_catalog": CONDITION_FACTOR_COLUMN_CATALOG,
+        "factor_column_catalog": factor_column_catalog,
         "column_schema": column_schema,
         "st_star_rules": ST_STAR_RULES,
         "rows": _json_records(latest_universe[output_columns]),
@@ -519,6 +559,53 @@ def market_overview_payload(research_boundary: str) -> dict[str, Any]:
     }
 
 
+def _stock_factor_values(symbol: str, trade_date: str, factor_names: list[str] | None = None) -> dict[str, dict[str, Any]]:
+    factor_path = project_root() / "data" / "gold" / "factor_daily_panel_long"
+    if not factor_path.exists():
+        return {}
+    filters: list[tuple[str, str, Any]] = [("symbol", "=", symbol), ("trade_date", "=", trade_date)]
+    if factor_names:
+        filters.append(("factor_name", "in", factor_names))
+    try:
+        frame = pd.read_parquet(
+            factor_path,
+            columns=["trade_date", "symbol", "factor_name", "factor_value", "category"],
+            filters=filters,
+        )
+    except Exception:
+        frame = _read_parquet(factor_path)
+        if frame.empty:
+            return {}
+        mask = (frame["symbol"].astype(str).str.upper() == symbol) & (frame["trade_date"].astype(str) == trade_date)
+        if factor_names:
+            mask = mask & frame["factor_name"].astype(str).isin(factor_names)
+        frame = frame[mask].copy()
+    if frame.empty:
+        return {}
+    frame = frame.sort_values(["category", "factor_name", "trade_date"]).drop_duplicates("factor_name", keep="last")
+    return {str(row["factor_name"]): row.to_dict() for _, row in frame.iterrows()}
+
+
+def _factor_value_interpretation(factor_name: str | None, factor_value: Any) -> str:
+    value = _safe_float(factor_value)
+    name = (factor_name or "").lower()
+    if value is None:
+        return "该股暂无取值。"
+    if any(token in name for token in ["return", "momentum", "reversal", "gap", "range", "deviation", "volatility"]):
+        if value > 0:
+            return f"该股该因子为正，约 {value:.2%}。"
+        if value < 0:
+            return f"该股该因子为负，约 {value:.2%}。"
+        return "该股该因子接近零。"
+    if "beta" in name:
+        return f"该股 Beta 约 {value:.2f}。"
+    if "rank" in name or "percentile" in name:
+        return f"该股截面位置约 {value:.2f}。"
+    if "zscore" in name or "z_score" in name:
+        return f"该股标准分约 {value:.2f}。"
+    return f"该股取值 {value:.4f}。"
+
+
 def stock_detail_payload(symbol: str, research_boundary: str) -> dict[str, Any]:
     normalized_symbol = symbol.upper().replace("-", ".")
     daily = _real_csi300_daily()
@@ -554,16 +641,24 @@ def stock_detail_payload(symbol: str, research_boundary: str) -> dict[str, Any]:
                 prediction_rows.extend(_json_records(row[_existing_columns(row, PREDICTION_COLUMNS)]))
 
     factor_report = _read_json(project_root() / "reports" / "factor_store" / "factor_store_factor_report.json")
+    report_by_name = {str(item.get("factor_name")): item for item in factor_report.get("single_factor_reports", []) if item.get("factor_name")}
+    latest_trade_date = str(latest_row.get("trade_date"))
+    stock_factor_values = _stock_factor_values(normalized_symbol, latest_trade_date)
     recent_factors = []
-    for item in factor_report.get("single_factor_reports", [])[:8]:
+    for factor_name, stock_factor in stock_factor_values.items():
+        item = report_by_name.get(str(factor_name), {})
+        factor_value = _safe_float(stock_factor.get("factor_value"))
         recent_factors.append({
-            "factor_name": item.get("factor_name"),
-            "category": item.get("category"),
+            "factor_name": factor_name,
+            "category": stock_factor.get("category") or item.get("category"),
             "coverage": item.get("coverage_by_year", {}).get("all"),
             "IC_mean": item.get("IC_mean"),
             "RankIC_mean": item.get("RankIC_mean"),
             "top_bottom_spread": item.get("top_bottom_spread"),
             "cost_adjusted_spread": item.get("cost_adjusted_spread"),
+            "factor_value": factor_value,
+            "value_trade_date": stock_factor.get("trade_date") or latest_trade_date,
+            "value_interpretation": _factor_value_interpretation(str(factor_name), factor_value),
         })
 
     return {
@@ -579,6 +674,7 @@ def stock_detail_payload(symbol: str, research_boundary: str) -> dict[str, Any]:
         "price_series": price_series,
         "predictions": prediction_rows,
         "recent_factors": recent_factors,
+        "factor_count": len(recent_factors),
         "market_notes": MARKET_NOTES,
     }
 

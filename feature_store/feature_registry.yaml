@@ -3,7 +3,7 @@ registry_name: factor_store_offline_feature_registry
 feature_set_version: feature_set_factor_store_v001
 research_boundary: research_signals_only_not_investment_advice
 grain: symbol + trade_date + prediction_time
-generated_at: '2026-06-10T06:37:06+00:00'
+generated_at: '2026-07-04T14:03:06+00:00'
 features:
 - feature_name: return_1d
   feature_group: price_return
