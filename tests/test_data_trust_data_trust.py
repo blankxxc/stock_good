@@ -6,6 +6,8 @@ from pathlib import Path
 import pandas as pd
 from fastapi.testclient import TestClient
 
+from tests.auth_helpers import authenticated_admin_client
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -163,7 +165,7 @@ def test_backend_data_trust_data_quality_and_lineage_apis_are_ready():
     from quality.data_trust_data_trust import run_data_trust_data_trust
 
     run_data_trust_data_trust()
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
 
     dq_response = client.get("/api/data-quality")
     assert dq_response.status_code == 200

@@ -7,6 +7,8 @@ import pandas as pd
 import yaml
 from fastapi.testclient import TestClient
 
+from tests.auth_helpers import authenticated_admin_client
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -91,7 +93,7 @@ def test_factor_store_backend_apis_and_frontend_factor_page_are_ready():
     _ensure_factor_store_without_spark()
     from backend.app.main import app
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     factors = client.get("/api/factors")
     features = client.get("/api/features")
     spark_jobs = client.get("/api/spark-jobs")
@@ -114,7 +116,7 @@ def test_factor_store_backend_apis_and_frontend_factor_page_are_ready():
 def test_factor_library_api_and_frontend_have_interactive_catalog_contract():
     from backend.app.main import app
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     factors = client.get("/api/factors")
     assert factors.status_code == 200
     payload = factors.json()

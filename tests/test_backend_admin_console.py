@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
+from tests.auth_helpers import authenticated_admin_client
+
 from backend.app.main import app
 
 
 def test_fastapi_backend_admin_overview_api_exposes_control_plane_contract() -> None:
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
 
     response = client.get("/api/admin/overview")
 
@@ -33,7 +35,7 @@ def test_fastapi_backend_admin_overview_api_exposes_control_plane_contract() -> 
 
 
 def test_fastapi_backend_admin_console_renders_html_dashboard() -> None:
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
 
     response = client.get("/admin")
 

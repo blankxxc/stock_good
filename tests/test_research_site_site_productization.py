@@ -10,7 +10,7 @@ FRONTEND_APP = PROJECT_ROOT / "frontend" / "src" / "app"
 USER_VISIBLE_ROUTES = ["scores", "condition-screen", "backtests", "factors"]
 INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "realtime", "flink-jobs", "ops"]
 INTERNAL_GOVERNANCE_ROUTES = ["rag", "simulation", "reports", "settings/licenses", "settings/users", "settings/audit"]
-PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login"]
+PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login", "watchlist"]
 FORBIDDEN_COPY = ["AI 荐股", "今日牛股", "稳赚", "买入卖出建议", "目标价", "一键跟投"]
 FORBIDDEN_USER_NAV = ["Data Fabric", "数据工程", "/dashboard", "/data-quality", "/lineage", "/lakehouse", "/spark-jobs", "/realtime", "/flink-jobs", "/ops", "Research Console"]
 
@@ -58,9 +58,10 @@ def test_internal_data_fabric_pages_exist_but_are_not_user_navigation_items():
     for route in INTERNAL_DATA_FABRIC_ROUTES + INTERNAL_GOVERNANCE_ROUTES:
         assert (FRONTEND_APP / route / "page.tsx").is_file(), route
         assert f"/{route}" not in layout, route
-    for route in INTERNAL_DATA_FABRIC_ROUTES:
+    for route in INTERNAL_DATA_FABRIC_ROUTES + INTERNAL_GOVERNANCE_ROUTES:
         assert f"/{route}" in proxy, route
-    assert "127.0.0.1:8000/admin" in proxy
+    assert "trustedPublicOrigins.includes(request.nextUrl.origin)" in proxy
+    assert "return NextResponse.redirect(redirectUrl, 307)" in proxy
 
 
 def test_user_visible_pages_have_safe_stock_selection_positioning():

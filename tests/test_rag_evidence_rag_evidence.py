@@ -7,6 +7,8 @@ import pandas as pd
 import yaml
 from fastapi.testclient import TestClient
 
+from tests.auth_helpers import authenticated_admin_client
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 REQUIRED_DOC_TYPES = {
@@ -161,7 +163,7 @@ def test_rag_evidence_answer_constraints_eval_and_backend_frontend_are_ready():
     assert eval_report["citation_support_rate"] >= 0.90
     assert eval_report["recall_at_5"] >= 0.80
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     rag = client.get("/api/rag")
     health = client.get("/health")
     assert rag.status_code == 200

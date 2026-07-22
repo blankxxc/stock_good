@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi.testclient import TestClient
+from scripts._authenticated_client import acceptance_admin_client
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -62,7 +63,7 @@ def run_acceptance() -> dict[str, Any]:
     check("visual_system_css_ready", "professional-shell" in (FRONTEND_APP / "globals.css").read_text(encoding="utf-8"), None)
     check("fixed_disclaimer_visible", "fixed-disclaimer" in layout and "选股辅助" in layout, None)
 
-    client = TestClient(app)
+    client = acceptance_admin_client(app)
     api_paths = ["/health", "/api/site", "/api/factors", "/api/scores", "/api/condition-screen", "/api/backtests", "/api/admin/overview", "/api/data-quality", "/api/lineage", "/api/lakehouse"]
     responses = {path: client.get(path).status_code for path in api_paths}
     check("api_smoke_status_200", all(code == 200 for code in responses.values()), responses)

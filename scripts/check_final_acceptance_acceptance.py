@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi.testclient import TestClient
+from scripts._authenticated_client import acceptance_admin_client
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -61,7 +62,7 @@ def run_acceptance() -> dict[str, Any]:
     for gate in ["no_broker_integration", "no_trading_advice_wording", "license_gate_before_export", "rag_citation_required", "point_in_time_required", "manual_review_required_before_real_use"]:
         check(f"release_gate_{gate}", gates.get(gate) == "passed", gates.get(gate))
 
-    client = TestClient(app)
+    client = acceptance_admin_client(app)
     endpoints = {
         "/health": "ok",
         "/api/final-acceptance": "final_acceptance_final_acceptance_ready",

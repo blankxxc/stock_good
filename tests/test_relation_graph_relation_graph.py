@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 
 import pandas as pd
@@ -131,17 +132,79 @@ def test_relation_graph_backend_frontend_and_acceptance_are_ready():
     assert graph.status_code == 200
     assert graph.json()["status"] == "relation_graph_relation_graph_ready"
     assert graph.json()["edge_rows"] == report["edge_rows"]
+    network = graph.json()["network"]
+    assert len(network["nodes"]) == 300
+    assert 1000 <= len(network["edges"]) <= 12000
+    assert network["as_of_date"]
+    assert network["available_node_counts"] == [20, 50, 100, 200, 300]
+    assert network["available_community_counts"] == [2, 4, 6, 8, 10]
+    assert network["default_node_count"] == 50
+    assert network["default_community_count"] == 4
+    node_symbols = {node["symbol"] for node in network["nodes"]}
+    assert len(node_symbols) == 300
+    assert all(
+        node.get("name")
+        and {"community_id", "community_assignments", "centrality_score", "degree"}.issubset(node)
+        and set(node["community_assignments"]) == {"2", "4", "6", "8", "10"}
+        for node in network["nodes"]
+    )
+    for community_count in network["available_community_counts"]:
+        assignments = {node["community_assignments"][str(community_count)] for node in network["nodes"]}
+        assert assignments == set(range(community_count))
+    assert all(
+        edge["source"] in node_symbols
+        and edge["target"] in node_symbols
+        and edge["source"] != edge["target"]
+        and {"relation_type", "weight", "confidence", "directed"}.issubset(edge)
+        and math.isfinite(edge["weight"])
+        and math.isfinite(edge["confidence"])
+        and 0 < edge["weight"] <= 1
+        and 0 <= edge["confidence"] <= 1
+        for edge in network["edges"]
+    )
     assert factors.status_code == 200
     assert factors.json()["relation_graph"]["status"] == "relation_graph_relation_graph_ready"
     assert health.status_code == 200
     assert health.json()["modules"]["relation_graph"] == "relation_graph_stock_relation_graph_ready"
 
     page = (PROJECT_ROOT / "frontend" / "src" / "app" / "graph" / "page.tsx").read_text(encoding="utf-8")
-    assert "relation_graph" in page
-    assert "stock_relation_edge" in page
-    assert "factor_relation_panel" in page
-    assert "HIST / TRSR" in page
-    assert "/api/graph" in page
+    explorer = (PROJECT_ROOT / "frontend" / "src" / "components" / "StockRelationNetwork.tsx").read_text(encoding="utf-8")
+    required_public_copy = {
+        "股票关系洞察",
+        "股票节点",
+        "可视关系",
+        "关系类型",
+        "关系社区",
+        "关系因子效果",
+    }
+    required_explorer_copy = {
+        "股票关系网络",
+        "graph-node",
+        "graph-edge",
+        "graph-relation-filter",
+        "graph-node-count-select",
+        "graph-community-count-select",
+        "节点数量",
+        "社区数量",
+        "关联股票",
+        "显示全部关系",
+        "network.edges",
+    }
+    forbidden_internal_copy = {
+        "ArtifactStatusCard",
+        "compatibility-checkpoints",
+        "真实数据入口",
+        "可追溯字段",
+        "验收兼容说明",
+        "data_mode",
+        "stock_relation_edge",
+        "factor_relation_panel",
+    }
+    public_source = page + explorer
+    assert all(text in public_source for text in required_public_copy)
+    assert all(text in explorer for text in required_explorer_copy)
+    assert "makeEdges" not in explorer
+    assert all(text not in page and text not in explorer for text in forbidden_internal_copy)
 
     from scripts.check_relation_graph_acceptance import run_acceptance
 

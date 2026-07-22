@@ -8,6 +8,7 @@ const userVisibleRoutes = [
   'data-security/page.tsx',
   'backtest-risk/page.tsx',
   'login/page.tsx',
+  'watchlist/page.tsx',
   'scores/page.tsx',
   'condition-screen/page.tsx',
   'backtests/page.tsx',
@@ -37,8 +38,8 @@ const internalBackendOnlyRoutes = [
 const base = path.join(process.cwd(), 'src', 'app');
 const missing = userVisibleRoutes.filter(route => !fs.existsSync(path.join(base, route)));
 const internalMissing = internalBackendOnlyRoutes.filter(route => !fs.existsSync(path.join(base, route)));
-if (missing.length) {
-  console.error(JSON.stringify({ status: 'failed', missing }, null, 2));
+if (missing.length || internalMissing.length) {
+  console.error(JSON.stringify({ status: 'failed', missing, internal_missing: internalMissing }, null, 2));
   process.exit(1);
 }
 console.log(JSON.stringify({

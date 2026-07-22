@@ -6,6 +6,8 @@ from pathlib import Path
 import yaml
 from fastapi.testclient import TestClient
 
+from tests.auth_helpers import authenticated_admin_client
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 PRIORITY_SOURCES = {
@@ -185,7 +187,7 @@ def test_lakehouse_spark_and_lakehouse_poc_artifacts_exist():
 def test_backend_license_api_exposes_lakehouse_source_statuses():
     from backend.app.main import app
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     response = client.get("/api/licenses")
     assert response.status_code == 200
     payload = response.json()

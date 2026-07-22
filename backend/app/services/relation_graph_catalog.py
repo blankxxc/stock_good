@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from backend.app.services.relation_graph_network import relation_network_payload
+
 
 def project_root() -> Path:
     return Path(__file__).resolve().parents[3]
@@ -55,6 +57,7 @@ def relation_graph_payload(research_boundary: str) -> dict[str, Any]:
                 for name, item in ablation.get("configs", {}).items()
             },
             "graph_summary": graph_summary,
+            "network": relation_network_payload(str(root)),
             "leakage_check_status": report.get("leakage_check_status"),
             "latest_available_time": report.get("latest_available_time"),
             "artifacts": report.get("artifacts", {}),

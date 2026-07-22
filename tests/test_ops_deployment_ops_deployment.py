@@ -9,6 +9,8 @@ from pathlib import Path
 import yaml
 from fastapi.testclient import TestClient
 
+from tests.auth_helpers import authenticated_admin_client
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_APP = PROJECT_ROOT / "frontend" / "src" / "app"
 REQUIRED_CONFIGS = [
@@ -202,7 +204,7 @@ def test_ops_deployment_deployment_ci_backup_assets_and_api_are_ready():
     )
     assert restore_smoke.returncode == 0, restore_smoke.stderr + restore_smoke.stdout
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     endpoints = {
         "/api/ops": "ops_deployment_ops_deployment_ready",
         "/api/orchestration": "ops_deployment_orchestration_ready",

@@ -20,6 +20,7 @@ def _read_json(path: Path) -> Any:
 def run_acceptance() -> dict[str, Any]:
     from backend.app.main import app
     from fastapi.testclient import TestClient
+    from scripts._authenticated_client import acceptance_admin_client
     from factors.offline.polars_factor_engine import FACTOR_NAMES, materialize_factor_store
     from feature_store.point_in_time_join.build_model_feature_matrix import build_model_feature_matrix
     from spark.jobs.factor_store_factor_materialization import run_job
@@ -27,7 +28,7 @@ def run_acceptance() -> dict[str, Any]:
     factor_report = materialize_factor_store(write_outputs=True)
     pit_report = build_model_feature_matrix()
     spark_report = run_job()
-    client = TestClient(app)
+    client = acceptance_admin_client(app)
 
     failed: list[str] = []
 

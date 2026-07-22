@@ -4,10 +4,12 @@ from datetime import datetime, timezone
 from html import escape
 from typing import Any, Callable
 
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.app.routers.auth import get_auth_service, optional_principal, require_admin, router as auth_router
+from backend.app.services.auth_service import configured_allowed_origins
 from backend.app.services.lakehouse_catalog import data_quality_payload, lakehouse_payload, license_payload, lineage_payload
 from backend.app.services.factor_store_catalog import factor_payload, feature_payload, spark_jobs_payload
 from backend.app.services.research_loop_catalog import backtests_payload, condition_screen_payload, dashboard_research_loop_payload, experiments_payload, market_overview_payload, scores_payload, stock_detail_payload
@@ -36,11 +38,31 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=list(configured_allowed_origins()),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router)
+
+
+def _requires_no_store(path: str) -> bool:
+    if path == "/admin" or path.startswith(("/api/auth", "/api/watchlist", "/api/admin")):
+        return True
+    if not path.startswith("/api/"):
+        return False
+    module = path.removeprefix("/api/").split("/", 1)[0]
+    return module in ROUTE_MODULES and module not in PUBLIC_API_MODULES
+
+
+@app.middleware("http")
+async def prevent_private_response_caching(request: Request, call_next: Callable[..., Any]):
+    response = await call_next(request)
+    if _requires_no_store(request.url.path):
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["Pragma"] = "no-cache"
+    return response
 
 
 @app.get("/health")
@@ -297,6 +319,22 @@ def _render_admin_console(payload: dict[str, Any]) -> str:
     module_summary = payload["module_summary"]
     service = payload["service"]
     framework = payload["framework"]
+    auth_summary = payload.get("auth_summary", {"total_users": 0, "active_users": 0, "active_sessions": 0, "watchlist_items": 0})
+    admin_user = payload.get("admin_user", {"id": -1, "display_name": "管理员"})
+    auth_users = payload.get("auth_users", [])
+    user_rows = "".join(
+        "<tr>"
+        f"<td><b>{escape(str(user['display_name']))}</b><br><span>@{escape(str(user['username']))}</span></td>"
+        f"<td>{escape('管理员' if user['role'] == 'admin' else '普通用户')}</td>"
+        f"<td><span class='status'>{escape('启用' if user['is_active'] else '禁用')}</span></td>"
+        f"<td>{escape(str(user.get('watchlist_count', 0)))}</td>"
+        f"<td>{escape(str(user.get('active_sessions', 0)))}</td>"
+        f"<td><button class='user-toggle' data-user-id='{int(user['id'])}' data-active='{1 if user['is_active'] else 0}' "
+        f"{'disabled' if int(user['id']) == int(admin_user['id']) else ''}>"
+        f"{escape('禁用' if user['is_active'] else '启用')}</button></td>"
+        "</tr>"
+        for user in auth_users
+    )
     return f"""
 <!doctype html>
 <html lang="zh-CN">
@@ -323,6 +361,7 @@ def _render_admin_console(payload: dict[str, Any]) -> str:
     .internal-card {{ border-color:rgba(251,191,36,.24); background:rgba(251,191,36,.08); }}
     table {{ width:100%; border-collapse:collapse; overflow:hidden; }} th, td {{ padding:12px 10px; border-bottom:1px solid rgba(148,163,184,.14); text-align:left; }} th {{ color:#cbd5e1; font-size:12px; text-transform:uppercase; letter-spacing:.12em; }} .status {{ color:#bbf7d0; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }}
     .docs {{ display:flex; gap:10px; flex-wrap:wrap; }} .docs a {{ color:#dbeafe; text-decoration:none; padding:10px 12px; border-radius:999px; border:1px solid rgba(167,139,250,.28); background:rgba(167,139,250,.10); }}
+    .admin-actions {{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:16px; }} .admin-actions a, .admin-actions button, .user-toggle {{ border:1px solid rgba(56,189,248,.24); border-radius:10px; padding:8px 11px; color:#dbeafe; background:rgba(56,189,248,.08); font:inherit; text-decoration:none; cursor:pointer; }} .admin-actions button {{ border-color:rgba(248,113,113,.24); color:#fecaca; background:rgba(127,29,29,.12); }} .user-toggle:disabled {{ opacity:.4; cursor:not-allowed; }}
     .warning {{ border-color:rgba(251,191,36,.26); background:rgba(251,191,36,.08); color:#fde68a; }}
     @media (max-width: 900px) {{ .hero {{ grid-template-columns:1fr; }} }}
   </style>
@@ -335,6 +374,7 @@ def _render_admin_console(payload: dict[str, Any]) -> str:
         <h1>FastAPI 后端控制台</h1>
         <p>{escape(framework['selection_reason'])}</p>
         <p>{escape(payload['research_boundary_label'])}</p>
+        <div class="admin-actions"><span>当前管理员：{escape(str(admin_user['display_name']))}</span><a href="/">返回前台</a><button id="admin-logout" type="button">安全退出</button></div>
       </div>
       <div class="status-main">
         <span>console status</span>
@@ -348,6 +388,18 @@ def _render_admin_console(payload: dict[str, Any]) -> str:
       <div class="card"><span>因子总数</span><strong>{factor['factor_count']}</strong><p>factor catalog {factor['catalog_count']}</p></div>
       <div class="card"><span>因子分类</span><strong>{factor['category_count']}</strong><p>category summary</p></div>
       <div class="card"><span>点时间违规</span><strong>{factor['point_in_time_violations']}</strong><p>available_time ≤ prediction_time</p></div>
+    </section>
+
+    <section class="grid">
+      <div class="card"><span>注册用户</span><strong>{auth_summary['total_users']}</strong><p>启用 {auth_summary['active_users']}</p></div>
+      <div class="card"><span>活跃会话</span><strong>{auth_summary['active_sessions']}</strong><p>可撤销服务端会话</p></div>
+      <div class="card"><span>自选记录</span><strong>{auth_summary['watchlist_items']}</strong><p>按用户严格隔离</p></div>
+    </section>
+
+    <section class="section card">
+      <h2>用户与权限</h2>
+      <p>公开注册仅能创建普通用户；禁用用户会立即撤销其全部登录会话。</p>
+      <table><thead><tr><th>账号</th><th>角色</th><th>状态</th><th>自选数</th><th>活跃会话</th><th>操作</th></tr></thead><tbody>{user_rows}</tbody></table>
     </section>
 
     <section class="section card">
@@ -385,19 +437,67 @@ def _render_admin_console(payload: dict[str, Any]) -> str:
       <p>这是智能选股平台的后台管理区，不面向普通用户展示；正式对外使用前需要权限控制、审计、数据脱敏和人工复核。所有页面均为选股辅助，非投资建议。</p>
     </section>
   </main>
+  <script>
+    function cookieValue(name) {{
+      const item = document.cookie.split('; ').find((value) => value.startsWith(name + '='));
+      return item ? decodeURIComponent(item.slice(name.length + 1)) : '';
+    }}
+    document.querySelectorAll('.user-toggle').forEach((button) => {{
+      button.addEventListener('click', async () => {{
+        if (button.disabled) return;
+        button.disabled = true;
+        const nextActive = button.dataset.active !== '1';
+        const response = await fetch('/api/admin/users/' + button.dataset.userId, {{
+          method: 'PATCH',
+          headers: {{ 'Content-Type': 'application/json', 'X-CSRF-Token': cookieValue('oa_csrf') }},
+          credentials: 'same-origin',
+          body: JSON.stringify({{ is_active: nextActive }}),
+        }});
+        if (response.ok) window.location.reload();
+        else {{ alert('用户状态更新失败，请刷新后重试。'); button.disabled = false; }}
+      }});
+    }});
+    document.getElementById('admin-logout').addEventListener('click', async () => {{
+      const response = await fetch('/api/auth/logout', {{
+        method: 'POST',
+        headers: {{ 'X-CSRF-Token': cookieValue('oa_csrf') }},
+        credentials: 'same-origin',
+      }});
+      if (response.ok) window.location.assign('/login');
+    }});
+  </script>
 </body>
 </html>
 """
 
 
 @app.get("/api/admin/overview")
-def get_admin_overview() -> dict[str, Any]:
-    return admin_overview_payload()
+def get_admin_overview(
+    request: Request,
+    _: object = Depends(require_admin),
+) -> JSONResponse:
+    payload = admin_overview_payload()
+    payload["auth_summary"] = get_auth_service(request).auth_summary()
+    return JSONResponse(payload, headers={"Cache-Control": "no-store", "Pragma": "no-cache"})
 
 
 @app.get("/admin", response_class=HTMLResponse)
-def get_admin_console() -> HTMLResponse:
-    return HTMLResponse(_render_admin_console(admin_overview_payload()))
+def get_admin_console(request: Request) -> HTMLResponse:
+    principal = optional_principal(request)
+    if principal is None:
+        return RedirectResponse(
+            "/login?next=/backend-admin",
+            status_code=307,
+            headers={"Cache-Control": "no-store", "Pragma": "no-cache"},
+        )
+    if principal.role != "admin":
+        raise HTTPException(status_code=403, detail="仅管理员可访问后台控制台。")
+    payload = admin_overview_payload()
+    service = get_auth_service(request)
+    payload["auth_summary"] = service.auth_summary()
+    payload["auth_users"] = service.list_users()
+    payload["admin_user"] = principal.public_user()
+    return HTMLResponse(_render_admin_console(payload), headers={"Cache-Control": "no-store"})
 
 
 @app.get("/api/stocks/{symbol}")
@@ -405,9 +505,32 @@ def get_stock_detail(symbol: str) -> dict[str, Any]:
     return stock_detail_payload(symbol, RESEARCH_BOUNDARY)
 
 
+PUBLIC_API_MODULES = {
+    "site",
+    "factors",
+    "event-regime",
+    "graph",
+    "scores",
+    "condition-screen",
+    "market",
+    "backtests",
+    "experiments",
+    "models",
+}
+
+
 for module_name in ROUTE_MODULES:
     async def endpoint(module: str = module_name) -> dict[str, Any]:  # type: ignore[misc]
         return route_payload(module)
 
-    app.add_api_route(f"/api/{module_name}", endpoint, methods=["GET"], name=f"get_{module_name}")
-    app.add_api_route(f"/api/{module_name}/status", endpoint, methods=["GET"], name=f"get_{module_name}_status")
+    dependencies = [] if module_name in PUBLIC_API_MODULES else [Depends(require_admin)]
+    app.add_api_route(
+        f"/api/{module_name}", endpoint, methods=["GET"], name=f"get_{module_name}", dependencies=dependencies
+    )
+    app.add_api_route(
+        f"/api/{module_name}/status",
+        endpoint,
+        methods=["GET"],
+        name=f"get_{module_name}_status",
+        dependencies=dependencies,
+    )
