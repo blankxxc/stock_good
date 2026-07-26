@@ -253,7 +253,42 @@ npm run build
 
 ### 4. 运行主线日频数据流水线
 
-当前主线以沪深300近三年日频为目标口径。仓库里的样例脚本会生成/验证本地可复现样例数据；接入真实授权数据时，应把 adapter 替换为正式数据源，同时保持相同 schema、license gate 和 snapshot manifest。
+当前主线以沪深300近三年日频为目标口径。日频获取器默认执行幂等增量更新：读取本地最大交易日，回看 7 个自然日以接收上游修订，只在发现新增或修订行情时原子替换 Parquet；无变化时不写数据文件。
+
+只获取日频行情：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\fetch_real_csi300_daily.py
+```
+
+获取行情，并仅在数据变化时重算因子、标签和最新评分：
+
+```powershell
+.\.venv\Scripts\python.exe scripts\update_daily_market_data.py
+```
+
+常用参数：
+
+```powershell
+# 强制重建近三年历史；日常任务不要使用
+.\.venv\Scripts\python.exe scripts\fetch_real_csi300_daily.py --full-refresh
+
+# 即使行情没有变化也重算下游产物
+.\.venv\Scripts\python.exe scripts\update_daily_market_data.py --force-rebuild
+
+# 明确允许盘中快照桥接；默认关闭，正式日频建议收盘后运行
+.\.venv\Scripts\python.exe scripts\fetch_real_csi300_daily.py --use-snapshot
+```
+
+Windows 包装脚本默认执行完整流水线（行情、因子、标签、评分）；只有维护时明确传入 `-FetchOnly` 才只抓行情。可将脚本加入任务计划，在交易日 16:40 后执行，并在失败时最多重试 3 次：
+
+```powershell
+schtasks /Create /TN "StockGoodDailyData" /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 16:40 /TR "powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File C:\Users\blankxxc\Desktop\work_space\stock_good\scripts\run_daily_data_update.ps1 -RetryCount 3 -RetryDelaySeconds 1800" /F
+```
+
+抓取报告写入 `reports/real_data/csi300_daily_ingestion_report.json`，完整流水线报告和 checkpoint 分别写入 `reports/daily_update/daily_market_data_update_report.json` 与 `reports/daily_update/pipeline_state.json`，每次运行同时保留历史报告和日志。退出码为 0 表示成功或无变化；抓取失败、部分失败、数据过期或并发任务冲突时返回非 0，未通过完整性门禁的候选数据不会替换旧 Parquet。
+
+仓库里的湖仓脚本会继续生成/验证本地可复现数据；接入正式授权数据时，应保持相同 schema、license gate 和 snapshot manifest。
 
 ```bash
 cd /c/Users/blankxxc/Desktop/work_space/stock_good
