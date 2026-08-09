@@ -6,7 +6,7 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 FRONTEND_APP = PROJECT_ROOT / "frontend" / "src" / "app"
 
-PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login"]
+PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login", "watchlist"]
 USER_VISIBLE_ROUTES = ["scores", "condition-screen", "backtests", "factors", "models", "graph"]
 INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "realtime", "flink-jobs", "ops"]
 INTERNAL_GOVERNANCE_ROUTES = ["rag", "simulation", "reports", "settings/licenses", "settings/users", "settings/audit"]

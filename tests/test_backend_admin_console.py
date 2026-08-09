@@ -2,11 +2,21 @@ from __future__ import annotations
 
 from fastapi.testclient import TestClient
 
-from backend.app.main import app
+from tests.auth_helpers import authenticated_admin_client
+
+from backend.app.main import app, should_expose_api_docs
+
+
+def test_production_api_docs_are_closed_unless_explicitly_enabled(monkeypatch) -> None:
+    monkeypatch.delenv("STOCK_GOOD_EXPOSE_API_DOCS", raising=False)
+    assert should_expose_api_docs("local", None) is True
+    assert should_expose_api_docs("production", None) is False
+    assert should_expose_api_docs("production", "true") is True
+    assert should_expose_api_docs("local", "false") is False
 
 
 def test_fastapi_backend_admin_overview_api_exposes_control_plane_contract() -> None:
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
 
     response = client.get("/api/admin/overview")
 
@@ -33,7 +43,7 @@ def test_fastapi_backend_admin_overview_api_exposes_control_plane_contract() -> 
 
 
 def test_fastapi_backend_admin_console_renders_html_dashboard() -> None:
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
 
     response = client.get("/admin")
 

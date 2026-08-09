@@ -209,37 +209,163 @@ MARKET_COLUMNS = [
     "pct_change", "volume", "amount", "amount_billion", "turnover_rate", "tradable_flag", "research_boundary",
 ]
 PRICE_SERIES_COLUMNS = ["trade_date", "open", "high", "low", "close", "volume", "amount", "pct_change", "ma5", "ma20", "turnover_rate"]
-PREDICTION_COLUMNS = ["trade_date", "symbol", "horizon", "probability_up", "probability_down", "score", "rank", "percentile", "confidence", "model_version"]
+PREDICTION_COLUMNS = [
+    "trade_date", "prediction_target_date", "symbol", "horizon", "probability_up", "probability_down", "score", "rank",
+    "percentile", "confidence", "model_name", "model_family", "model_version", "market_regime",
+    "sentiment_score", "sentiment_source", "sentiment_coverage", "relation_signal",
+    "global_probability_up", "sentiment_probability_up", "regime_adjustment",
+    "predicted_relative_change", "predicted_relative_change_pct", "signal_direction",
+    "information_source", "sentiment_polarity_used",
+]
 MARKET_NOTES = [
-    {"title": "沪深300样本内展示", "body": "页面使用近三年日频真实行情与当前沪深300成分股，适合研究展示；严格历史回测仍需 point-in-time 成分股。"},
-    {"title": "模型概率解释", "body": "1d/5d/14d probability_up 是横截面研究排序概率，不是确定性收益承诺，也不是交易指令。"},
+    {"title": "当前沪深300重训", "body": "保留 IJCAI 2025 COGRASP 作者网络结构，使用当前 300 只股票和截至 2026-07-24 的本地日频数据重新训练。"},
+    {"title": "原始回归输出", "body": "页面展示本地重训 checkpoint 的下一交易日相对涨跌回归值和横截面排名，不进行概率校准。"},
+    {"title": "关系图口径", "body": "当前新闻缓存不足以覆盖 300 只股票，因此关系图使用历史日收益绝对相关性 Top8；不包含正负文本情绪。"},
+    {"title": "样本外表现", "body": "当前测试集 RankIC 为负且样本量较小，只能作为研究候选排序，不能视为已验证的交易信号。"},
     {"title": "因子复核", "body": "下方因子摘要来自本地 factor_store 报告，正式使用前需要做样本外、成本、容量和风控复核。"},
 ]
 
-def scores_payload(research_boundary: str) -> dict[str, Any]:
+def _score_model_catalog(root: Path) -> list[dict[str, Any]]:
+    definitions = [
+        {
+            "id": "cograsp",
+            "label": "COGRASP 当前沪深300重训",
+            "description": "基于价格序列与收益相关性图的 COGRASP 1d 回归模型。",
+            "report": root / "reports" / "research_loop" / "live_predictions_report.json",
+            "predictions": root / "reports" / "research_loop" / "live_predictions.parquet",
+        },
+        {
+            "id": "sentiment_event",
+            "label": "情绪/事件融合 LightGBM",
+            "description": "融合市场情绪代理和按可用时间对齐的可选真实新闻情绪。",
+            "report": root / "reports" / "research_loop" / "sentiment_event_predictions_report.json",
+            "predictions": root / "reports" / "research_loop" / "sentiment_event_predictions.parquet",
+        },
+        {
+            "id": "finmamba",
+            "label": "FinMamba 官方模型",
+            "description": "市场引导动态图 GAT + 多层级 Mamba；直接使用作者原版模型结构。",
+            "report": root / "reports" / "research_loop" / "finmamba_predictions_report.json",
+            "predictions": root / "reports" / "research_loop" / "finmamba_predictions.parquet",
+        },
+    ]
+    catalog: list[dict[str, Any]] = []
+    for definition in definitions:
+        report = _read_json(definition["report"])
+        available = bool(
+            definition["predictions"].exists() and report.get("status") == "ok"
+        )
+        status = "ready" if available else str(report.get("status") or "pending")
+        catalog.append(
+            {
+                "id": definition["id"],
+                "label": definition["label"],
+                "description": definition["description"],
+                "status": status,
+                "latest_trade_date": report.get("latest_trade_date"),
+                "model_version": report.get("model_version"),
+                "integration_status": report.get("integration_status"),
+                "runtime_requirements": report.get("runtime_requirements"),
+                "runtime_blockers": report.get("runtime_blockers"),
+            }
+        )
+    return catalog
+
+
+def scores_payload(research_boundary: str, model: str = "cograsp") -> dict[str, Any]:
     root = project_root()
-    report = research_loop_report()
+    aliases = {
+        "cograsp": "cograsp",
+        "default": "cograsp",
+        "sentiment": "sentiment_event",
+        "sentiment_event": "sentiment_event",
+        "event": "sentiment_event",
+        "finmamba": "finmamba",
+        "mamba": "finmamba",
+    }
+    selected_model = aliases.get(str(model or "cograsp").strip().lower(), "cograsp")
+    available_models = _score_model_catalog(root)
+    legacy_report = research_loop_report()
     backtest_predictions = _read_parquet(root / "reports" / "research_loop" / "predictions.parquet")
-    live_predictions = _read_parquet(root / "reports" / "research_loop" / "live_predictions.parquet")
-    predictions = backtest_predictions
-    score_source = "walk_forward_backtest_predictions"
-    if not live_predictions.empty:
-        if backtest_predictions.empty or str(live_predictions["trade_date"].max()) >= str(backtest_predictions["trade_date"].max()):
-            predictions = live_predictions
-            score_source = "latest_unlabeled_feature_inference"
+    if selected_model == "finmamba":
+        live_report = _read_json(
+            root / "reports" / "research_loop" / "finmamba_predictions_report.json"
+        )
+        live_predictions = _read_parquet(
+            root / "reports" / "research_loop" / "finmamba_predictions.parquet"
+        )
+        score_source = "official_finmamba_current_csi300_checkpoint"
+        maturity = "L2-finmamba-official-current-csi300"
+        model_description = "作者原版 FinMamba：市场引导动态图 GAT + 多层级 Mamba，使用日频量价和行业衰减关系。"
+        candidate_reason = "作者原版 FinMamba 的下一日回归值排名靠前；需结合样本外指标和交易成本人工复核。"
+        pool_definition = "取作者原版 FinMamba 下一日收益回归值排名靠前的 Top20；本站只做沪深300数据格式适配，不改模型结构与算法。"
+    elif selected_model == "sentiment_event":
+        live_report = _read_json(
+            root / "reports" / "research_loop" / "sentiment_event_predictions_report.json"
+        )
+        live_predictions = _read_parquet(
+            root / "reports" / "research_loop" / "sentiment_event_predictions.parquet"
+        )
+        score_source = "sentiment_event_fusion_lgbm_checkpoint"
+        maturity = "L2-sentiment-event-fusion-lightgbm"
+        model_description = "融合股票时序、市场情绪代理和按可用时间对齐的可选真实新闻情绪。"
+        candidate_reason = "情绪/事件融合模型的下一日回归值排名靠前；需结合新闻覆盖率与样本外指标人工复核。"
+        pool_definition = "取情绪/事件融合 LightGBM 下一日相对涨跌回归值排名靠前的 Top20；市场代理始终启用，真实新闻为可选增强。"
+    else:
+        live_report = _read_json(root / "reports" / "research_loop" / "live_predictions_report.json")
+        live_predictions = _read_parquet(root / "reports" / "research_loop" / "live_predictions.parquet")
+        score_source = "current_csi300_retrained_cograsp_checkpoint"
+        maturity = "L2-cograsp-current-csi300-retrained"
+        model_description = "保留 COGRASP 作者网络结构，以当前沪深300日频和收益相关性图重训。"
+        candidate_reason = "当前沪深300重训版 COGRASP 的下一日相对涨跌回归值排名靠前；样本外表现较弱，需人工复核。"
+        pool_definition = "取当前沪深300重训版 COGRASP 下一日相对涨跌回归值排名靠前的 Top20；没有二次概率校准，且样本外效果尚弱。"
+    if not live_predictions.empty and live_report.get("status") == "ok":
+        predictions = live_predictions
+        report = live_report
+    elif selected_model == "cograsp":
+        predictions = backtest_predictions
+        report = legacy_report
+        score_source = "walk_forward_backtest_predictions"
+    else:
+        predictions = pd.DataFrame()
+        report = live_report
     if report.get("status") != "ok" or predictions.empty:
         return {
             "module": "scores",
             "status": "research_loop_scores_pending",
             "maturity": "L1-route-stub",
+            "selected_model": selected_model,
+            "available_models": available_models,
+            "model_description": live_report.get("model_description") or model_description,
+            "model_family": live_report.get("model_family"),
+            "model_version": live_report.get("model_version"),
+            "latest_trade_date": live_report.get("latest_trade_date"),
+            "latest_training_label_date": live_report.get("latest_training_label_date"),
+            "training_sample_count": live_report.get("training_sample_count"),
+            "integration_status": live_report.get("integration_status") or "training_pending",
+            "runtime_requirements": live_report.get("runtime_requirements"),
+            "runtime_blockers": live_report.get("runtime_blockers") or [],
+            "training_command": live_report.get("training_command"),
+            "upstream_source": live_report.get("upstream_source"),
+            "model_methodology": live_report.get("model_methodology"),
+            "paper_references": live_report.get("paper_references"),
+            "architecture_modified": live_report.get("architecture_modified"),
+            "algorithm_modified": live_report.get("algorithm_modified"),
+            "data_pipeline_adapted": live_report.get("data_pipeline_adapted"),
             "research_boundary": research_boundary,
         }
     name_map = _stock_name_map()
     if not name_map.empty and "stock_name" not in predictions.columns:
         predictions = predictions.merge(name_map, on="symbol", how="left")
+    predictions = _with_display_industry(predictions)
     latest_date = str(predictions["trade_date"].max())
     base_cols = [
-        "trade_date", "symbol", "stock_name", "industry_name", "score", "probability_up", "probability_down", "rank", "percentile", "horizon", "model_version", "confidence", "leakage_check_status"
+        "trade_date", "prediction_target_date", "symbol", "stock_name", "industry_name", "score", "probability_up", "probability_down",
+        "rank", "percentile", "horizon", "model_name", "model_family", "model_version", "confidence",
+        "market_regime", "sentiment_score", "sentiment_source", "sentiment_coverage", "relation_signal",
+        "global_probability_up", "sentiment_probability_up", "regime_adjustment", "leakage_check_status",
+        "predicted_relative_change", "predicted_relative_change_pct", "signal_direction",
+        "information_source", "sentiment_polarity_used",
     ]
     available_horizons = sorted(predictions["horizon"].astype(str).unique().tolist(), key=lambda h: int(h.rstrip("d")) if h.rstrip("d").isdigit() else 999)
     horizon_rankings: dict[str, list[dict[str, Any]]] = {}
@@ -251,20 +377,23 @@ def scores_payload(research_boundary: str) -> dict[str, Any]:
         latest_trade_date_by_horizon[horizon] = horizon_latest_date
         latest = horizon_frame[horizon_frame["trade_date"].astype(str) == horizon_latest_date].sort_values("rank").head(20)
         horizon_rankings[horizon] = _json_records(latest[[col for col in base_cols if col in latest.columns]])
-    rows = horizon_rankings.get("5d") or next(iter(horizon_rankings.values()), [])
+    rows = horizon_rankings.get("1d") or next(iter(horizon_rankings.values()), [])
     candidate_pool = []
     for row in rows[:20]:
         candidate_pool.append({
             **row,
-            "candidate_reason": "入选股票预测选股候选池：5d 横截面 rank 靠前，供人工复核、因子诊断和回测联动，不是买入指令。",
+            "candidate_reason": candidate_reason,
             "review_action": "查看个股详情 / 对照条件测试 / 进入回测风险复核",
         })
 
     return {
         "module": "scores",
         "status": "research_loop_scores_ready",
-        "maturity": "L2-lightgbm-cross-sectional-scores",
+        "maturity": maturity,
         "research_boundary": research_boundary,
+        "selected_model": selected_model,
+        "available_models": available_models,
+        "model_description": report.get("model_description") or model_description,
         "run_id": report.get("run_id"),
         "experiment_id": report.get("experiment_id"),
         "latest_trade_date": latest_date,
@@ -274,15 +403,43 @@ def scores_payload(research_boundary: str) -> dict[str, Any]:
         "score_source": score_source,
         "available_horizons": available_horizons,
         "model_version": report.get("model_version"),
+        "model_family": report.get("model_family") or (rows[0].get("model_family") if rows else None),
+        "model_methodology": report.get("model_methodology"),
+        "integration_status": report.get("integration_status"),
+        "runtime_requirements": report.get("runtime_requirements"),
+        "runtime_blockers": report.get("runtime_blockers"),
+        "training_command": report.get("training_command"),
+        "upstream_source": report.get("upstream_source"),
+        "prediction_target_date": report.get("prediction_target_date"),
+        "prediction_target_date_is_estimated": report.get("prediction_target_date_is_estimated"),
+        "latest_training_label_date": report.get("latest_training_label_date"),
+        "training_sample_count": report.get("training_sample_count"),
+        "test_metrics": report.get("test_metrics"),
+        "relationship_graph": report.get("relationship_graph"),
+        "sentiment_status": report.get("sentiment_status"),
+        "text_sentiment_coverage": report.get("text_sentiment_coverage"),
+        "news_event_rows": report.get("news_event_rows"),
+        "news_symbol_coverage": report.get("news_symbol_coverage"),
+        "market_sentiment_proxy": report.get("market_sentiment_proxy"),
+        "risk_appetite_proxy": report.get("risk_appetite_proxy"),
+        "price_only_ablation_metrics": report.get("price_only_ablation_metrics"),
+        "implementation_scope": report.get("implementation_scope"),
+        "paper_references": report.get("paper_references"),
+        "algorithm_modified": report.get("algorithm_modified"),
+        "architecture_modified": report.get("architecture_modified"),
+        "data_pipeline_adapted": report.get("data_pipeline_adapted"),
+        "model_output_rows": report.get("model_output_rows"),
+        "display_overlap_rows": report.get("display_overlap_rows"),
+        "probability_calibration": report.get("probability_calibration"),
         "label_version": report.get("label_version"),
         "factor_version": report.get("factor_version"),
-        "horizon": "5d",
+        "horizon": "1d",
         "top_scores": rows,
         "candidate_pool": candidate_pool,
         "candidate_summary": {
-            "source_horizon": "5d",
+            "source_horizon": "1d",
             "candidate_count": len(candidate_pool),
-            "pool_definition": "默认取 5d probability_up/rank 靠前的 Top20，合并到股票预测选股页作为研究候选池。",
+            "pool_definition": pool_definition,
             "next_checks": ["个股详情", "条件测试", "回测风险"],
         },
         "horizon_rankings": horizon_rankings,

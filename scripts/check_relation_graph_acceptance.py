@@ -77,6 +77,19 @@ def run_acceptance() -> dict[str, Any]:
         "stock_feature_tensor.parquet", "label_tensor.parquet",
     ]
     expected_ablation = {"base_event_regime", "base_plus_relation_graph", "full_minus_relation_graph"}
+    graph_page = (ROOT / "frontend" / "src" / "app" / "graph" / "page.tsx").read_text(encoding="utf-8")
+    graph_explorer = (ROOT / "frontend" / "src" / "components" / "StockRelationNetwork.tsx").read_text(encoding="utf-8")
+    required_public_copy = {
+        "股票关系洞察", "股票节点", "可视关系", "关系类型", "关系社区", "关系因子效果",
+    }
+    required_explorer_copy = {
+        "股票关系网络", "graph-node", "graph-edge", "graph-relation-filter", "关联股票", "network.edges",
+        "graph-node-count-select", "graph-community-count-select", "节点数量", "社区数量",
+    }
+    forbidden_internal_copy = {
+        "ArtifactStatusCard", "compatibility-checkpoints", "真实数据入口", "可追溯字段", "验收兼容说明",
+        "data_mode", "stock_relation_edge", "factor_relation_panel",
+    }
 
     check("stock_relation_edge_written", not edges.empty and len(edges) >= 100 and required_edge_cols.issubset(edges.columns))
     check("required_relation_types_ready", required_relation_types.issubset(set(edges.get("relation_type", pd.Series(dtype=str)).astype(str))) and {"lead_lag", "news_co_mention"}.intersection(set(edges.get("relation_type", pd.Series(dtype=str)).astype(str))))
@@ -92,9 +105,32 @@ def run_acceptance() -> dict[str, Any]:
     check("relation_ablation_report_written", bool(ablation) and expected_ablation.issubset(set(ablation.get("configs", {}).keys())))
     check("ablation_not_auto_approved", ablation.get("approval_status") == "not_approved_research_candidate_only" and report.get("relation_ablation_gain_status") in {"measured_not_approved", "no_positive_gain_observed_not_approved"})
     check("leakage_check_passed", report.get("leakage_check_status") == "passed" and ablation.get("leakage_check_status") == "passed")
-    check("backend_graph_api_ready", api_graph.status_code == 200 and api_graph.json().get("status") == "relation_graph_relation_graph_ready")
+    api_network = api_graph.json().get("network", {}) if api_graph.status_code == 200 else {}
+    check(
+        "backend_graph_api_ready",
+        api_graph.status_code == 200
+        and api_graph.json().get("status") == "relation_graph_relation_graph_ready"
+        and len(api_network.get("nodes", [])) == 300
+        and 1000 <= len(api_network.get("edges", [])) <= 12000
+        and api_network.get("available_node_counts") == [20, 50, 100, 200, 300]
+        and api_network.get("available_community_counts") == [2, 4, 6, 8, 10]
+        and api_network.get("default_node_count") == 50
+        and api_network.get("default_community_count") == 4
+        and all(
+            len({node.get("community_assignments", {}).get(str(count)) for node in api_network.get("nodes", [])}) == count
+            for count in [2, 4, 6, 8, 10]
+        ),
+    )
     check("backend_factors_api_has_relation_graph", api_factors.status_code == 200 and api_factors.json().get("relation_graph", {}).get("status") == "relation_graph_relation_graph_ready")
-    check("frontend_graph_page_relation_graph_ready", "relation_graph" in (ROOT / "frontend" / "src" / "app" / "graph" / "page.tsx").read_text(encoding="utf-8") and "/api/graph" in (ROOT / "frontend" / "src" / "app" / "graph" / "page.tsx").read_text(encoding="utf-8") and health.status_code == 200 and health.json().get("modules", {}).get("relation_graph") == "relation_graph_stock_relation_graph_ready")
+    check(
+        "frontend_graph_page_public_contract_ready",
+        all(text in graph_page + graph_explorer for text in required_public_copy)
+        and all(text in graph_explorer for text in required_explorer_copy)
+        and "makeEdges" not in graph_explorer
+        and all(text not in graph_page and text not in graph_explorer for text in forbidden_internal_copy)
+        and health.status_code == 200
+        and health.json().get("modules", {}).get("relation_graph") == "relation_graph_stock_relation_graph_ready",
+    )
 
     result = {
         "status": "ok" if not failed else "failed",

@@ -7,6 +7,8 @@ from pathlib import Path
 
 from fastapi.testclient import TestClient
 
+from tests.auth_helpers import authenticated_admin_client
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -182,7 +184,7 @@ def test_governance_simulation_rbac_license_and_forbidden_wording_gates_are_enfo
 def test_governance_simulation_api_frontend_and_acceptance_script_are_ready() -> None:
     from backend.app.main import app
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     health = client.get("/health").json()
     assert health["version"] in {"0.1.0-governance_simulation", "0.1.0-ops_deployment", "0.1.0-final_acceptance"}
     assert health["modules"]["simulation"] == "governance_simulation_paper_simulation_governance_ready"

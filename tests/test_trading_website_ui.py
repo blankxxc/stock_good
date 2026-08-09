@@ -16,7 +16,7 @@ def _read(path: Path) -> str:
 
 def test_homepage_market_board_keeps_stock_universe_without_redundant_intro_copy() -> None:
     home = _read(APP / "page.tsx")
-    layout = _read(APP / "layout.tsx")
+    layout = _read(APP / "layout.tsx") + _read(COMPONENTS / "ApplicationShell.tsx")
     css = _read(APP / "globals.css")
     component = _read(COMPONENTS / "MarketOverviewBoard.tsx")
     combined = home + layout + css + component
@@ -47,7 +47,8 @@ def test_scores_page_renders_top10_multi_horizon_with_names_probabilities_and_de
     combined = scores_page + component
 
     assert "股票预测选股" in combined
-    assert "未来1d" in combined and "未来5d" in combined and "未来14d" in combined
+    assert "未来1d" in combined
+    assert "未来5d" not in component and "未来14d" not in component
     assert "slice(0, 10)" in component
     assert "selectedCandidateHorizon" in component
     assert "selectedCandidateLimit" in component
@@ -86,10 +87,20 @@ def test_scores_page_renders_top10_multi_horizon_with_names_probabilities_and_de
     assert "data_mode" not in scores_page
     assert "multi-horizon probability" not in combined
     assert "看回测风险" in component
-    assert "probability_up" in component
-    assert "<tr><th>排名</th><th>股票代码</th><th>股票名称</th><th>上涨概率</th></tr>" in component
+    assert "predicted_relative_change_pct" in component
+    assert "<tr><th>排名</th><th>股票代码</th><th>股票名称</th><th>预测相对涨跌</th>" in component
     assert "<tr><th>排名</th><th>股票代码</th><th>股票名称</th><th>上涨概率</th><th>下跌概率</th><th>score</th></tr>" not in component
-    assert "上涨概率" in component
+    assert "可切换模型回归输出" in component
+    assert "selectedModel" in component
+    assert "FinMamba 官方模型" in component
+    assert "环境待就绪" in component
+    assert "model-selector" in component
+    assert "sentiment_event" in component
+    assert "情绪/事件融合 LightGBM" in component
+    assert "/api/scores?model=" in component
+    assert "sentiment-evidence-grid" in component
+    assert "prediction_target_date" in component
+    assert "样本外 MAE" in component
     assert "/stocks/" in component
 
 
@@ -133,7 +144,7 @@ def test_stock_detail_page_is_compact_and_chart_points_have_hover_tooltips() -> 
     assert "prediction-probability--up" in component
     assert "prediction-probability--down" in component
     assert "prediction-probability--flat" in component
-    assert "probabilityTone" in component
+    assert "predictionTone" in component
     assert "最近因子结果" in combined
     assert "factor-filter-panel" in component
     assert "selectedFactorNames" in component
@@ -181,7 +192,7 @@ def test_stock_detail_page_is_compact_and_chart_points_have_hover_tooltips() -> 
 def test_condition_screen_page_and_api_support_custom_multifactor_backtest_table() -> None:
     from backend.app.main import app
 
-    layout = _read(APP / "layout.tsx")
+    layout = _read(APP / "layout.tsx") + _read(COMPONENTS / "ApplicationShell.tsx")
     page = _read(APP / "condition-screen" / "page.tsx")
     component = _read(COMPONENTS / "ConditionScreenTable.tsx")
     combined = layout + page + component
@@ -305,7 +316,8 @@ def test_market_and_stock_detail_api_payloads_are_real_data_backed() -> None:
     assert detail_payload["industry_name"] == "银行"
     assert "unknown" not in detail_payload["industry_name"].lower()
     assert len(detail_payload["price_series"]) >= 60
-    assert {row["horizon"] for row in detail_payload["predictions"]} >= {"1d", "5d", "14d"}
+    assert {row["horizon"] for row in detail_payload["predictions"]} == {"1d"}
+    assert "predicted_relative_change_pct" in detail_payload["predictions"][0]
     assert detail_payload["factor_count"] >= 70
     assert len(detail_payload["recent_factors"]) == detail_payload["factor_count"]
     assert len(detail_payload["recent_factors"]) >= 70
@@ -326,7 +338,7 @@ def test_market_and_stock_detail_api_payloads_are_real_data_backed() -> None:
 def test_scores_candidate_pool_and_backtest_risk_dashboard_are_integrated() -> None:
     from backend.app.main import app
 
-    layout = _read(APP / "layout.tsx")
+    layout = _read(APP / "layout.tsx") + _read(COMPONENTS / "ApplicationShell.tsx")
     scores_page = _read(APP / "scores" / "page.tsx")
     candidates_page = _read(APP / "candidates" / "page.tsx")
     backtests_page = _read(APP / "backtests" / "page.tsx")
@@ -389,7 +401,7 @@ def test_scores_candidate_pool_and_backtest_risk_dashboard_are_integrated() -> N
     scores_payload = scores.json()
     assert scores_payload["status"] == "research_loop_scores_ready"
     assert scores_payload["candidate_summary"]["candidate_count"] == len(scores_payload["candidate_pool"])
-    assert scores_payload["candidate_summary"]["source_horizon"] == "5d"
+    assert scores_payload["candidate_summary"]["source_horizon"] == "1d"
     assert len(scores_payload["candidate_pool"]) > 0
     assert "candidate_reason" in scores_payload["candidate_pool"][0]
 

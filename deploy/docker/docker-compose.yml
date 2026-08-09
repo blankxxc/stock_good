@@ -49,6 +49,8 @@ services:
       context: ../..
       dockerfile: deploy/docker/Dockerfile.backend
     ports: ["8000:8000"]
+    volumes:
+      - auth-secrets:/app/.secrets
     depends_on: [postgres, redis, redpanda, qdrant, clickhouse]
   worker:
     build:
@@ -75,3 +77,4 @@ services:
     command: ["sh", "-c", "while true; do sleep 3600; done"]
 volumes:
   postgres-data:
+  auth-secrets:

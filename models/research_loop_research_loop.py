@@ -14,7 +14,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
-DATA_VERSION = "data_trust_v001"
+DATA_VERSION = "real_csi300_recent_3y_daily_hfq_v002"
 FACTOR_VERSION = "factor_v004"
 FEATURE_SET_VERSION = "feature_set_factor_store_v001"
 LABEL_VERSION = "label_v006_multi_horizon_probability"
@@ -315,7 +315,6 @@ def _fit_predict_lightgbm(sample: pd.DataFrame, feature_cols: list[str], splits:
             importance = dict(zip(feature_cols, model.feature_importance(importance_type="gain"), strict=False))
             top_features = sorted(importance.items(), key=lambda item: item[1], reverse=True)[:12]
         else:
-            # Deterministic linear fallback: enough to keep the research_loop executable if LightGBM is absent.
             x = np.c_[np.ones(len(x_train)), x_train.to_numpy(dtype=float)]
             coef = np.linalg.pinv(x.T @ x + np.eye(x.shape[1]) * 1e-3) @ x.T @ y_train.to_numpy(dtype=float)
             raw_score = np.c_[np.ones(len(x_test)), x_test.to_numpy(dtype=float)] @ coef

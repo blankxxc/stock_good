@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi.testclient import TestClient
+from scripts._authenticated_client import acceptance_admin_client
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
@@ -64,7 +65,7 @@ def run_acceptance() -> dict[str, Any]:
     check("backup_smoke", backup.returncode == 0 and "backup_smoke_passed" in backup.stdout, backup.stderr + backup.stdout)
     check("restore_smoke", restore.returncode == 0 and "restore_smoke_passed" in restore.stdout, restore.stderr + restore.stdout)
 
-    client = TestClient(app)
+    client = acceptance_admin_client(app)
     endpoints = {
         "/health": "ok",
         "/api/ops": "ops_deployment_ops_deployment_ready",

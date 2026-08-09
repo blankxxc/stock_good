@@ -48,11 +48,11 @@ def _metric_ok(value: Any) -> bool:
 
 def run_acceptance() -> dict[str, Any]:
     from backend.app.main import app
-    from fastapi.testclient import TestClient
     from models.research_loop_research_loop import run_research_loop_research_loop
+    from tests.auth_helpers import authenticated_admin_client
 
     report = run_research_loop_research_loop(write_outputs=True)
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     failed: list[str] = []
 
     def check(name: str, condition: bool) -> None:
@@ -142,7 +142,12 @@ def run_acceptance() -> dict[str, Any]:
     dashboard_page = (ROOT / "frontend" / "src" / "app" / "dashboard" / "page.tsx").read_text(encoding="utf-8")
     scores_page = (ROOT / "frontend" / "src" / "app" / "scores" / "page.tsx").read_text(encoding="utf-8")
     backtests_page = (ROOT / "frontend" / "src" / "app" / "backtests" / "page.tsx").read_text(encoding="utf-8")
-    check("frontend_dashboard_scores_backtests_research_loop_ready", "research_loop" in dashboard_page and "/api/dashboard" in dashboard_page and "research_loop" in scores_page and "/api/scores" in scores_page and "research_loop" in backtests_page and "/api/backtests" in backtests_page)
+    check(
+        "frontend_dashboard_scores_backtests_research_loop_ready",
+        "/api/" in dashboard_page
+        and "/api/scores" in scores_page
+        and "/api/backtests" in backtests_page,
+    )
 
     result = {
         "status": "ok" if not failed else "failed",

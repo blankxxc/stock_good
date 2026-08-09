@@ -6,6 +6,8 @@ from pathlib import Path
 import pandas as pd
 from fastapi.testclient import TestClient
 
+from tests.auth_helpers import authenticated_admin_client
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
@@ -108,7 +110,7 @@ def test_realtime_streaming_backend_api_and_frontend_pages_are_ready():
 
     from backend.app.main import app
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     realtime = client.get("/api/realtime")
     flink = client.get("/api/flink-jobs")
     assert realtime.status_code == 200

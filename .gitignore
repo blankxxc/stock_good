@@ -17,7 +17,9 @@ desktop.ini
 *.p12
 *.pfx
 secrets/
+.secrets/
 credentials/
+**/admin-bootstrap-token*.txt
 
 # Python
 __pycache__/
@@ -44,6 +46,7 @@ frontend/node_modules/
 frontend/.next/
 frontend/out/
 frontend/.turbo/
+frontend/*.tsbuildinfo
 frontend/coverage/
 frontend/npm-debug.log*
 frontend/yarn-debug.log*
@@ -86,6 +89,8 @@ data/ads/
 data/samples/
 data/quarantine/
 data/snapshots/*.json
+data/real/finmamba_csi300/
+data/real/finmamba_relations/
 lakehouse/delta/*
 !lakehouse/delta/.gitkeep
 lakehouse/iceberg/*
@@ -93,8 +98,12 @@ lakehouse/iceberg/*
 lakehouse/hudi/*
 !lakehouse/hudi/.gitkeep
 lakehouse/warehouse/
+configs/env/**
 !configs/env/
-!configs/env/**
+!configs/env/**/
+!configs/env/**/*.example
+!configs/env/**/*.example.*
+!configs/env/**/.gitkeep
 
 # Generated reports; keep markdown summaries trackable.
 reports/**/*.json

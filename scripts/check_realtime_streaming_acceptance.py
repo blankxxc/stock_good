@@ -77,6 +77,7 @@ def _docker_compose_services() -> set[str]:
 def run_acceptance() -> dict[str, Any]:
     from backend.app.main import app
     from fastapi.testclient import TestClient
+    from scripts._authenticated_client import acceptance_admin_client
     from streaming.flink.realtime_streaming_realtime_pipeline import run_realtime_streaming_realtime_pipeline
 
     report = run_realtime_streaming_realtime_pipeline(write_outputs=True)
@@ -87,7 +88,7 @@ def run_acceptance() -> dict[str, Any]:
     factors = _read_parquet(realtime_streaming_DIR / "realtime_factor_latest.parquet")
     gold = _read_parquet(ROOT / "data" / "gold" / "factor_intraday_panel" / "part-000.parquet")
     services = _docker_compose_services()
-    client = TestClient(app)
+    client = acceptance_admin_client(app)
     failed: list[str] = []
 
     def check(name: str, condition: bool) -> None:

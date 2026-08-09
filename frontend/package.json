@@ -4,17 +4,28 @@
   "private": true,
   "scripts": {
     "validate:routes": "node scripts/validate_routes.mjs",
+    "test:auth-runtime": "node --import tsx --test tests/auth-runtime.test.tsx",
+    "verify:models": "node scripts/verify_models_source.mjs",
     "dev": "next dev -H 0.0.0.0 -p 3000",
-    "build": "next build"
+    "prebuild": "npm run validate:routes",
+    "build": "next build",
+    "start": "node scripts/start_standalone.mjs"
   },
   "dependencies": {
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "next": "latest",
+    "next": "16.2.10",
     "react": "latest",
     "react-dom": "latest",
     "typescript": "latest"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@types/react-test-renderer": "^19.1.0",
+    "react-test-renderer": "^19.2.8",
+    "tsx": "^4.23.1"
+  },
+  "overrides": {
+    "postcss": "8.5.21"
+  }
 }

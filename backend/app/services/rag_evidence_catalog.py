@@ -28,10 +28,12 @@ def _safe_records(frame: pd.DataFrame, limit: int = 5) -> list[dict[str, Any]]:
                 if pd.isna(value):
                     row[key] = None
                     continue
-            except Exception:
-                pass
+            except (TypeError, ValueError):
+                row[key] = value
+                continue
             row[key] = value
         records.append(row)
+
     return records
 
 

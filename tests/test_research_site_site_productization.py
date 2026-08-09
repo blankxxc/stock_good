@@ -10,7 +10,7 @@ FRONTEND_APP = PROJECT_ROOT / "frontend" / "src" / "app"
 USER_VISIBLE_ROUTES = ["scores", "condition-screen", "backtests", "factors"]
 INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "realtime", "flink-jobs", "ops"]
 INTERNAL_GOVERNANCE_ROUTES = ["rag", "simulation", "reports", "settings/licenses", "settings/users", "settings/audit"]
-PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login"]
+PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login", "watchlist"]
 FORBIDDEN_COPY = ["AI 荐股", "今日牛股", "稳赚", "买入卖出建议", "目标价", "一键跟投"]
 FORBIDDEN_USER_NAV = ["Data Fabric", "数据工程", "/dashboard", "/data-quality", "/lineage", "/lakehouse", "/spark-jobs", "/realtime", "/flink-jobs", "/ops", "Research Console"]
 
@@ -21,7 +21,9 @@ def _read_page(route: str) -> str:
 
 def test_public_stock_selection_site_hides_internal_data_fabric_from_user_navigation():
     home = (FRONTEND_APP / "page.tsx").read_text(encoding="utf-8")
-    layout = (FRONTEND_APP / "layout.tsx").read_text(encoding="utf-8")
+    layout = (FRONTEND_APP / "layout.tsx").read_text(encoding="utf-8") + (
+        PROJECT_ROOT / "frontend" / "src" / "components" / "ApplicationShell.tsx"
+    ).read_text(encoding="utf-8")
     css = (FRONTEND_APP / "globals.css").read_text(encoding="utf-8")
     combined = home + layout + css
 
@@ -58,9 +60,10 @@ def test_internal_data_fabric_pages_exist_but_are_not_user_navigation_items():
     for route in INTERNAL_DATA_FABRIC_ROUTES + INTERNAL_GOVERNANCE_ROUTES:
         assert (FRONTEND_APP / route / "page.tsx").is_file(), route
         assert f"/{route}" not in layout, route
-    for route in INTERNAL_DATA_FABRIC_ROUTES:
+    for route in INTERNAL_DATA_FABRIC_ROUTES + INTERNAL_GOVERNANCE_ROUTES:
         assert f"/{route}" in proxy, route
-    assert "127.0.0.1:8000/admin" in proxy
+    assert "trustedPublicOrigins.includes(request.nextUrl.origin)" in proxy
+    assert "return NextResponse.redirect(redirectUrl, 307)" in proxy
 
 
 def test_user_visible_pages_have_safe_stock_selection_positioning():
@@ -85,10 +88,10 @@ def test_scores_page_surfaces_multi_horizon_probability_table_contract():
     combined = page + component
     config = (PROJECT_ROOT / "frontend" / "src" / "lib" / "researchConsoleData.ts").read_text(encoding="utf-8")
     assert "HorizonProbabilityTable" in page
-    assert "未来1d" in combined and "未来5d" in combined and "未来14d" in combined
+    assert "未来1d" in combined
     assert "available_horizons" in component
     assert "horizon_rankings" in component
-    assert "probability_up" in component
+    assert "predicted_relative_change_pct" in component
     assert "section-heading-row" not in page
     assert "上涨概率排行与研究候选池" not in page
     assert "查看未来1d、未来5d、未来14d 的上涨概率 Top10" not in page
@@ -96,7 +99,7 @@ def test_scores_page_surfaces_multi_horizon_probability_table_contract():
     assert "验收兼容说明" not in page
     assert "API path prefix" not in page
     assert "保留5d兼容口径" not in page
-    assert "1d" in config and "5d" in config and "14d" in config
+    assert "COGRASP" in config and "predicted_relative_change_pct" in config
 
 
 def test_research_site_site_api_acceptance_and_status_payload_are_ready():

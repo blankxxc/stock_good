@@ -10,6 +10,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from fastapi.testclient import TestClient
+from scripts._authenticated_client import acceptance_admin_client
 
 from backend.app.main import app
 from simulation.governance_simulation_governance import (
@@ -37,7 +38,7 @@ def main() -> None:
     data = build_governance_simulation_artifacts(PROJECT_ROOT)
     failed: list[str] = []
     checks: list[tuple[str, bool]] = []
-    client = TestClient(app)
+    client = acceptance_admin_client(app)
     health = client.get("/health").json()
     endpoints = {
         "/api/simulation": "governance_simulation_paper_simulation_ready",

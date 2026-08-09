@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 REPORT_DIR = PROJECT_ROOT / "reports" / "ops_deployment"
@@ -95,7 +95,7 @@ def _load_yaml(rel: str) -> dict[str, Any]:
     return yaml.safe_load((PROJECT_ROOT / rel).read_text(encoding="utf-8"))
 
 
-def resolve_config() -> tuple[ops_deploymentConfig, str, str]:
+def resolve_config(*, write_artifact: bool = True) -> tuple[ops_deploymentConfig, str, str]:
     base = _load_yaml("configs/base.yaml")
     resolved = {
         **base,
@@ -113,9 +113,13 @@ def resolve_config() -> tuple[ops_deploymentConfig, str, str]:
     canonical = yaml.safe_dump(config.model_dump(), sort_keys=True, allow_unicode=True)
     config_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
     run_dir = REPORT_DIR / "runs" / f"ops_deployment_{config_hash[:12]}"
-    run_dir.mkdir(parents=True, exist_ok=True)
     resolved_path = run_dir / "resolved_config.yaml"
-    resolved_path.write_text(yaml.safe_dump(config.model_dump(), sort_keys=True, allow_unicode=True), encoding="utf-8")
+    if write_artifact:
+        run_dir.mkdir(parents=True, exist_ok=True)
+        resolved_path.write_text(
+            yaml.safe_dump(config.model_dump(), sort_keys=True, allow_unicode=True),
+            encoding="utf-8",
+        )
     return config, config_hash, str(resolved_path.relative_to(PROJECT_ROOT)).replace("\\", "/")
 
 
@@ -319,8 +323,8 @@ def build_deployment() -> dict[str, Any]:
     }
 
 
-def build_ops_deployment_artifacts() -> dict[str, Any]:
-    config, config_hash, resolved_config_path = resolve_config()
+def build_ops_deployment_artifacts(*, write_reports: bool = True) -> dict[str, Any]:
+    config, config_hash, resolved_config_path = resolve_config(write_artifact=write_reports)
     payload = {
         "status": "ops_deployment_ops_deployment_ready",
         "version": "0.1.0-ops_deployment",
@@ -338,10 +342,24 @@ def build_ops_deployment_artifacts() -> dict[str, Any]:
         "ci_cd": build_ci_cd(),
         "deployment": build_deployment(),
     }
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    (REPORT_DIR / "ops_deployment_ops_acceptance_report.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    (REPORT_DIR / "ops_deployment_pipeline_dry_run.json").write_text(json.dumps({"status": "dry_run_passed", "config_hash": config_hash, "tasks": MVP_DAG}, ensure_ascii=False, indent=2), encoding="utf-8")
-    (REPORT_DIR / "backfill_dry_run.json").write_text(json.dumps(payload["backfill_request"], ensure_ascii=False, indent=2), encoding="utf-8")
+    if write_reports:
+        REPORT_DIR.mkdir(parents=True, exist_ok=True)
+        (REPORT_DIR / "ops_deployment_ops_acceptance_report.json").write_text(
+            json.dumps(payload, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+        (REPORT_DIR / "ops_deployment_pipeline_dry_run.json").write_text(
+            json.dumps(
+                {"status": "dry_run_passed", "config_hash": config_hash, "tasks": MVP_DAG},
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        (REPORT_DIR / "backfill_dry_run.json").write_text(
+            json.dumps(payload["backfill_request"], ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
     return payload
 
 

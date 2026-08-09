@@ -1,0 +1,82 @@
+# Deny the repository by default. Re-include only the backend runtime context.
+**
+
+# Backend image definition and dependency manifest
+!deploy/
+deploy/**
+!deploy/docker/
+deploy/docker/**
+!deploy/docker/Dockerfile.backend
+!deploy/docker/requirements.backend.txt
+
+# Python application packages imported by backend.app.main
+!backend/
+!backend/**
+!ops/
+!ops/**
+!simulation/
+!simulation/**
+
+# Non-secret runtime configuration and generated reports
+!configs/
+!configs/**
+configs/env/**
+!reports/
+!reports/**
+
+# The site catalog validates public frontend source at runtime
+!frontend/
+frontend/**
+!frontend/src/
+!frontend/src/**
+
+# Minimal artifact set read by public backend catalogs
+!data/
+data/**
+!data/snapshots/
+!data/snapshots/**
+!data/real/
+data/real/**
+!data/real/csi300_daily/
+!data/real/csi300_daily/**
+!data/gold/
+data/gold/**
+!data/gold/model_feature_matrix_wide/
+!data/gold/model_feature_matrix_wide/**
+!data/gold/factor_daily_panel_long/
+!data/gold/factor_daily_panel_long/**
+!data/gold/portfolio_backtest_result/
+!data/gold/portfolio_backtest_result/**
+!data/gold/stock_relation_edge/
+!data/gold/stock_relation_edge/**
+!data/gold/advanced_model_predictions/
+!data/gold/advanced_model_predictions/**
+!data/gold/rag_documents/
+!data/gold/rag_documents/**
+!data/gold/rag_chunks/
+!data/gold/rag_chunks/**
+!data/gold/rag_claims/
+!data/gold/rag_claims/**
+
+# Documentation copied into the image metadata
+!pyproject.toml
+!README.md
+
+# Defense in depth: never send credentials or local runtime state
+.secrets/**
+secrets/**
+credentials/**
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+**/admin-bootstrap-token*.txt
+.venv/**
+.git/**
+.pytest_cache/**
+**/__pycache__/**
+frontend/node_modules/**
+frontend/.next/**

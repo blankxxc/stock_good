@@ -1,0 +1,6 @@
+[submodule "third_party/COGRASP"]
+	path = third_party/COGRASP
+	url = https://github.com/NingboSong/COGRASP.git
+[submodule "third_party/FinMamba"]
+	path = third_party/FinMamba
+	url = https://github.com/TROUBADOUR000/FinMamba.git

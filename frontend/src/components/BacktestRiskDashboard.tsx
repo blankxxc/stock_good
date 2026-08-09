@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useApiPayload } from '../lib/useApiPayload';
 
 type RiskFlag = { name: string; level: string; explain: string };
 type CurvePoint = { trade_date?: string; nav?: number; max_drawdown?: number; daily_return?: number; turnover?: number; transaction_cost?: number };
@@ -139,29 +140,7 @@ function EquityMiniChart({ curve }: { curve: CurvePoint[] }) {
 }
 
 export function BacktestRiskDashboard({ initialPayload = null }: { initialPayload?: BacktestPayload | null }) {
-  const [payload, setPayload] = useState<BacktestPayload | null>(initialPayload);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetch('/api/backtests', { cache: 'no-store' })
-      .then((response) => {
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        return response.json() as Promise<BacktestPayload>;
-      })
-      .then((data) => {
-        if (!cancelled) {
-          setPayload(data);
-          setError(null);
-        }
-      })
-      .catch((exc: Error) => {
-        if (!cancelled) setError(exc.message);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { payload, error, loading, reload } = useApiPayload<BacktestPayload>('/api/backtests', initialPayload);
 
   const summary = payload?.risk_summary ?? {};
   const flags = (summary.risk_flags as RiskFlag[] | undefined) ?? [];
@@ -171,16 +150,24 @@ export function BacktestRiskDashboard({ initialPayload = null }: { initialPayloa
   const latestDate = String(summary.latest_trade_date ?? latestCurve?.trade_date ?? '—');
   const capacity = payload?.capacity_curve ?? [];
   const baselineRows = useMemo(() => Object.entries(payload?.baseline_metrics ?? {}).slice(0, 5), [payload?.baseline_metrics]);
+  const riskKnown = Boolean(payload && Object.keys(summary).length);
+  const verdict = !riskKnown
+    ? (loading ? '正在评估' : '状态未知')
+    : flags.some((flag) => flag.level === 'danger')
+      ? '高风险复核'
+      : flags.some((flag) => flag.level === 'warning')
+        ? '需要关注'
+        : '状态正常';
 
   return (
-    <div className="backtest-risk-dashboard">
+    <div className="backtest-risk-dashboard" aria-busy={loading && !payload}>
       <section className="card risk-command-center">
         <div className="artifact-card__topline">
           <span className="badge">风险看板</span>
         </div>
         <div className="risk-hero-grid">
           <div className="risk-hero-copy">
-            <h2>回测风险</h2>
+            <h1>回测风险</h1>
             <p>历史表现、回撤压力和当前风控状态</p>
             <div className="risk-context-strip">
               <span>组合 <b>{payload?.portfolio_id ?? '—'}</b></span>
@@ -190,11 +177,17 @@ export function BacktestRiskDashboard({ initialPayload = null }: { initialPayloa
           </div>
           <div className="risk-verdict-card">
             <span>总体风控结论</span>
-            <strong>{flags.some((flag) => flag.level === 'danger') ? '高风险复核' : flags.some((flag) => flag.level === 'warning') ? '需要关注' : '状态正常'}</strong>
-            <p>最大回撤 {pct(summary.max_drawdown)} · 换手 {pct(summary.turnover)} · Sharpe {num(summary.sharpe, 2)}</p>
+            <strong className={!riskKnown ? 'risk-verdict-unknown' : undefined}>{verdict}</strong>
+            <p>{riskKnown ? `最大回撤 ${pct(summary.max_drawdown)} · 换手 ${pct(summary.turnover)} · Sharpe ${num(summary.sharpe, 2)}` : '等待有效的回测风险快照，当前不做正常或异常判断。'}</p>
           </div>
         </div>
-        {error ? <p className="muted">暂时无法读取回测数据：{error}</p> : null}
+        {error ? (
+          <div className="data-state data-state--error" role="alert">
+            <span>暂时无法读取回测数据：{error}</span>
+            <button className="button table-button" type="button" onClick={reload} disabled={loading}>重新加载</button>
+          </div>
+        ) : null}
+        {loading && !payload ? <p className="data-state" role="status" aria-live="polite">正在加载回测风险快照…</p> : null}
       </section>
 
       <section className="risk-kpi-grid risk-kpi-grid--premium">

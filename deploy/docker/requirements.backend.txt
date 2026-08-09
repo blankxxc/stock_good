@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+pydantic
+pyyaml
+duckdb>=1.4.0
+numpy
+pandas>=2.3.0
+pyarrow>=18.0.0
+networkx>=3.5
+sqlalchemy>=2.0.50
+alembic>=1.18.4

@@ -83,6 +83,7 @@ def _read_json(path: Path) -> dict[str, Any]:
 def run_acceptance() -> dict[str, Any]:
     from backend.app.main import app
     from fastapi.testclient import TestClient
+    from scripts._authenticated_client import acceptance_admin_client
     from rag.rag_evidence_evidence_system import answer_with_evidence, retrieve_claims, run_rag_evidence_rag_pipeline
 
     report = run_rag_evidence_rag_pipeline(write_outputs=True)
@@ -104,7 +105,7 @@ def run_acceptance() -> dict[str, Any]:
     present = retrieve_claims("公告 情绪 因子 可用时间", mode="present", display_context="redisplay", top_k=10)
     answer = answer_with_evidence("relation_spillover 是否有 ablation 证据？", mode="present")
     abstain = answer_with_evidence("不存在的火星矿业股票稳赚吗", mode="present")
-    client = TestClient(app)
+    client = acceptance_admin_client(app)
     api_rag = client.get("/api/rag")
     health = client.get("/health")
     page = (ROOT / "frontend" / "src" / "app" / "rag" / "page.tsx").read_text(encoding="utf-8")
