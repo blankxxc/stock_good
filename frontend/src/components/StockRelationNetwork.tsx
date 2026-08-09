@@ -760,7 +760,7 @@ export function StockRelationNetwork({ network, relationTypes }: { network: Rela
                   </button>
                 )) : <small>当前筛选条件下没有关系。</small>}
               </div>
-              <a className="relation-detail-link" href={`/stocks/${encodeURIComponent(selectedNode.symbol)}`}>查看个股详情 <span>→</span></a>
+              <a className="relation-detail-link" href={`/stocks/${encodeURIComponent(selectedNode.symbol)}?from=graph`}>查看个股详情 <span>→</span></a>
             </>
           ) : (
             <div className="relation-inspector-empty"><span className="relation-eyebrow">NODE DETAILS</span><h3>选择一个股票节点</h3><p>点击图中的股票，即可查看真实的一跳关联、关系类型、方向与强度。</p></div>

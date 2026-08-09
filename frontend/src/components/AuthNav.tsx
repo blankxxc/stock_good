@@ -95,7 +95,7 @@ export function AuthNav() {
 
   return (
     <span className="auth-nav-session">
-      {user.role === 'admin' ? <a className="auth-nav-admin" href="/backend-admin">后台管理</a> : null}
+      {user.role === 'admin' ? <a className="auth-nav-admin" href="/admin-console">后台管理</a> : null}
       <a className="auth-nav-user" href="/watchlist" aria-label={`打开 ${user.display_name} 的自选股票`} title={`账号：${user.username}`}>{user.display_name}</a>
       <button type="button" onClick={logout} disabled={loggingOut} aria-busy={loggingOut}>
         {loggingOut ? '正在退出…' : '退出'}

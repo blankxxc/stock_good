@@ -208,7 +208,7 @@ export function safeNextPath(raw: string | null, fallback: string, allowBackendA
   if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return fallback;
   const allowed = raw === '/'
     || raw === '/watchlist'
-    || (allowBackendAdmin && raw === '/backend-admin')
+    || (allowBackendAdmin && (raw === '/admin-console' || raw === '/backend-admin'))
     || /^\/stocks\/[0-9A-Za-z._-]+$/.test(raw);
   return allowed ? raw : fallback;
 }

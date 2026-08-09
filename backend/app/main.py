@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from html import escape
 from typing import Any, Callable
@@ -10,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.routers.auth import get_auth_service, optional_principal, require_admin, router as auth_router
 from backend.app.services.auth_service import configured_allowed_origins
-from backend.app.services.lakehouse_catalog import data_quality_payload, lakehouse_payload, license_payload, lineage_payload
+from backend.app.services.lakehouse_catalog import data_quality_payload, lakehouse_payload, lineage_payload
 from backend.app.services.factor_store_catalog import factor_payload, feature_payload, spark_jobs_payload
 from backend.app.services.research_loop_catalog import backtests_payload, condition_screen_payload, dashboard_research_loop_payload, experiments_payload, market_overview_payload, scores_payload, stock_detail_payload
 from backend.app.services.realtime_streaming_catalog import flink_jobs_payload, realtime_payload
@@ -26,6 +27,17 @@ from ops.final_acceptance_final import build_final_acceptance_final_artifacts
 SERVICE_NAME = "stock-research-platform"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
 
+
+def should_expose_api_docs(environment: str | None = None, explicit: str | None = None) -> bool:
+    environment_name = (environment or os.getenv("STOCK_GOOD_ENVIRONMENT", "local")).strip().lower()
+    override = explicit if explicit is not None else os.getenv("STOCK_GOOD_EXPOSE_API_DOCS")
+    if override is not None:
+        return override.strip().lower() in {"1", "true", "yes", "on"}
+    return environment_name not in {"production", "prod"}
+
+
+EXPOSE_API_DOCS = should_expose_api_docs()
+
 app = FastAPI(
     title="Intelligent Stock Research Platform",
     version="0.1.0-final_acceptance",
@@ -34,6 +46,9 @@ app = FastAPI(
         "backtest reports, risk explanation, and RAG-cited research notes. "
         "It does not provide deterministic trading instructions."
     ),
+    docs_url="/docs" if EXPOSE_API_DOCS else None,
+    redoc_url="/redoc" if EXPOSE_API_DOCS else None,
+    openapi_url="/openapi.json" if EXPOSE_API_DOCS else None,
 )
 
 app.add_middleware(
@@ -83,7 +98,7 @@ def health() -> dict[str, Any]:
             "spark": "factor_store_factor_materialization_consistency_ready",
             "factor_store": "factor_store_offline_factor_store_ready",
             "labels": "research_loop_cross_sectional_labels_ready",
-            "scores": "research_loop_lightgbm_scores_ready",
+            "scores": "research_loop_cograsp_official_scores_ready",
             "condition_screen": "research_loop_condition_screen_ready",
             "backtests": "research_loop_tradable_backtest_risk_capacity_ready",
             "experiments": "research_loop_experiment_recorder_ready",
@@ -154,7 +169,7 @@ ROUTE_MODULES = {
 
 
 def _ops_section_payload(status: str, *sections: str, flatten_single: bool = False) -> dict[str, Any]:
-    payload = build_ops_deployment_artifacts()
+    payload = build_ops_deployment_artifacts(write_reports=False)
     base = {"status": status, "version": payload["version"], "research_boundary": RESEARCH_BOUNDARY}
     if flatten_single and len(sections) == 1:
         return {**base, **payload[sections[0]]}
@@ -162,7 +177,7 @@ def _ops_section_payload(status: str, *sections: str, flatten_single: bool = Fal
 
 
 def _deployment_payload() -> dict[str, Any]:
-    payload = build_ops_deployment_artifacts()
+    payload = build_ops_deployment_artifacts(write_reports=False)
     return {
         "status": "ops_deployment_deployment_backup_ready",
         "version": payload["version"],
@@ -181,12 +196,12 @@ ROUTE_PAYLOAD_FACTORIES: dict[str, Callable[[], dict[str, Any]]] = {
     "audit": lambda: audit_payload(RESEARCH_BOUNDARY),
     "reports": lambda: reports_payload(RESEARCH_BOUNDARY),
     "simulation": lambda: simulation_payload(RESEARCH_BOUNDARY),
-    "ops": build_ops_deployment_artifacts,
+    "ops": lambda: build_ops_deployment_artifacts(write_reports=False),
     "orchestration": lambda: _ops_section_payload("ops_deployment_orchestration_ready", "orchestration", flatten_single=True),
     "backfill": lambda: _ops_section_payload("ops_deployment_backfill_dry_run_ready", "backfill_request", "dataset_snapshot_manifest"),
     "observability": lambda: _ops_section_payload("ops_deployment_observability_ready", "observability", flatten_single=True),
     "deployment": _deployment_payload,
-    "final-acceptance": build_final_acceptance_final_artifacts,
+    "final-acceptance": lambda: build_final_acceptance_final_artifacts(write_report=False),
     "lakehouse": lambda: lakehouse_payload(RESEARCH_BOUNDARY),
     "data-quality": lambda: data_quality_payload(RESEARCH_BOUNDARY),
     "lineage": lambda: lineage_payload(RESEARCH_BOUNDARY),
@@ -250,8 +265,8 @@ def admin_overview_payload() -> dict[str, Any]:
         "framework": {
             "name": "FastAPI",
             "selection_reason": "项目已采用 FastAPI；它适合 Python 量化/AI 后端的 async API、自动 OpenAPI 文档、类型校验和快速管理控制台落地。",
-            "api_docs": "/docs",
-            "openapi_schema": "/openapi.json",
+            "api_docs": "/docs" if EXPOSE_API_DOCS else None,
+            "openapi_schema": "/openapi.json" if EXPOSE_API_DOCS else None,
         },
         "service": {
             "name": SERVICE_NAME,
@@ -288,7 +303,7 @@ def admin_overview_payload() -> dict[str, Any]:
             {"path": "/docs", "label": "Swagger UI"},
             {"path": "/redoc", "label": "ReDoc"},
             {"path": "/openapi.json", "label": "OpenAPI Schema"},
-        ],
+        ] if EXPOSE_API_DOCS else [],
         "module_statuses": modules,
         "research_boundary_label": "仅研究排序、因子诊断、回测和治理监控；非投资建议。",
     }
@@ -486,7 +501,7 @@ def get_admin_console(request: Request) -> HTMLResponse:
     principal = optional_principal(request)
     if principal is None:
         return RedirectResponse(
-            "/login?next=/backend-admin",
+            "/login?next=/admin-console",
             status_code=307,
             headers={"Cache-Control": "no-store", "Pragma": "no-cache"},
         )
@@ -519,9 +534,19 @@ PUBLIC_API_MODULES = {
 }
 
 
-for module_name in ROUTE_MODULES:
-    async def endpoint(module: str = module_name) -> dict[str, Any]:  # type: ignore[misc]
+def _catalog_endpoint(module: str) -> Callable[[], dict[str, Any]]:
+    def endpoint() -> dict[str, Any]:
         return route_payload(module)
+
+    return endpoint
+
+
+def _scores_endpoint(model: str = "cograsp") -> dict[str, Any]:
+    return scores_payload(RESEARCH_BOUNDARY, model=model)
+
+
+for module_name in ROUTE_MODULES:
+    endpoint = _scores_endpoint if module_name == "scores" else _catalog_endpoint(module_name)
 
     dependencies = [] if module_name in PUBLIC_API_MODULES else [Depends(require_admin)]
     app.add_api_route(

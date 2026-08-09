@@ -19,6 +19,8 @@ const userVisibleRoutes = [
 ];
 
 const internalBackendOnlyRoutes = [
+  'admin-console/page.tsx',
+  'backend-admin/page.tsx',
   'dashboard/page.tsx',
   'data-quality/page.tsx',
   'lineage/page.tsx',

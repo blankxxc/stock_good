@@ -51,7 +51,7 @@ export function proxy(request: NextRequest) {
   const publicOrigin = trustedPublicOrigins.includes(request.nextUrl.origin)
     ? request.nextUrl.origin
     : trustedPublicOrigins[0];
-  const redirectUrl = new URL('/backend-admin', publicOrigin);
+  const redirectUrl = new URL('/admin-console', publicOrigin);
   redirectUrl.searchParams.set('from', pathname);
   redirectUrl.searchParams.set('reason', 'backend_admin_only');
   return NextResponse.redirect(redirectUrl, 307);

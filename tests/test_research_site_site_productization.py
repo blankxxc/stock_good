@@ -21,7 +21,9 @@ def _read_page(route: str) -> str:
 
 def test_public_stock_selection_site_hides_internal_data_fabric_from_user_navigation():
     home = (FRONTEND_APP / "page.tsx").read_text(encoding="utf-8")
-    layout = (FRONTEND_APP / "layout.tsx").read_text(encoding="utf-8")
+    layout = (FRONTEND_APP / "layout.tsx").read_text(encoding="utf-8") + (
+        PROJECT_ROOT / "frontend" / "src" / "components" / "ApplicationShell.tsx"
+    ).read_text(encoding="utf-8")
     css = (FRONTEND_APP / "globals.css").read_text(encoding="utf-8")
     combined = home + layout + css
 
@@ -86,10 +88,10 @@ def test_scores_page_surfaces_multi_horizon_probability_table_contract():
     combined = page + component
     config = (PROJECT_ROOT / "frontend" / "src" / "lib" / "researchConsoleData.ts").read_text(encoding="utf-8")
     assert "HorizonProbabilityTable" in page
-    assert "未来1d" in combined and "未来5d" in combined and "未来14d" in combined
+    assert "未来1d" in combined
     assert "available_horizons" in component
     assert "horizon_rankings" in component
-    assert "probability_up" in component
+    assert "predicted_relative_change_pct" in component
     assert "section-heading-row" not in page
     assert "上涨概率排行与研究候选池" not in page
     assert "查看未来1d、未来5d、未来14d 的上涨概率 Top10" not in page
@@ -97,7 +99,7 @@ def test_scores_page_surfaces_multi_horizon_probability_table_contract():
     assert "验收兼容说明" not in page
     assert "API path prefix" not in page
     assert "保留5d兼容口径" not in page
-    assert "1d" in config and "5d" in config and "14d" in config
+    assert "COGRASP" in config and "predicted_relative_change_pct" in config
 
 
 def test_research_site_site_api_acceptance_and_status_payload_are_ready():

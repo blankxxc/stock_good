@@ -1,9 +1,39 @@
 FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    STOCK_GOOD_ENVIRONMENT=production
+
 WORKDIR /app
-COPY pyproject.toml README.md ./
+
+COPY deploy/docker/requirements.backend.txt /tmp/requirements.backend.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.backend.txt
+
 COPY backend ./backend
+COPY ops ./ops
+COPY simulation ./simulation
 COPY configs ./configs
-COPY data/snapshots ./data/snapshots
 COPY reports ./reports
-RUN pip install --no-cache-dir fastapi uvicorn pydantic pyyaml sqlalchemy alembic
+COPY frontend/src ./frontend/src
+COPY data/snapshots ./data/snapshots
+COPY data/real/csi300_daily ./data/real/csi300_daily
+COPY data/gold/model_feature_matrix_wide ./data/gold/model_feature_matrix_wide
+COPY data/gold/factor_daily_panel_long ./data/gold/factor_daily_panel_long
+COPY data/gold/portfolio_backtest_result ./data/gold/portfolio_backtest_result
+COPY data/gold/stock_relation_edge ./data/gold/stock_relation_edge
+COPY data/gold/advanced_model_predictions ./data/gold/advanced_model_predictions
+COPY data/gold/rag_documents ./data/gold/rag_documents
+COPY data/gold/rag_chunks ./data/gold/rag_chunks
+COPY data/gold/rag_claims ./data/gold/rag_claims
+
+RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p /app/.secrets \
+    && chown appuser:appuser /app/.secrets
+
+USER appuser
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3).read()"
+
 CMD ["uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "8000"]

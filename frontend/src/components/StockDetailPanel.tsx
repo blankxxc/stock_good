@@ -20,12 +20,24 @@ type PricePoint = {
 
 type PredictionRow = {
   trade_date?: string;
+  prediction_target_date?: string;
   horizon: string;
   probability_up?: number;
   probability_down?: number;
+  predicted_relative_change?: number;
+  predicted_relative_change_pct?: number;
   score?: number;
   rank?: number;
   confidence?: number;
+  model_name?: string;
+  model_family?: string;
+  market_regime?: string;
+  sentiment_score?: number;
+  sentiment_source?: string;
+  sentiment_coverage?: number;
+  global_probability_up?: number;
+  sentiment_probability_up?: number;
+  regime_adjustment?: number;
 };
 
 type FactorRow = {
@@ -140,11 +152,16 @@ function isUpDay(point: PricePoint) {
   return close >= open;
 }
 
-function probabilityTone(value?: number) {
+function predictionTone(value?: number) {
   if (typeof value !== 'number' || Number.isNaN(value)) return 'prediction-probability--flat';
-  if (value > 0.5) return 'prediction-probability--up';
-  if (value < 0.5) return 'prediction-probability--down';
+  if (value > 0) return 'prediction-probability--up';
+  if (value < 0) return 'prediction-probability--down';
   return 'prediction-probability--flat';
+}
+
+function relativeChangeDisplay(value?: number) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return '—';
+  return `${value >= 0 ? '+' : ''}${value.toFixed(3)}%`;
 }
 
 function factorValueDisplay(factor: FactorRow) {
@@ -181,8 +198,18 @@ function chartTooltipY(y: number) {
   return Math.min(Math.max(y - 94, PRICE_TOP + 6), PRICE_BOTTOM - 128);
 }
 
-export function StockDetailPanel({ symbol, initialPayload = null }: { symbol: string; initialPayload?: StockDetailPayload | null }) {
-  const { payload, error } = useApiPayload<StockDetailPayload>(`/api/stocks/${encodeURIComponent(symbol)}`, initialPayload);
+export function StockDetailPanel({
+  symbol,
+  initialPayload = null,
+  returnTo = '/',
+  returnLabel = '返回股票全景',
+}: {
+  symbol: string;
+  initialPayload?: StockDetailPayload | null;
+  returnTo?: string;
+  returnLabel?: string;
+}) {
+  const { payload, error, loading, reload } = useApiPayload<StockDetailPayload>(`/api/stocks/${encodeURIComponent(symbol)}`, initialPayload);
   const [hoveredPoint, setHoveredPoint] = useState<HoveredChartPoint | null>(null);
   const [selectedFactorNames, setSelectedFactorNames] = useState<string[] | null>(null);
 
@@ -213,14 +240,23 @@ export function StockDetailPanel({ symbol, initialPayload = null }: { symbol: st
         <div>
           <h1>{payload?.stock_name ?? symbol} <span>{payload?.symbol ?? symbol}</span></h1>
         </div>
-        <a className="button" href="/">返回股票全景</a>
+        <div className="stock-detail__actions">
+          <a className="button button--secondary" href={returnTo}>{returnLabel}</a>
+          <a className="button" href="/backtests">查看整体回测风险</a>
+        </div>
       </div>
-      {error ? <p className="muted">暂时无法读取个股 API：{error}</p> : null}
+      {error ? (
+        <div className="data-state data-state--error" role="alert">
+          <span>暂时无法读取个股数据：{error}</span>
+          <button className="button table-button" type="button" onClick={reload} disabled={loading}>重新加载</button>
+        </div>
+      ) : null}
+      {loading && !payload ? <p className="data-state" role="status" aria-live="polite">正在加载个股行情与研究数据…</p> : null}
       <div className="market-ticker-row">
         <div><strong>{payload?.latest_trade_date ?? '加载中'}</strong><span>最新交易日</span></div>
         <div><strong>{formatNumber(latest?.close)}</strong><span>最新价</span></div>
         <div><strong className={(latest?.pct_change ?? 0) >= 0 ? 'positive' : 'negative'}>{formatPercent(latest?.pct_change)}</strong><span>涨跌幅</span></div>
-        <div><strong>{formatNumber((latest?.amount ?? 0) / 100000000, 2)}亿</strong><span>成交额</span></div>
+        <div><strong>{typeof latest?.amount === 'number' ? `${formatNumber(latest.amount / 100000000, 2)}亿` : '—'}</strong><span>成交额</span></div>
         <div><strong>{payload?.industry_name ?? '—'}</strong><span>行业</span></div>
       </div>
 
@@ -326,13 +362,15 @@ export function StockDetailPanel({ symbol, initialPayload = null }: { symbol: st
         </div>
 
         <div className="card prediction-card prediction-card--below-chart">
-          <strong>股票预测选股概率</strong>
+          <strong>COGRASP 当前沪深300重训版下一日回归输出</strong>
           <div className="prediction-list-horizontal">
             {(payload?.predictions ?? []).map((row) => (
               <div className="prediction-row" key={row.horizon}>
                 <span>{horizonLabel(row.horizon)}</span>
-                <strong className={probabilityTone(row.probability_up)}>{formatPercent(row.probability_up, 1)}</strong>
-                <small>上涨概率 · 排名 #{row.rank ?? '—'} · confidence {formatPercent(row.confidence, 1)}</small>
+                <strong className={predictionTone(row.predicted_relative_change_pct)}>{relativeChangeDisplay(row.predicted_relative_change_pct)}</strong>
+                <small>预测相对涨跌 · 当前300只排名 #{row.rank ?? '—'} · 输入 {row.trade_date ?? '—'} · 目标 {row.prediction_target_date ?? '下一交易日'}</small>
+                <small>{row.model_family ?? row.model_name ?? 'COGRASP current CSI300 retrained'}</small>
+                <small>收益相关性 Top8 关系图，不含正负文本情绪</small>
               </div>
             ))}
           </div>

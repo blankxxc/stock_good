@@ -535,6 +535,80 @@ def test_admin_rbac_user_management_and_deactivation_revokes_user_sessions(auth_
     assert "admin_user_status_denied" in event_types
 
 
+def test_admin_can_unlock_accounts_and_revoke_sessions_without_revoking_self(auth_runtime) -> None:
+    service, _, secret_dir = auth_runtime
+    user_primary = new_client()
+    user_secondary = new_client()
+    admin_primary = new_client()
+    admin_secondary = new_client()
+
+    registered = register(user_primary, "alice")
+    assert registered.status_code == 201
+    assert login(user_secondary, "alice", "UserSecure!Pass2026").status_code == 200
+    admin_auth, _ = setup_admin(admin_primary, secret_dir)
+    admin_user = admin_auth.json()["user"]
+    assert login(admin_secondary, "platform.admin", "AdminSecure!Pass2026").status_code == 200
+
+    users = admin_primary.get("/api/admin/users").json()["users"]
+    alice = next(item for item in users if item["username"] == "alice")
+    assert alice["active_sessions"] == 2
+    assert {"failed_attempts", "locked_until", "password_changed_at"}.issubset(alice)
+
+    forbidden = user_primary.post(
+        f"/api/admin/users/{alice['id']}/revoke-sessions",
+        headers={"Origin": "http://testserver", "X-CSRF-Token": csrf_token(user_primary)},
+    )
+    assert forbidden.status_code == 403
+    missing_csrf = admin_primary.post(
+        f"/api/admin/users/{alice['id']}/revoke-sessions",
+        headers={"Origin": "http://testserver"},
+    )
+    assert missing_csrf.status_code == 403
+
+    revoked = admin_primary.post(
+        f"/api/admin/users/{alice['id']}/revoke-sessions",
+        headers={"Origin": "http://testserver", "X-CSRF-Token": csrf_token(admin_primary)},
+    )
+    assert revoked.status_code == 200
+    assert revoked.json()["revoked_sessions"] == 2
+    assert revoked.json()["remaining_active_sessions"] == 0
+    assert user_primary.get("/api/auth/session").status_code == 401
+    assert user_secondary.get("/api/auth/session").status_code == 401
+
+    attacker = new_client()
+    for _ in range(5):
+        assert login(attacker, "alice", "WrongSecure!Pass2026").status_code == 401
+    locked = next(
+        item for item in admin_primary.get("/api/admin/users").json()["users"]
+        if item["username"] == "alice"
+    )
+    assert locked["failed_attempts"] == 5
+    assert locked["locked_until"] is not None
+
+    unlocked = admin_primary.post(
+        f"/api/admin/users/{alice['id']}/unlock",
+        headers={"Origin": "http://testserver", "X-CSRF-Token": csrf_token(admin_primary)},
+    )
+    assert unlocked.status_code == 200
+    assert unlocked.json()["failed_attempts"] == 0
+    assert unlocked.json()["locked_until"] is None
+    assert login(new_client(), "alice", "UserSecure!Pass2026").status_code == 200
+
+    self_revoked = admin_primary.post(
+        f"/api/admin/users/{admin_user['id']}/revoke-sessions",
+        headers={"Origin": "http://testserver", "X-CSRF-Token": csrf_token(admin_primary)},
+    )
+    assert self_revoked.status_code == 200
+    assert self_revoked.json()["revoked_sessions"] == 1
+    assert self_revoked.json()["remaining_active_sessions"] == 1
+    assert admin_primary.get("/api/auth/session").status_code == 200
+    assert admin_secondary.get("/api/auth/session").status_code == 401
+
+    event_types = {event["event_type"] for event in service.recent_audit(200)}
+    assert "admin_user_sessions_revoked" in event_types
+    assert "admin_user_unlock" in event_types
+
+
 def test_admin_backend_and_internal_apis_are_protected_but_public_market_is_open(auth_runtime) -> None:
     _, _, secret_dir = auth_runtime
     anonymous = new_client()
@@ -548,7 +622,7 @@ def test_admin_backend_and_internal_apis_are_protected_but_public_market_is_open
     assert anonymous.get("/api/data-quality").status_code == 401
     redirect = anonymous.get("/admin", follow_redirects=False)
     assert redirect.status_code in {302, 307}
-    assert redirect.headers["location"] == "/login?next=/backend-admin"
+    assert redirect.headers["location"] == "/login?next=/admin-console"
     assert redirect.headers["cache-control"] == "no-store"
 
     assert user.get("/api/admin/overview").status_code == 403

@@ -4,7 +4,7 @@ import hmac
 from functools import lru_cache
 from typing import Annotated
 
-from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
@@ -398,6 +398,38 @@ def update_user_status(
     except AuthError as error:
         _raise_auth(error)
     return _no_store(JSONResponse(user))
+
+
+@router.post("/api/admin/users/{user_id}/unlock")
+def unlock_user(
+    user_id: int,
+    request: Request,
+    principal: Annotated[AuthPrincipal, Depends(require_admin)],
+    x_csrf_token: Annotated[str | None, Header()] = None,
+) -> Response:
+    service = get_auth_service(request)
+    enforce_csrf(request, principal, service, x_csrf_token)
+    try:
+        result = service.unlock_user(principal, user_id, client_key=client_key(request))
+    except AuthError as error:
+        _raise_auth(error)
+    return _no_store(JSONResponse(result))
+
+
+@router.post("/api/admin/users/{user_id}/revoke-sessions")
+def revoke_user_sessions(
+    user_id: int,
+    request: Request,
+    principal: Annotated[AuthPrincipal, Depends(require_admin)],
+    x_csrf_token: Annotated[str | None, Header()] = None,
+) -> Response:
+    service = get_auth_service(request)
+    enforce_csrf(request, principal, service, x_csrf_token)
+    try:
+        result = service.revoke_user_sessions(principal, user_id, client_key=client_key(request))
+    except AuthError as error:
+        _raise_auth(error)
+    return _no_store(JSONResponse(result))
 
 
 @router.get("/api/admin/audit")

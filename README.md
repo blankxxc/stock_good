@@ -165,7 +165,40 @@ npm install
 ./.venv/Scripts/python.exe --version
 ```
 
-### 2. 启动后端 API
+### 2. 一键启动网站并检查增量数据
+
+推荐统一使用下面的启动器。它会先检查最新已完成交易日并执行幂等增量回流，确认行情、因子和页面预测产物一致后才启动缺失的前后端服务；行情指纹没有变化时不会重复写数据或重训模型，避免页面先展示旧数据。
+
+```powershell
+.\scripts\start_website.ps1
+```
+
+常用参数：
+
+```powershell
+# 仅启动网站，不执行启动时增量检查
+# 只建议在明确需要离线调试时使用
+.\scripts\start_website.ps1 -SkipStartupUpdate
+
+# 启动前同时增量抓取真实新闻并重训情绪/事件融合模型
+.\scripts\start_website.ps1 -FetchNews
+
+# 启动网站，同时幂等安装周一至周五 16:40 的自动更新任务
+.\scripts\start_website.ps1 -InstallDailyTask
+
+# 启动后打开系统默认浏览器
+.\scripts\start_website.ps1 -OpenBrowser
+```
+
+也可以单独安装定时任务；重复运行会更新同名任务，不会创建多个副本：
+
+```powershell
+.\scripts\install_daily_update_task.ps1
+```
+
+启动时增量任务会在前后端对外提供页面之前完成，结果写入 `reports/daily_update/`；若检查或回流失败，启动器会失败并指向日志，不会静默启动旧数据页面。前后端运行日志写入 `reports/runtime/website/`。数据有新增或修订时，流水线依次更新因子、标签、COGRASP checkpoint、情绪/事件融合 LightGBM 和两套页面评分；无变化时按数据指纹跳过。直接运行 `npm run dev` 只启动前端，不属于完整的网站启动入口。
+
+### 3. 手动启动后端 API
 
 ```bash
 cd /c/Users/blankxxc/Desktop/work_space/stock_good
@@ -230,7 +263,7 @@ print(client.get("/health").json())
 print(client.get("/api/factors").json())
 ```
 
-### 3. 启动前端网站
+### 4. 手动启动前端网站
 
 ```bash
 cd /c/Users/blankxxc/Desktop/work_space/stock_good/frontend
@@ -251,7 +284,7 @@ cd /c/Users/blankxxc/Desktop/work_space/stock_good/frontend
 npm run build
 ```
 
-### 4. 运行主线日频数据流水线
+### 5. 运行主线日频数据流水线
 
 当前主线以沪深300近三年日频为目标口径。日频获取器默认执行幂等增量更新：读取本地最大交易日，回看 7 个自然日以接收上游修订，只在发现新增或修订行情时原子替换 Parquet；无变化时不写数据文件。
 
@@ -267,6 +300,46 @@ npm run build
 .\.venv\Scripts\python.exe scripts\update_daily_market_data.py
 ```
 
+当前评分页保留 IJCAI 2025 `COGRASP` 作者仓库的网络结构，并使用当前沪深300日频数据重训；原始回归值不会二次校准成上涨概率。首次拉取仓库时初始化子模块并安装训练/推理依赖：
+
+```powershell
+# 拉取作者原仓库（固定到项目记录的 commit）
+git submodule update --init --recursive
+
+# Windows/CPU 推理环境；不安装上游未使用且 Windows 不支持的 Triton
+uv sync --extra cograsp
+
+# 训练当前沪深300模型（CPU，作者原版 forward 要求 batch-size=1）
+uv run --extra cograsp python scripts\train_cograsp_current.py
+
+# 生成网站读取的最新 1d 原始回归排名
+uv run --extra cograsp python scripts\build_latest_live_scores.py
+```
+
+COGRASP 当前重训版不使用文本情绪：静态关系图由历史日收益绝对相关性 Top8 构建。停牌/缺行日沿用前收盘价，并把成交量、成交额和换手率置零，以保持日频序列连续。模型先做时间顺序训练/验证/测试，再按验证最佳轮次用全部已知样本重训；页面会展示最新输入日期、预测目标日期、训练样本数和样本外指标。作者固定股票池的 `2024-06-28` 复现流程仍保留在 `scripts\update_cograsp_market_data.py` 与 `models\cograsp_official_adapter.py`，但不再作为网站默认评分源。
+
+评分页还提供第二个可切换模型：`Sentiment Event Fusion LightGBM`。它是参考 KDD 2025 CAMEF 与 EACL 2026 CARAG 的可运行日频实现，不是论文原模型的完整复现：股票时序与市场情绪代理始终启用，真实新闻情绪按覆盖情况作为可选模态；新闻严格按 `available_time <= 下一交易日 09:25` 对齐，避免把盘后才知道的信息泄漏到更早预测中。事件交互特征属于 causal-inspired proxy，不宣称识别了真实因果效应。
+
+```powershell
+# 只用现有行情生成/更新市场情绪代理，不联网抓新闻
+.\.venv\Scripts\python.exe scripts\update_sentiment_event_data.py
+
+# 增量抓取当前沪深300最近 30 天真实个股新闻；event_id 去重
+.\.venv\Scripts\python.exe scripts\update_sentiment_event_data.py --fetch-news --lookback-days 30
+
+# 可先限制股票数量做网络连通性检查
+.\.venv\Scripts\python.exe scripts\update_sentiment_event_data.py --fetch-news --max-symbols 30
+
+# 单独训练新模型并生成页面评分
+.\.venv\Scripts\python.exe scripts\train_sentiment_event_fusion.py
+.\.venv\Scripts\python.exe scripts\build_sentiment_event_scores.py
+
+# 完整日频流水线同时增量抓新闻
+.\scripts\run_daily_data_update.ps1 -FetchNews
+```
+
+新闻来源当前为 AkShare 的东方财富个股新闻接口，每只股票返回最近 100 条；缓存保留来源、发布时间、可用时间、事件类型、词典情绪和来源权重。网页通过 `/api/scores?model=cograsp` 与 `/api/scores?model=sentiment_event` 切换模型，并显示真实新闻覆盖率。即使新闻接口不可用，新模型仍可用行情计算的市场广度、风险偏好、波动冲击和流动性代理运行。
+
 常用参数：
 
 ```powershell
@@ -280,10 +353,10 @@ npm run build
 .\.venv\Scripts\python.exe scripts\fetch_real_csi300_daily.py --use-snapshot
 ```
 
-Windows 包装脚本默认执行完整流水线（行情、因子、标签、评分）；只有维护时明确传入 `-FetchOnly` 才只抓行情。可将脚本加入任务计划，在交易日 16:40 后执行，并在失败时最多重试 3 次：
+Windows 包装脚本默认执行完整流水线（行情、因子、标签、模型重训、评分）；只有维护时明确传入 `-FetchOnly` 才只抓行情。推荐使用仓库提供的幂等安装器创建交易日 16:40 定时任务：
 
 ```powershell
-schtasks /Create /TN "StockGoodDailyData" /SC WEEKLY /D MON,TUE,WED,THU,FRI /ST 16:40 /TR "powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File C:\Users\blankxxc\Desktop\work_space\stock_good\scripts\run_daily_data_update.ps1 -RetryCount 3 -RetryDelaySeconds 1800" /F
+.\scripts\install_daily_update_task.ps1
 ```
 
 抓取报告写入 `reports/real_data/csi300_daily_ingestion_report.json`，完整流水线报告和 checkpoint 分别写入 `reports/daily_update/daily_market_data_update_report.json` 与 `reports/daily_update/pipeline_state.json`，每次运行同时保留历史报告和日志。退出码为 0 表示成功或无变化；抓取失败、部分失败、数据过期或并发任务冲突时返回非 0，未通过完整性门禁的候选数据不会替换旧 Parquet。

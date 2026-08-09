@@ -89,6 +89,8 @@ data/ads/
 data/samples/
 data/quarantine/
 data/snapshots/*.json
+data/real/finmamba_csi300/
+data/real/finmamba_relations/
 lakehouse/delta/*
 !lakehouse/delta/.gitkeep
 lakehouse/iceberg/*

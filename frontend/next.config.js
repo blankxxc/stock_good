@@ -35,14 +35,6 @@ const nextConfig = {
       {
         source: '/health',
         destination: `${apiBase}/health`
-      },
-      {
-        source: '/backend-admin',
-        destination: `${apiBase}/admin`
-      },
-      {
-        source: '/backend-admin/:path*',
-        destination: `${apiBase}/admin/:path*`
       }
     ];
   }

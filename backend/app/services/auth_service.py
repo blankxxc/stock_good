@@ -81,10 +81,13 @@ def _env_bool(name: str, default: bool) -> bool:
 def configured_allowed_origins() -> tuple[str, ...]:
     raw = os.getenv("STOCK_GOOD_ALLOWED_ORIGINS", "")
     if not raw.strip():
-        return LOCAL_ALLOWED_ORIGINS
-    origins = tuple(dict.fromkeys(value.strip().rstrip("/") for value in raw.split(",") if value.strip()))
-    if not origins or any(not origin.startswith(("http://", "https://")) for origin in origins):
-        raise RuntimeError("STOCK_GOOD_ALLOWED_ORIGINS must contain comma-separated http(s) origins")
+        origins = LOCAL_ALLOWED_ORIGINS
+    else:
+        origins = tuple(dict.fromkeys(value.strip().rstrip("/") for value in raw.split(",") if value.strip()))
+        if not origins or any(not origin.startswith(("http://", "https://")) for origin in origins):
+            raise RuntimeError("STOCK_GOOD_ALLOWED_ORIGINS must contain comma-separated http(s) origins")
+    if any(origin.startswith("https://") for origin in origins) and not _env_bool("STOCK_GOOD_SECURE_COOKIE", False):
+        raise RuntimeError("STOCK_GOOD_SECURE_COOKIE must be enabled when an HTTPS origin is allowed")
     return origins
 
 
@@ -507,7 +510,7 @@ class AuthService:
             raise AuthError(403, "registration_closed", "当前暂未开放新用户注册。")
         normalized = self.normalize_username(username)
         display = self.validate_display_name(display_name)
-        if not hmac.compare_digest(password, password_confirm):
+        if not hmac.compare_digest(password.encode("utf-8"), password_confirm.encode("utf-8")):
             raise AuthError(400, "password_mismatch", "两次输入的密码不一致。")
         self.validate_password(normalized, password)
         salt, digest = self.hash_password(password)
@@ -557,7 +560,7 @@ class AuthService:
         self._enforce_rate_limit("setup_admin", client_key, SETUP_RATE_LIMIT)
         normalized = self.normalize_username(username)
         display = self.validate_display_name(display_name)
-        if not hmac.compare_digest(password, password_confirm):
+        if not hmac.compare_digest(password.encode("utf-8"), password_confirm.encode("utf-8")):
             raise AuthError(400, "password_mismatch", "两次输入的密码不一致。")
         self.validate_password(normalized, password)
         salt, digest = self.hash_password(password)
@@ -786,7 +789,8 @@ class AuthService:
         with self._connection() as connection:
             rows = connection.execute(
                 """SELECT u.id, u.username, u.display_name, u.role, u.is_active,
-                          u.created_at, u.last_login_at,
+                          u.failed_attempts, u.locked_until, u.created_at,
+                          u.password_changed_at, u.last_login_at,
                           COUNT(DISTINCT w.id) AS watchlist_count,
                           COUNT(DISTINCT CASE WHEN s.revoked_at IS NULL AND s.idle_expires_at > ?
                                                 AND s.absolute_expires_at > ? THEN s.id END) AS active_sessions
@@ -843,6 +847,93 @@ class AuthService:
         result = dict(updated)
         result["is_active"] = bool(result["is_active"])
         return result
+
+    def unlock_user(
+        self, actor: AuthPrincipal, user_id: int, *, client_key: str | None = None
+    ) -> dict[str, object]:
+        if actor.role != "admin":
+            self.record_security_event(
+                "admin_user_unlock_denied",
+                principal=actor,
+                detail="admin_required",
+                client_key=client_key,
+            )
+            raise AuthError(403, "admin_required", "仅管理员可执行此操作。")
+        with self._connection() as connection:
+            target = connection.execute(
+                "SELECT id, username FROM auth_users WHERE id = ?", (user_id,)
+            ).fetchone()
+            if target is None:
+                raise AuthError(404, "user_not_found", "用户不存在。")
+            connection.execute(
+                "UPDATE auth_users SET failed_attempts = 0, locked_until = NULL WHERE id = ?",
+                (user_id,),
+            )
+            self._audit(
+                connection,
+                "admin_user_unlock",
+                user_id=actor.id,
+                username=actor.username,
+                detail=f"target={user_id};username={target['username']}",
+                client_key=client_key,
+            )
+        return {"user_id": user_id, "failed_attempts": 0, "locked_until": None}
+
+    def revoke_user_sessions(
+        self, actor: AuthPrincipal, user_id: int, *, client_key: str | None = None
+    ) -> dict[str, int]:
+        if actor.role != "admin":
+            self.record_security_event(
+                "admin_user_sessions_revoke_denied",
+                principal=actor,
+                detail="admin_required",
+                client_key=client_key,
+            )
+            raise AuthError(403, "admin_required", "仅管理员可执行此操作。")
+        now = _iso(self.runtime.clock())
+        with self._connection() as connection:
+            target = connection.execute(
+                "SELECT id, username FROM auth_users WHERE id = ?", (user_id,)
+            ).fetchone()
+            if target is None:
+                raise AuthError(404, "user_not_found", "用户不存在。")
+            if actor.id == user_id:
+                cursor = connection.execute(
+                    """UPDATE auth_sessions SET revoked_at = ?
+                       WHERE user_id = ? AND id != ? AND revoked_at IS NULL
+                         AND idle_expires_at > ? AND absolute_expires_at > ?""",
+                    (now, user_id, actor.session_id, now, now),
+                )
+            else:
+                cursor = connection.execute(
+                    """UPDATE auth_sessions SET revoked_at = ?
+                       WHERE user_id = ? AND revoked_at IS NULL
+                         AND idle_expires_at > ? AND absolute_expires_at > ?""",
+                    (now, user_id, now, now),
+                )
+            remaining = connection.execute(
+                """SELECT COUNT(*) FROM auth_sessions
+                   WHERE user_id = ? AND revoked_at IS NULL
+                     AND idle_expires_at > ? AND absolute_expires_at > ?""",
+                (user_id, now, now),
+            ).fetchone()[0]
+            revoked = max(0, cursor.rowcount)
+            self._audit(
+                connection,
+                "admin_user_sessions_revoked",
+                user_id=actor.id,
+                username=actor.username,
+                detail=(
+                    f"target={user_id};username={target['username']};"
+                    f"revoked={revoked};remaining={int(remaining)}"
+                ),
+                client_key=client_key,
+            )
+        return {
+            "user_id": user_id,
+            "revoked_sessions": revoked,
+            "remaining_active_sessions": int(remaining),
+        }
 
     def recent_audit(self, limit: int = 100) -> list[dict[str, object]]:
         safe_limit = max(1, min(limit, 200))

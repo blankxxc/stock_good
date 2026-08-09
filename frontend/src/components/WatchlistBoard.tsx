@@ -239,8 +239,12 @@ export function WatchlistBoard() {
         <div className="watchlist-empty">
           <span aria-hidden="true">☆</span>
           <h2>还没有自选股票</h2>
-          <p>前往股票全景，点击“加入自选”即可保存到当前账号。</p>
-          <a className="button" href="/">浏览沪深300股票</a>
+          <p>可以从市场全景直接收藏，也可以先查看模型候选或使用条件筛选缩小范围。</p>
+          <div className="watchlist-empty__actions">
+            <a className="button primary" href="/scores">查看预测候选</a>
+            <a className="button" href="/condition-screen">使用条件选股</a>
+            <a className="button button--secondary" href="/">浏览股票全景</a>
+          </div>
         </div>
       ) : null}
       {!loading && user && items.length ? (
@@ -274,7 +278,7 @@ export function WatchlistBoard() {
                   const busy = pendingSymbol === item.symbol;
                   return (
                     <tr key={item.symbol}>
-                      <td><a className="code-link" href={`/stocks/${item.symbol}`}>{item.symbol}</a></td>
+                      <td><a className="code-link" href={`/stocks/${item.symbol}?from=watchlist`}>{item.symbol}</a></td>
                       <td>{stock?.stock_name ?? '—'}</td>
                       <td>{formatNumber(stock?.close)}</td>
                       <td className={typeof stock?.pct_change === 'number' ? (stock.pct_change >= 0 ? 'positive' : 'negative') : 'muted'}>{formatPercent(stock?.pct_change)}</td>
@@ -283,7 +287,7 @@ export function WatchlistBoard() {
                       <td>{formatSavedDate(item.created_at)}</td>
                       <td>
                         <div className="watchlist-actions">
-                          <a className="button table-button" href={`/stocks/${item.symbol}`}>详情</a>
+                          <a className="button table-button" href={`/stocks/${item.symbol}?from=watchlist`}>详情</a>
                           <button
                             type="button"
                             className="button table-button danger"

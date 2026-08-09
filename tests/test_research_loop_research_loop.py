@@ -98,8 +98,9 @@ def test_research_loop_experiment_recorder_and_backend_frontend_are_ready():
     assert report["qlib_status"] in {"minimal_qlib_recorder_available", "qlib_workflow_blocked_minimal_recorder_used"}
 
     from backend.app.main import app
+    from tests.auth_helpers import authenticated_admin_client
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     dashboard = client.get("/api/dashboard")
     scores = client.get("/api/scores")
     backtests = client.get("/api/backtests")
@@ -107,18 +108,31 @@ def test_research_loop_experiment_recorder_and_backend_frontend_are_ready():
     assert dashboard.status_code == 200 and dashboard.json()["status"] == "research_loop_research_loop_ready"
     assert scores.status_code == 200 and scores.json()["status"] == "research_loop_scores_ready"
     scores_payload = scores.json()
-    assert set(scores_payload["available_horizons"]) >= {"1d", "5d", "14d"}
-    assert set(scores_payload["horizon_rankings"].keys()) >= {"1d", "5d", "14d"}
-    assert set(scores_payload["latest_trade_date_by_horizon"].keys()) >= {"1d", "5d", "14d"}
-    assert all(len(scores_payload["horizon_rankings"][horizon]) > 0 for horizon in ["1d", "5d", "14d"])
-    assert all("probability_up" in row for rows in scores_payload["horizon_rankings"].values() for row in rows[:1])
+    assert scores_payload["available_horizons"] == ["1d"]
+    assert set(scores_payload["horizon_rankings"]) == {"1d"}
+    assert len(scores_payload["horizon_rankings"]["1d"]) > 0
+    assert "predicted_relative_change_pct" in scores_payload["horizon_rankings"]["1d"][0]
+    assert scores_payload["model_family"] == "COGRASP current CSI300 retrained"
+    assert scores_payload["prediction_target_date"] > scores_payload["latest_trade_date"]
+    assert scores_payload["algorithm_modified"] is False
+    sentiment_scores = client.get("/api/scores?model=sentiment_event")
+    assert sentiment_scores.status_code == 200
+    sentiment_payload = sentiment_scores.json()
+    assert sentiment_payload["status"] == "research_loop_scores_ready"
+    assert sentiment_payload["selected_model"] == "sentiment_event"
+    assert sentiment_payload["model_family"] == "Sentiment Event Fusion LightGBM"
+    assert sentiment_payload["text_sentiment_coverage"] >= 0
+    assert {item["id"] for item in sentiment_payload["available_models"]} == {"cograsp", "sentiment_event"}
     assert backtests.status_code == 200 and backtests.json()["status"] == "research_loop_backtest_ready"
     assert experiments.status_code == 200 and experiments.json()["status"] == "research_loop_experiment_recorder_ready"
 
-    for page, api in [("dashboard", "/api/dashboard"), ("scores", "/api/scores"), ("backtests", "/api/backtests")]:
+    for page, marker in [
+        ("dashboard", "getConsolePage('dashboard')"),
+        ("scores", "/api/scores"),
+        ("backtests", "/api/backtests"),
+    ]:
         text = (PROJECT_ROOT / "frontend" / "src" / "app" / page / "page.tsx").read_text(encoding="utf-8")
-        assert "research_loop" in text
-        assert api in text
+        assert marker in text
 
 
 def test_research_loop_acceptance_script_reports_ok():

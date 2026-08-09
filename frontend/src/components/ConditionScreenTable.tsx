@@ -155,10 +155,12 @@ function defaultSignalDateFilters(latestTradeDate?: string): Record<string, Filt
 }
 
 export function ConditionScreenTable({ initialPayload = null }: { initialPayload?: ConditionScreenPayload | null }) {
-  const { payload, error } = useApiPayload<ConditionScreenPayload>('/api/condition-screen', initialPayload);
+  const { payload, error, loading, reload } = useApiPayload<ConditionScreenPayload>('/api/condition-screen', initialPayload);
   const [filters, setFilters] = useState<Record<string, FilterState>>(() => defaultSignalDateFilters(initialPayload?.latest_trade_date));
   const [selectedFactors, setSelectedFactors] = useState<string[]>(DEFAULT_FACTOR_COLUMNS);
   const [signalDateFilterTouched, setSignalDateFilterTouched] = useState(false);
+  const [factorQuery, setFactorQuery] = useState('');
+  const [onlyMatched, setOnlyMatched] = useState(false);
 
   const baseColumns = payload?.base_columns ?? [];
   const availableFactors = payload?.available_factor_columns ?? [];
@@ -169,6 +171,16 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
   const filteredRows = useMemo(() => rows.filter((row) => visibleColumns.every((column) => {
     return rowMatchesFilter(row, column, columnSchema[column], filters[column]);
   })), [rows, filters, visibleColumns, columnSchema]);
+  const displayedRows = useMemo(
+    () => onlyMatched ? filteredRows.filter((row) => row.all_conditions_met === true) : filteredRows,
+    [filteredRows, onlyMatched],
+  );
+  const filteredFactorOptions = useMemo(() => {
+    const keyword = factorQuery.trim().toLowerCase();
+    if (!keyword) return availableFactors;
+    return availableFactors.filter((factor) => `${COLUMN_LABELS[factor] ?? factor} ${factor} ${payload?.factor_column_catalog?.[factor] ?? ''}`.toLowerCase().includes(keyword));
+  }, [availableFactors, factorQuery, payload?.factor_column_catalog]);
+  const activeFilterCount = Object.values(filters).filter((filter) => Boolean(filter.value?.trim() || filter.value2?.trim())).length;
 
   const summary = payload?.summary ?? {};
 
@@ -187,22 +199,62 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
     setFilters((state) => ({ ...state, [column]: updater(state[column] ?? {}) }));
   };
 
+  const resetScreen = () => {
+    setFilters(defaultSignalDateFilters(payload?.latest_trade_date));
+    setSelectedFactors(DEFAULT_FACTOR_COLUMNS);
+    setSignalDateFilterTouched(false);
+    setFactorQuery('');
+    setOnlyMatched(false);
+  };
+
   return (
-    <section className="condition-screen">
-      {error ? <p className="muted">暂时无法读取条件选股数据：{error}</p> : null}
+    <section className="condition-screen" aria-busy={loading && !payload}>
+      <div className="workflow-page-header">
+        <div className="workflow-page-heading workflow-page-heading--compact">
+          <span className="workflow-page-heading__eyebrow">条件筛选</span>
+          <h1>构建你的股票筛选条件</h1>
+          <p>从核心条件开始，再按需添加因子列；结果数量会随每一项筛选即时更新。</p>
+        </div>
+        <div className="workflow-page-actions">
+          <button className={`button${onlyMatched ? ' primary' : ''}`} type="button" onClick={() => setOnlyMatched((current) => !current)} aria-pressed={onlyMatched}>只看综合通过</button>
+          <button className="button button--secondary" type="button" onClick={resetScreen}>恢复默认</button>
+        </div>
+      </div>
+      {error ? (
+        <div className="data-state data-state--error" role="alert">
+          <span>暂时无法读取条件选股数据：{error}</span>
+          <button className="button table-button" type="button" onClick={reload} disabled={loading}>重新加载</button>
+        </div>
+      ) : null}
+      {loading && !payload ? <p className="data-state" role="status" aria-live="polite">正在加载条件选股数据…</p> : null}
       <div className="market-ticker-row">
         <div><strong>{payload?.row_count ?? rows.length}</strong><span>最新完整沪深300截面</span></div>
-        <div><strong>{String(summary.matched_count ?? 0)}</strong><span>综合条件通过</span></div>
+        <div><strong>{String(summary.matched_count ?? 0)}</strong><span>预设综合条件通过</span></div>
+        <div><strong>{displayedRows.length}</strong><span>当前显示结果</span></div>
         <div><strong>{payload?.latest_trade_date ?? '加载中'}</strong><span>最新行情日期</span></div>
       </div>
 
       <div className="card factor-column-picker">
         <div className="artifact-card__topline">
-          <strong>从因子里面选择扩充列</strong>
-          <span className="muted">勾选后表格会实时增加/减少列，每列顶部都能单独筛选。</span>
+          <div>
+            <strong>选择要分析的因子列</strong>
+            <p className="muted">已选 {selectedFactors.length} 项 · 当前表格共 {visibleColumns.length} 列</p>
+          </div>
+          <span className="muted">搜索或使用快捷操作，避免在 70+ 因子中逐项查找。</span>
+        </div>
+        <div className="factor-picker-toolbar">
+          <label className="factor-picker-search">
+            <span>搜索因子</span>
+            <input type="search" value={factorQuery} onChange={(event) => setFactorQuery(event.target.value)} placeholder="名称、代码或分类" />
+          </label>
+          <div className="factor-picker-actions" aria-label="因子列快捷选择">
+            <button type="button" onClick={() => setSelectedFactors(DEFAULT_FACTOR_COLUMNS)}>核心因子</button>
+            <button type="button" onClick={() => setSelectedFactors(availableFactors)}>选择全部</button>
+            <button type="button" onClick={() => setSelectedFactors([])}>清空选择</button>
+          </div>
         </div>
         <div className="factor-checkbox-grid">
-          {availableFactors.map((factor) => (
+          {filteredFactorOptions.map((factor) => (
             <label key={factor}>
               <input
                 type="checkbox"
@@ -217,18 +269,28 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
               <small>{payload?.factor_column_catalog?.[factor] ?? factor}</small>
             </label>
           ))}
+          {!filteredFactorOptions.length ? <p className="factor-picker-empty">没有找到匹配的因子，请换一个关键词。</p> : null}
         </div>
       </div>
 
-      <div className="stock-table-shell condition-table-shell">
+      <div className="condition-result-bar" role="status" aria-live="polite">
+        <span>当前显示 <strong>{displayedRows.length}</strong> / {rows.length} 只股票</span>
+        <span>{activeFilterCount} 个列筛选{onlyMatched ? ' · 仅综合通过' : ''}</span>
+        {activeFilterCount || onlyMatched ? <button type="button" onClick={resetScreen}>清除全部筛选</button> : null}
+      </div>
+
+      <div className="stock-table-shell condition-table-shell" role="region" aria-label="条件选股结果表格，可横向滚动" tabIndex={0}>
         <table className="stock-table condition-table">
+          <caption className="sr-only">条件选股结果及每列筛选控件</caption>
           <thead>
             <tr>
-              {visibleColumns.map((column) => <th key={column}>{COLUMN_LABELS[column] ?? column}</th>)}
+              {visibleColumns.map((column) => <th id={`condition-column-${column}`} scope="col" key={column}>{COLUMN_LABELS[column] ?? column}</th>)}
             </tr>
             <tr>
-              {visibleColumns.map((column) => (
-                <th key={`${column}-filter`}>
+              {visibleColumns.map((column) => {
+                const columnLabel = COLUMN_LABELS[column] ?? column;
+                return (
+                <th aria-label={`${columnLabel}筛选`} key={`${column}-filter`}>
                   {(() => {
                     const schema = columnSchema[column] ?? { type: 'text', operators: ['contains'] };
                     const current = filters[column] ?? {};
@@ -238,6 +300,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                         <div className="column-filter-control numeric-filter-control">
                           <select
                             className="numeric-filter-operator"
+                            aria-label={`${columnLabel}筛选条件`}
                             value={operator}
                             onChange={(event) => updateColumnFilter(column, (current) => ({ ...current, operator: event.target.value }))}
                           >
@@ -245,6 +308,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                           </select>
                           <input
                             className="column-filter-input numeric-filter-value"
+                            aria-label={operator === 'between' ? `${columnLabel}下限` : `${columnLabel}筛选数值`}
                             type="number"
                             value={current.value ?? ''}
                             onChange={(event) => updateColumnFilter(column, (current) => ({ ...current, value: event.target.value }))}
@@ -253,6 +317,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                           {operator === 'between' ? (
                             <input
                               className="column-filter-input numeric-filter-value"
+                              aria-label={`${columnLabel}上限`}
                               type="number"
                               value={current.value2 ?? ''}
                               onChange={(event) => updateColumnFilter(column, (current) => ({ ...current, value2: event.target.value }))}
@@ -266,6 +331,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                       return (
                         <select
                           className="discrete-filter-select column-filter-input"
+                          aria-label={`${columnLabel}筛选值`}
                           value={current.value ?? ''}
                           onChange={(event) => updateColumnFilter(column, () => ({ operator: 'eq', value: event.target.value }))}
                         >
@@ -280,6 +346,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                     return (
                       <input
                         className="column-filter-input text-filter-input"
+                        aria-label={`${columnLabel}包含文本`}
                         value={current.value ?? ''}
                         onChange={(event) => updateColumnFilter(column, () => ({ operator: 'contains', value: event.target.value }))}
                         placeholder={`包含${COLUMN_LABELS[column] ?? column}`}
@@ -287,20 +354,20 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                     );
                   })()}
                 </th>
-              ))}
+              );})}
             </tr>
           </thead>
           <tbody>
-            {filteredRows.map((row, index) => (
+            {displayedRows.map((row, index) => (
               <tr key={`${row.symbol}-${row.trade_date}-${index}`}>
                 {visibleColumns.map((column) => (
                   <td key={column} className={typeof row[column] === 'number' && String(column).includes('return') ? ((row[column] as number) >= 0 ? 'positive' : 'negative') : ''}>
-                    {column === 'symbol' && row.symbol ? <a className="code-link" href={`/stocks/${row.symbol}`}>{formatCell(column, row[column])}</a> : formatCell(column, row[column])}
+                    {column === 'symbol' && row.symbol ? <a className="code-link" href={`/stocks/${row.symbol}?from=condition-screen`}>{formatCell(column, row[column])}</a> : formatCell(column, row[column])}
                   </td>
                 ))}
               </tr>
             ))}
-            {!filteredRows.length ? <tr><td colSpan={visibleColumns.length || 1}>暂无匹配记录，请调整列筛选条件。</td></tr> : null}
+            {!displayedRows.length ? <tr><td className="table-empty-cell" colSpan={visibleColumns.length || 1}>暂无匹配记录，请调整筛选条件或恢复默认设置。</td></tr> : null}
           </tbody>
         </table>
       </div>

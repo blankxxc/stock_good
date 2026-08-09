@@ -45,7 +45,10 @@ def run_acceptance() -> dict[str, Any]:
     check("route_counts", len(PUBLIC_ROUTES) == 5 and len(USER_VISIBLE_ROUTES) >= 4 and len(INTERNAL_DATA_FABRIC_ROUTES) >= 7, None)
 
     layout = (FRONTEND_APP / "layout.tsx").read_text(encoding="utf-8")
-    combined_public = "\n".join([_read(route) for route in user_routes] + [layout])
+    application_shell = (
+        ROOT / "frontend" / "src" / "components" / "ApplicationShell.tsx"
+    ).read_text(encoding="utf-8")
+    combined_public = "\n".join([_read(route) for route in user_routes] + [layout, application_shell])
     home = _read("")
     redundant_home_copy = [
         "智能选股平台",
@@ -58,10 +61,10 @@ def run_acceptance() -> dict[str, Any]:
     ]
     check("home_uses_market_overview_without_intro_shell", "MarketOverviewBoard" in home and "home-intro" not in home and "alpha-command-deck" not in home, None)
     check("redundant_home_copy_removed", all(text not in home for text in redundant_home_copy), [text for text in redundant_home_copy if text in home])
-    check("data_fabric_not_in_user_navigation", not any(token in layout for token in FORBIDDEN_USER_NAV), [token for token in FORBIDDEN_USER_NAV if token in layout])
+    check("data_fabric_not_in_user_navigation", not any(token in application_shell for token in FORBIDDEN_USER_NAV), [token for token in FORBIDDEN_USER_NAV if token in application_shell])
     check("forbidden_copy_absent", not any(word in combined_public for word in FORBIDDEN_COPY), [w for w in FORBIDDEN_COPY if w in combined_public])
     check("visual_system_css_ready", "professional-shell" in (FRONTEND_APP / "globals.css").read_text(encoding="utf-8"), None)
-    check("fixed_disclaimer_visible", "fixed-disclaimer" in layout and "选股辅助" in layout, None)
+    check("fixed_disclaimer_visible", "fixed-disclaimer" in application_shell and "选股辅助" in application_shell, None)
 
     client = acceptance_admin_client(app)
     api_paths = ["/health", "/api/site", "/api/factors", "/api/scores", "/api/condition-screen", "/api/backtests", "/api/admin/overview", "/api/data-quality", "/api/lineage", "/api/lakehouse"]

@@ -16,7 +16,7 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     title: 'Dashboard 研究总览',
     eyebrow: 'artifact-backed · research_site',
     apiPath: '/api/dashboard',
-    artifact: 'reports/research_loop/experiment_recorder/research_loop_lightgbm_walk_forward_v001',
+    artifact: 'reports/research_loop/live_predictions_report.json',
     dataMode: 'artifact-backed research run',
     status: 'latest_run_quality_ready',
     description: '股票池、数据截止时间、最新 run、质量状态、Spark/Flink/Kafka 状态和风险提示集中展示。',
@@ -24,14 +24,14 @@ export const consolePages: Record<string, ConsolePageConfig> = {
   },
   scores: {
     route: '/scores',
-    title: 'Scores 横截面概率评分',
-    eyebrow: 'artifact-backed · LightGBM probability',
+    title: 'Scores COGRASP 当前重训评分',
+    eyebrow: 'artifact-backed · IJCAI 2025 architecture · current CSI300 retraining',
     apiPath: '/api/scores',
-    artifact: 'reports/research_loop/predictions.parquet',
-    dataMode: 'artifact-backed multi-horizon model score',
-    status: 'cross_sectional_probability_rank_ready',
-    description: '展示 1d、5d、14d 的 probability_up、score、rank、percentile，并在同页生成研究候选池 Top20。',
-    fields: ['symbol', 'probability_up', 'score', 'rank', 'percentile', 'horizon', 'candidate_pool', 'candidate_summary', '1d', '5d', '14d']
+    artifact: 'reports/research_loop/live_predictions.parquet',
+    dataMode: 'current-universe retrained 1d regression score',
+    status: 'cograsp_current_rank_ready',
+    description: '保留 COGRASP 作者网络结构，使用当前沪深300日频数据与收益相关性图重训并展示最新 1d 回归值；不做概率校准。',
+    fields: ['symbol', 'prediction_target_date', 'predicted_relative_change_pct', 'score', 'rank', 'percentile', 'horizon', 'candidate_pool', 'candidate_summary', '1d']
   },
   candidates: {
     route: '/candidates',
@@ -41,8 +41,8 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     artifact: 'reports/research_loop/holdings.parquet',
     dataMode: 'artifact-backed topk holdings',
     status: 'topk_candidate_pool_ready',
-    description: '候选池功能已合并到 /scores：由 candidate_pool / candidate_summary 展示 Top20 研究候选、入池原因和回测风险入口。',
-    fields: ['candidate_pool', 'candidate_summary', 'probability_up', 'rank', 'score', 'backtest_risk_entry']
+    description: '候选池功能已合并到 /scores：按当前沪深300重训版 COGRASP 1d 原始回归值生成 Top20 研究候选。',
+    fields: ['candidate_pool', 'candidate_summary', 'predicted_relative_change_pct', 'rank', 'score', 'backtest_risk_entry']
   },
   backtests: {
     route: '/backtests',
@@ -173,7 +173,7 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     artifact: 'reports/advanced_models/model_comparison_report.json',
     dataMode: 'artifact-backed model comparison',
     status: 'advanced_model_candidates_ready',
-    description: 'LightGBM/Qlib/MASTER/StockMixer/HIST/TRSR 对比和成熟度。',
+    description: '当前站点保留 COGRASP（IJCAI 2025）作者网络结构并在当前沪深300日频数据上重训；同时保留 Qlib/MASTER/StockMixer/HIST/TRSR 候选资料。',
     fields: ['model_name', 'maturity', 'metric', 'run_id', 'approval_status']
   },
   simulation: {

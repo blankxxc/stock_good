@@ -18,7 +18,7 @@ export default function Page() {
       <div className="grid">
         <div className="card"><strong>真实数据入口</strong><p>现在读取 /api/scores 的 candidate_pool 与 candidate_summary；原 {config.apiPath} 入口保留用于兼容旧验收。</p></div>
         <div className="card"><strong>研究边界</strong><p>候选池只是研究候选，不是买入名单；后续必须结合条件测试、回测风险和人工复核。</p></div>
-        <div className="card"><strong>可追溯字段</strong><p>candidate_pool · candidate_summary · probability_up · rank · score · model_version</p></div>
+        <div className="card"><strong>可追溯字段</strong><p>candidate_pool · candidate_summary · predicted_relative_change_pct · rank · score · model_version</p></div>
       </div>
     </section>
   );

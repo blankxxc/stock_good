@@ -163,7 +163,7 @@ export function LoginPanel() {
       if (!mounted.current || actionSequence.current !== sequence) return;
       invalidateSessionStatus();
       const params = new URLSearchParams(window.location.search);
-      const fallback = result.user.role === 'admin' ? '/backend-admin' : '/watchlist';
+      const fallback = result.user.role === 'admin' ? '/admin-console' : '/watchlist';
       window.location.assign(safeNextPath(params.get('next'), fallback, result.user.role === 'admin'));
     } catch {
       if (mounted.current && actionSequence.current === sequence) {
@@ -232,7 +232,7 @@ export function LoginPanel() {
         <p><strong>{user.display_name}</strong><span className="muted"> @{user.username}</span></p>
         <div className="auth-actions">
           <a className="button" href="/watchlist">进入我的自选</a>
-          {user.role === 'admin' ? <a className="button secondary" href="/backend-admin">进入后台管理</a> : null}
+          {user.role === 'admin' ? <a className="button secondary" href="/admin-console">进入后台管理</a> : null}
           <button type="button" className="button ghost" onClick={logout} disabled={submitting} aria-busy={submitting}>
             {submitting ? '正在退出…' : '退出当前账号'}
           </button>

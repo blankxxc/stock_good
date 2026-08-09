@@ -12,19 +12,22 @@ def test_multi_user_login_watchlist_and_session_navigation_are_real_api_backed()
     login_page = read("app/login/page.tsx")
     login_panel = read("components/LoginPanel.tsx")
     layout = read("app/layout.tsx")
+    application_shell = read("components/ApplicationShell.tsx")
     auth_nav = read("components/AuthNav.tsx")
     watchlist_page = read("app/watchlist/page.tsx")
     watchlist_board = read("components/WatchlistBoard.tsx")
     market = read("components/MarketOverviewBoard.tsx")
     auth_lib = read("lib/auth.ts")
-    combined = "\n".join([login_page, login_panel, layout, auth_nav, watchlist_page, watchlist_board, market, auth_lib])
+    combined = "\n".join([login_page, login_panel, layout, application_shell, auth_nav, watchlist_page, watchlist_board, market, auth_lib])
 
     assert "LoginPanel" in login_page
     assert "/api/auth/login" in login_panel
     assert "/api/auth/register" in login_panel
     assert "/api/auth/setup-admin" in login_panel
     assert "普通用户与管理员使用同一安全入口" in login_panel
-    assert "AuthNav" in layout and "我的自选" in layout
+    assert "ApplicationShell" in layout
+    assert "AuthNav" in application_shell and "我的自选" in application_shell
+    assert "isAdminRoute" in application_shell and "admin-application-shell" in application_shell
     assert "getSessionStatus" in auth_nav
     assert "/api/auth/logout" in auth_nav
     assert "WatchlistBoard" in watchlist_page
@@ -99,12 +102,15 @@ def test_auth_and_watchlist_controls_expose_accessible_busy_and_scroll_contracts
     watchlist_board = read("components/WatchlistBoard.tsx")
     market = read("components/MarketOverviewBoard.tsx")
     layout = read("app/layout.tsx")
+    application_shell = read("components/ApplicationShell.tsx")
     css = read("app/globals.css")
 
-    assert 'className="skip-link"' in layout
-    assert 'aria-label="主导航"' in layout
-    assert 'id="main-content"' in layout
-    assert 'tabIndex={-1}' in layout
+    assert "ApplicationShell" in layout
+    assert 'className="skip-link"' in application_shell
+    assert 'aria-label="主导航"' in application_shell
+    assert 'id="main-content"' in application_shell
+    assert 'id="admin-main-content"' in application_shell
+    assert 'tabIndex={-1}' in application_shell
 
     assert 'role="tab"' in login_panel
     assert "aria-selected" in login_panel
@@ -153,8 +159,9 @@ def test_backend_admin_is_server_guarded_and_not_only_hidden_by_frontend() -> No
     assert "role TEXT NOT NULL CHECK(role IN ('user', 'admin'))" in service
     assert "hashlib.scrypt" in service
     assert "password.encode()" not in main
-    assert "source: '/backend-admin'" in next_config
-    assert "destination: `${apiBase}/admin`" in next_config
+    assert "source: '/backend-admin'" not in next_config
+    assert "destination: `${apiBase}/admin`" not in next_config
+    assert "new URL('/admin-console', publicOrigin)" in proxy
     assert "BACKEND_INTERNAL_ORIGIN" in next_config
     assert "NEXT_PUBLIC_API_BASE_URL" not in next_config
     assert "PUBLIC_SITE_ORIGINS" in proxy

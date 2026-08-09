@@ -96,7 +96,16 @@ def _latest_real_data_status() -> dict[str, Any]:
     }
 
 
-DERIVED_STEPS = ["materialize_factor_store", "build_labels", "build_latest_live_scores"]
+DERIVED_STEPS = [
+    "materialize_factor_store",
+    "build_labels",
+    "train_cograsp_current",
+    "build_latest_live_scores",
+    "refresh_sentiment_event_data",
+    "train_sentiment_event_fusion",
+    "build_sentiment_event_scores",
+    "train_finmamba_official",
+]
 
 
 def run_daily_update(
@@ -105,6 +114,7 @@ def run_daily_update(
     overlap_days: int = 7,
     use_snapshot: bool = False,
     force_rebuild: bool = False,
+    fetch_news: bool = False,
 ) -> dict[str, Any]:
     from data.adapters.real_csi300_akshare import _exclusive_file_lock
 
@@ -152,24 +162,55 @@ def run_daily_update(
         step_runners: dict[str, Any] = {}
         if not upstream_blocked:
             from factors.offline.polars_factor_engine import materialize_factor_store
+            from models.cograsp_current import CURRENT_DAILY, train_current_cograsp
+            from models.sentiment_event_fusion import (
+                build_sentiment_event_scores,
+                train_sentiment_event_fusion,
+            )
             from models.research_loop_research_loop import build_labels
             from scripts.build_latest_live_scores import build_latest_live_scores
+            from scripts.train_finmamba_official import train_official_finmamba
+            from data.adapters.sentiment_event_data import update_sentiment_event_data
 
             step_runners = {
                 "materialize_factor_store": lambda: materialize_factor_store(write_outputs=True),
                 "build_labels": lambda: build_labels(write_outputs=True)[1],
+                "train_cograsp_current": lambda: train_current_cograsp(
+                    pd.read_parquet(CURRENT_DAILY)
+                ),
                 "build_latest_live_scores": build_latest_live_scores,
+                "refresh_sentiment_event_data": lambda: update_sentiment_event_data(
+                    fetch_news=fetch_news
+                ),
+                "train_sentiment_event_fusion": lambda: train_sentiment_event_fusion(
+                    pd.read_parquet(CURRENT_DAILY)
+                ),
+                "build_sentiment_event_scores": build_sentiment_event_scores,
+                "train_finmamba_official": lambda: train_official_finmamba(
+                    device="auto", epochs=5
+                ),
             }
 
         dependency_failed = upstream_blocked
         ran_derived_step = False
+        sentiment_data_refreshed = False
         for step_name in DERIVED_STEPS:
             checkpoint = state_steps.get(step_name, {}) if isinstance(state_steps, dict) else {}
             checkpoint_current = bool(
-                checkpoint.get("status") == "ok"
+                checkpoint.get("status") in {"ok", "blocked_runtime"}
                 and checkpoint.get("input_fingerprint") == raw_fingerprint
             )
-            needs_run = bool(skip_fetch or full_refresh or force_rebuild or not checkpoint_current)
+            needs_run = bool(
+                skip_fetch
+                or full_refresh
+                or force_rebuild
+                or not checkpoint_current
+                or (step_name == "refresh_sentiment_event_data" and fetch_news)
+                or (
+                    sentiment_data_refreshed
+                    and step_name in {"train_sentiment_event_fusion", "build_sentiment_event_scores"}
+                )
+            )
             if dependency_failed:
                 steps.append({"step": step_name, "status": "skipped", "reason": "upstream or dependency step was not complete"})
                 continue
@@ -188,7 +229,12 @@ def run_daily_update(
                     "input_fingerprint": raw_fingerprint,
                     "duration_seconds": round((datetime.now(timezone.utc) - started_at).total_seconds(), 3),
                 }
-                for field in ("output_rows", "factor_long_rows", "row_count", "tradable_rows", "latest_trade_date", "stock_count", "rows"):
+                for field in (
+                    "output_rows", "factor_long_rows", "row_count", "tradable_rows",
+                    "latest_trade_date", "latest_market_date", "stock_count", "rows",
+                    "market_sentiment_rows", "stored_event_rows", "news_symbol_coverage",
+                    "training_sample_count", "prediction_rows",
+                ):
                     if field in step_report:
                         step_entry[field] = step_report[field]
                 steps.append(step_entry)
@@ -197,8 +243,10 @@ def run_daily_update(
                     "input_fingerprint": raw_fingerprint,
                     "completed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 }
-                if step_status != "ok":
+                if step_status not in {"ok", "blocked_runtime"}:
                     dependency_failed = True
+                elif step_name == "refresh_sentiment_event_data":
+                    sentiment_data_refreshed = True
             except Exception as exc:
                 dependency_failed = True
                 steps.append({
@@ -266,6 +314,11 @@ def main() -> None:
     snapshot.add_argument("--no-snapshot", action="store_false", dest="use_snapshot", help=argparse.SUPPRESS)
     parser.set_defaults(use_snapshot=False)
     parser.add_argument("--force-rebuild", action="store_true", help="Rebuild factors, labels, and latest scores even when daily data is unchanged.")
+    parser.add_argument(
+        "--fetch-news",
+        action="store_true",
+        help="Incrementally fetch recent real stock news before training the optional sentiment-event model.",
+    )
     parser.add_argument("--overlap-days", type=int, default=7, help="Calendar-day overlap for default incremental fetch; refreshes partial latest dates.")
     args = parser.parse_args()
     try:
@@ -275,6 +328,7 @@ def main() -> None:
             overlap_days=args.overlap_days,
             use_snapshot=args.use_snapshot,
             force_rebuild=args.force_rebuild,
+            fetch_news=args.fetch_news,
         )
     except Exception as exc:
         report = {
