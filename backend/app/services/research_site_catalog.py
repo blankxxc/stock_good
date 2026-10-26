@@ -6,12 +6,12 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 FRONTEND_APP = PROJECT_ROOT / "frontend" / "src" / "app"
 
-PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login", "watchlist"]
-USER_VISIBLE_ROUTES = ["scores", "condition-screen", "backtests", "factors", "models", "graph"]
-INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "realtime", "flink-jobs", "ops"]
+PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "login", "account", "watchlist"]
+USER_VISIBLE_ROUTES = ["scores", "condition-screen", "strategy-lab", "visualization", "graph"]
+INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "ops"]
 INTERNAL_GOVERNANCE_ROUTES = ["rag", "simulation", "reports", "settings/licenses", "settings/users", "settings/audit"]
 FORBIDDEN_COPY = ["AI 荐股", "今日牛股", "稳赚", "买入卖出建议", "目标价", "一键跟投"]
-FORBIDDEN_USER_NAV = ["Data Fabric", "数据工程", "/dashboard", "/data-quality", "/lineage", "/lakehouse", "/spark-jobs", "/realtime", "/flink-jobs", "/ops", "Research Console"]
+FORBIDDEN_USER_NAV = ["Data Fabric", "数据工程", "/dashboard", "/data-quality", "/lineage", "/lakehouse", "/spark-jobs", "/ops", "Research Console"]
 
 
 def _page_text(route: str) -> str:
@@ -31,8 +31,6 @@ def site_payload(research_boundary: str) -> dict[str, Any]:
         {"route": "/lineage", "api": "/api/lineage", "status": "backend_admin_only"},
         {"route": "/lakehouse", "api": "/api/lakehouse", "status": "backend_admin_only"},
         {"route": "/spark-jobs", "api": "/api/spark-jobs", "status": "backend_admin_only"},
-        {"route": "/realtime", "api": "/api/realtime", "status": "backend_admin_only"},
-        {"route": "/flink-jobs", "api": "/api/flink-jobs", "status": "backend_admin_only"},
         {"route": "/ops", "api": "/api/ops", "status": "backend_admin_only"},
     ]
     return {

@@ -1,10 +1,80 @@
 table: ods_market_daily_raw
 layer: ODS
-schema_version: v0.1.0
-description: foundation contract stub with point-in-time metadata and license governance.
+schema_version: v0.2.0
+description: Daily research OHLC with separate unadjusted prices and nullable historical ST status; adj_factor is adjusted close divided by raw_close, null when unavailable.
 primary_key: [trade_date, symbol]
 unique_key: [trade_date, symbol]
 fields:
+  - name: raw_open
+    type: decimal
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: trade_date
+    unit: "CNY, unadjusted"
+    range: ">0 or null"
+    anomaly_rule: "reject invalid prices; preserve unknown ST as null"
+    backfill_allowed: true
+  - name: raw_high
+    type: decimal
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: trade_date
+    unit: "CNY, unadjusted"
+    range: ">0 or null"
+    anomaly_rule: "reject invalid prices; preserve unknown ST as null"
+    backfill_allowed: true
+  - name: raw_low
+    type: decimal
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: trade_date
+    unit: "CNY, unadjusted"
+    range: ">0 or null"
+    anomaly_rule: "reject invalid prices; preserve unknown ST as null"
+    backfill_allowed: true
+  - name: raw_close
+    type: decimal
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: trade_date
+    unit: "CNY, unadjusted"
+    range: ">0 or null"
+    anomaly_rule: "reject invalid prices; preserve unknown ST as null"
+    backfill_allowed: true
+  - name: st_flag
+    type: boolean
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: trade_date
+    unit: "flag"
+    range: "true=ST, false=verified non-ST, null=unknown"
+    anomaly_rule: "reject invalid prices; preserve unknown ST as null"
+    backfill_allowed: true
+  - name: st_status_source
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: trade_date
+    unit: "source"
+    range: "baostock_daily_isST or unknown"
+    anomaly_rule: "reject invalid prices; preserve unknown ST as null"
+    backfill_allowed: true
+  - name: raw_price_source
+    type: string
+    primary_key: false
+    unique_key: false
+    nullable: true
+    time_semantic: trade_date
+    unit: "source"
+    range: "provider provenance or unknown"
+    anomaly_rule: "reject invalid prices; preserve unknown ST as null"
+    backfill_allowed: true
   - name: trade_date
     type: date
     primary_key: true

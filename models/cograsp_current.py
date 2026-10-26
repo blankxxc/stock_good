@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import importlib.util
 import hashlib
 import json
 import math
@@ -8,20 +9,43 @@ import os
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
+from types import ModuleType
 from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
 
-from models.cograsp_official_adapter import (
-    FEATURE_COLUMNS,
-    LOOKBACK_WINDOW,
-    ROOT,
-    UPSTREAM_COMMIT,
-    UPSTREAM_MODEL,
-    UPSTREAM_URL,
-    _load_module,
-)
+ROOT = Path(__file__).resolve().parents[1]
+UPSTREAM_DIR = ROOT / "third_party" / "COGRASP"
+UPSTREAM_MODEL = UPSTREAM_DIR / "model.py"
+
+UPSTREAM_URL = "https://github.com/NingboSong/COGRASP"
+UPSTREAM_COMMIT = "34e31f856ac396fa5ecea1f4410fe6c7d0bd5851"
+LOOKBACK_WINDOW = 15
+FEATURE_COLUMNS = [
+    "open",
+    "close",
+    "high",
+    "low",
+    "amount",
+    "volume",
+    "amplitude",
+    "momentum",
+    "momentum_volume",
+    "turnover",
+]
+
+def _load_module(module_name: str, path: Path) -> ModuleType:
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Missing official COGRASP source at {path}; run: git submodule update --init --recursive"
+        )
+    spec = importlib.util.spec_from_file_location(module_name, path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Unable to import official COGRASP module from {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 CURRENT_DAILY = ROOT / "data" / "real" / "csi300_daily" / "part-000.parquet"
 ARTIFACT_DIR = ROOT / "models" / "checkpoints" / "cograsp_current_csi300"

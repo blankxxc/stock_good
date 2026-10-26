@@ -12,7 +12,6 @@ create table if not exists model_registry (id integer primary key autoincrement,
 create table if not exists experiment_run (id integer primary key autoincrement, created_at text not null default current_timestamp, updated_at text);
 create table if not exists pipeline_task_run (id integer primary key autoincrement, created_at text not null default current_timestamp, updated_at text);
 create table if not exists spark_job_run (id integer primary key autoincrement, created_at text not null default current_timestamp, updated_at text, run_id text unique, job_name text, input_snapshot_id text, output_snapshot_id text, config_hash text, status text);
-create table if not exists flink_job_run (id integer primary key autoincrement, created_at text not null default current_timestamp, updated_at text, run_id text unique, job_name text, input_topics text, output_topics text, checkpoint_path text, status text);
 create table if not exists report_registry (id integer primary key autoincrement, created_at text not null default current_timestamp, updated_at text);
 create table if not exists rag_document (id integer primary key autoincrement, created_at text not null default current_timestamp, updated_at text);
 create table if not exists rag_chunk (id integer primary key autoincrement, created_at text not null default current_timestamp, updated_at text);

@@ -1,6 +1,8 @@
 job_name: factor_store_materialize_feature_matrix
 runtime: local_polars_pandas_then_spark_materialization
 inputs:
+- data/real/csi300_daily
+- data/real/benchmark_daily
 - data/samples/synthetic_mini_market
 - configs/factor/factor_spec.yaml
 - feature_store/feature_registry.yaml

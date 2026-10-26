@@ -10,7 +10,7 @@ from typing import Any
 
 import pandas as pd
 
-from data.adapters.lakehouse_sources import registry_as_dicts, status_counts, write_registry
+from data.adapters.lakehouse_sources import status_counts, write_registry
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_VERSION = "lakehouse_v001"
@@ -181,18 +181,6 @@ def build_source_tables() -> dict[str, pd.DataFrame]:
                 "publish_time": f"{d}T15:30:00+08:00",
             })
     market_daily = pd.DataFrame(daily_rows)
-    minute_rows = []
-    for row in daily_rows[:8]:
-        for minute, mult in [("09:31:00", 0.998), ("10:00:00", 1.002), ("14:57:00", 1.0)]:
-            minute_rows.append({
-                "trade_date": row["trade_date"], "symbol": row["symbol"], "event_time": f"{row['trade_date']}T{minute}+08:00",
-                "open": row["open"] * mult, "high": row["high"] * mult, "low": row["low"] * mult, "close": row["close"] * mult,
-                "volume": int(row["volume"] / 24), "amount": round(row["amount"] / 24, 2), "vwap": round(row["amount"] / row["volume"], 4)
-            })
-    market_minute = pd.DataFrame(minute_rows)
-    tick = market_minute.head(8).assign(price=lambda x: x["close"], bid_price=lambda x: x["close"] * 0.999, ask_price=lambda x: x["close"] * 1.001)
-    trade = market_minute.head(8).assign(trade_id=[f"T{i:04d}" for i in range(8)], trade_price=lambda x: x["close"], trade_volume=lambda x: (x["volume"] / 10).astype(int))
-    orderbook = market_minute.head(8).assign(bid_volume=1000, ask_volume=1200, bid_price=lambda x: x["close"] * 0.999, ask_price=lambda x: x["close"] * 1.001)
     financial = pd.DataFrame([
         {"symbol": s, "report_period": "2025Q4", "announce_time": "2026-01-05T08:00:00+08:00", "statement_type": "income", "item_name": "revenue", "item_value": 1_000_000_000 + i * 120_000_000, "publish_time": "2026-01-05T08:00:00+08:00"}
         for i, (s, *_rest) in enumerate(symbols)
@@ -223,10 +211,6 @@ def build_source_tables() -> dict[str, pd.DataFrame]:
         "index_constituent_history": index_constituents,
         "concept_classification": concepts,
         "market_daily_ohlcv": market_daily,
-        "market_minute_rt": market_minute,
-        "market_tick_rt": tick,
-        "trade_rt": trade,
-        "orderbook_rt": orderbook,
         "financial_statement_basic": financial,
         "announcement_event": announcements,
         "news_event": news,
@@ -239,10 +223,6 @@ def build_source_tables() -> dict[str, pd.DataFrame]:
 
 ODS_SOURCE_MAP = {
     "ods_market_daily_raw": "market_daily_ohlcv",
-    "ods_market_minute_raw": "market_minute_rt",
-    "ods_market_tick_raw": "market_tick_rt",
-    "ods_trade_raw": "trade_rt",
-    "ods_orderbook_raw": "orderbook_rt",
     "ods_financial_statement_raw": "financial_statement_basic",
     "ods_announcement_raw": "announcement_event",
     "ods_news_raw": "news_event",
@@ -283,22 +263,18 @@ def _build_dwd(source_tables: dict[str, pd.DataFrame], ods_snapshot_ids: dict[st
     dwd_daily["adj_close"] = dwd_daily["close"] * dwd_daily["adj_factor"]
     dwd_daily = _base_metadata(dwd_daily, "dwd_stock_daily_bar")
 
-    minute = source_tables["market_minute_rt"].copy()
-    dwd_minute = _base_metadata(minute, "dwd_stock_minute_bar")
     fin = source_tables["financial_statement_basic"].copy().rename(columns={"announce_time": "event_time"})
     dwd_fin = _base_metadata(fin, "dwd_financial_statement")
     dwd_news = _base_metadata(source_tables["news_event"].copy(), "dwd_news_event")
     dwd_ann = _base_metadata(source_tables["announcement_event"].copy(), "dwd_announcement_event")
     tables = {
         "dwd_stock_daily_bar": dwd_daily,
-        "dwd_stock_minute_bar": dwd_minute,
         "dwd_financial_statement": dwd_fin,
         "dwd_news_event": dwd_news,
         "dwd_announcement_event": dwd_ann,
     }
     upstream = {
         "dwd_stock_daily_bar": [ods_snapshot_ids["ods_market_daily_raw"], ods_snapshot_ids["ods_financial_statement_raw"]],
-        "dwd_stock_minute_bar": [ods_snapshot_ids["ods_market_minute_raw"]],
         "dwd_financial_statement": [ods_snapshot_ids["ods_financial_statement_raw"]],
         "dwd_news_event": [ods_snapshot_ids["ods_news_raw"]],
         "dwd_announcement_event": [ods_snapshot_ids["ods_announcement_raw"]],
@@ -335,12 +311,6 @@ def _build_gold_ads(dwd_tables: dict[str, pd.DataFrame], dwd_snapshot_ids: dict[
         part["factor_version"] = "v001"
         factors.append(part)
     factor_daily = pd.concat(factors, ignore_index=True)
-
-    minute = dwd_tables["dwd_stock_minute_bar"].copy()
-    factor_intraday = minute[["event_time", "trade_date", "symbol", "vwap", "available_time", "source", "data_version", "schema_version", "trace_id"]].copy()
-    factor_intraday["factor_name"] = "vwap_deviation"
-    factor_intraday["factor_value"] = factor_intraday["vwap"] / factor_intraday["vwap"].mean() - 1
-    factor_intraday["factor_version"] = "v001"
 
     news = dwd_tables["dwd_news_event"].copy()
     news_factor = news[["event_id", "event_time", "publish_time", "available_time", "related_symbols", "related_industries", "sentiment", "confidence", "source", "data_version", "schema_version", "trace_id"]].copy()
@@ -411,7 +381,6 @@ def _build_gold_ads(dwd_tables: dict[str, pd.DataFrame], dwd_snapshot_ids: dict[
 
     tables = {
         "factor_daily_panel": factor_daily,
-        "factor_intraday_panel": factor_intraday,
         "factor_news_sentiment_panel": news_factor,
         "factor_market_regime_panel": market_regime,
         "stock_relation_edge": relation_edges,
@@ -428,7 +397,6 @@ def _build_gold_ads(dwd_tables: dict[str, pd.DataFrame], dwd_snapshot_ids: dict[
     layer = {name: ("ADS" if name.startswith("ads_") else "DWS") for name in tables}
     upstream = {
         "factor_daily_panel": [dwd_snapshot_ids["dwd_stock_daily_bar"]],
-        "factor_intraday_panel": [dwd_snapshot_ids["dwd_stock_minute_bar"]],
         "factor_news_sentiment_panel": [dwd_snapshot_ids["dwd_news_event"]],
         "factor_market_regime_panel": [dwd_snapshot_ids["dwd_stock_daily_bar"]],
         "stock_relation_edge": [dwd_snapshot_ids["dwd_stock_daily_bar"]],

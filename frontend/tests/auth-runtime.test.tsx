@@ -48,6 +48,7 @@ browserWindow.confirm = () => true;
 
 Object.assign(globalThis, {
   IS_REACT_ACT_ENVIRONMENT: true,
+  self: globalThis,
   window: browserWindow,
   document: { cookie: 'oa_csrf=csrf-runtime-test' },
   BroadcastChannel: FakeBroadcastChannel,

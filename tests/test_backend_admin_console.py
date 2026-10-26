@@ -35,7 +35,7 @@ def test_fastapi_backend_admin_overview_api_exposes_control_plane_contract() -> 
     assert any(item["path"] == "/docs" for item in payload["documentation_links"])
     assert any(item["path"] == "/api/factors" for item in payload["critical_routes"])
     assert payload["data_fabric"]["visibility"] == "backend_admin_only"
-    assert {"/api/data-quality", "/api/lineage", "/api/lakehouse", "/api/spark-jobs", "/api/realtime", "/api/flink-jobs"}.issubset(
+    assert {"/api/data-quality", "/api/lineage", "/api/lakehouse", "/api/spark-jobs"}.issubset(
         {item["path"] for item in payload["data_fabric"]["internal_routes"]}
     )
     assert payload["frontend_policy"]["public_positioning"] == "user_stock_selection_platform"

@@ -120,15 +120,13 @@ def run_acceptance() -> dict[str, Any]:
     check("ablation_report_written", bool(ablation) and expected_ablation.issubset(set(ablation.get("configs", {}).keys())))
     check("ablation_has_no_time_leakage", ablation.get("leakage_check_status") == "passed" and report.get("leakage_check_status") == "passed")
     check("backend_factors_api_has_event_regime_payload", api_factors.status_code == 200 and api_factors.json().get("event_regime", {}).get("status") == "event_regime_event_regime_ready")
-    factors_page = (ROOT / "frontend" / "src" / "app" / "factors" / "page.tsx").read_text(encoding="utf-8")
-    check("frontend_factors_page_event_regime_ready", "event_regime" in factors_page and "事件因子" in factors_page and "market regime" in factors_page and "publish_time / available_time" in factors_page)
     check("research_boundary_present", report.get("research_boundary") == RESEARCH_BOUNDARY and (not event_factors.empty and event_factors["research_boundary"].eq(RESEARCH_BOUNDARY).all()))
     check("artifacts_manifest_present", bool(report.get("artifacts")) and (event_regime_DIR / "event_regime_event_regime_report.json").is_file())
     check("report_counts_positive", report.get("event_factor_rows", 0) > 0 and report.get("market_regime_rows", 0) > 0 and report.get("enhanced_feature_rows", 0) > 0)
 
     result = {
         "status": "ok" if not failed else "failed",
-        "checks": 18,
+        "checks": 17,
         "failed": failed,
         "text_model_status": report.get("text_model_status"),
         "event_factor_rows": report.get("event_factor_rows"),

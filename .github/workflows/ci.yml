@@ -30,10 +30,8 @@ jobs:
         run: pytest tests/test_lakehouse_batch_lakehouse.py -q
       - name: spark_job_smoke
         run: pytest tests/test_factor_store_factor_store.py -q
-      - name: flink_job_smoke
-        run: pytest tests/test_realtime_streaming_realtime_streaming.py -q
-      - name: small_sample_training_smoke
-        run: pytest tests/test_advanced_models_advanced_models.py -q
+      - name: daily_model_catalog_smoke
+        run: pytest tests/test_daily_models_catalog.py -q
       - name: small_sample_backtest_smoke
         run: pytest tests/test_research_loop_research_loop.py -q
       - name: rag_citation_rule_test
@@ -44,9 +42,10 @@ jobs:
       - name: frontend_build
         working-directory: frontend
         run: npm run build
+      - name: frontend_runtime_tests
+        working-directory: frontend
+        run: npm run test:runtime
       - name: api_smoke
         run: python scripts/check_ops_deployment_acceptance.py
-      - name: docker_build
-        run: docker compose -f deploy/docker/docker-compose.yml config --services
       - name: database_migration_dry_run
         run: alembic upgrade head --sql > /tmp/ops_deployment_migration_dry_run.sql

@@ -78,5 +78,7 @@ features:
 - cs_rank_return_20d
 - cs_zscore_liquidity
 - industry_zscore_liquidity
+- return_10d_gt_100pct
+- abnormal_move_4_times_10d
 feature_set_version: feature_set_factor_store_v001
 point_in_time_join: feature_store/point_in_time_join/build_model_feature_matrix.py

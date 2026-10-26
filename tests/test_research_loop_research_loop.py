@@ -95,7 +95,7 @@ def test_research_loop_experiment_recorder_and_backend_frontend_are_ready():
     manifest = json.loads((recorder / "artifact_manifest.json").read_text(encoding="utf-8"))
     assert manifest["run_id"] == run_id
     assert manifest["config_hash"] == report["config_hash"]
-    assert report["qlib_status"] in {"minimal_qlib_recorder_available", "qlib_workflow_blocked_minimal_recorder_used"}
+    assert report["recorder_status"] == "file_based_recorder"
 
     from backend.app.main import app
     from tests.auth_helpers import authenticated_admin_client
@@ -129,7 +129,7 @@ def test_research_loop_experiment_recorder_and_backend_frontend_are_ready():
     for page, marker in [
         ("dashboard", "getConsolePage('dashboard')"),
         ("scores", "/api/scores"),
-        ("backtests", "/api/backtests"),
+        ("strategy-lab", "StrategyLab"),
     ]:
         text = (PROJECT_ROOT / "frontend" / "src" / "app" / page / "page.tsx").read_text(encoding="utf-8")
         assert marker in text

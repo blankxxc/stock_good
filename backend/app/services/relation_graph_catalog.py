@@ -17,7 +17,7 @@ def _read_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def relation_graph_payload(research_boundary: str) -> dict[str, Any]:
+def relation_graph_payload(research_boundary: str, *, include_network: bool = True) -> dict[str, Any]:
     root = project_root()
     report = _read_json(root / "reports" / "relation_graph" / "relation_graph_relation_graph_report.json")
     ablation = _read_json(root / "reports" / "relation_graph" / "relation_factor_ablation_report.json")
@@ -43,8 +43,6 @@ def relation_graph_payload(research_boundary: str) -> dict[str, Any]:
             "networkx_status": report.get("networkx_status"),
             "spark_price_corr_status": report.get("spark_price_corr_status"),
             "spark_job": spark_job,
-            "hist_trsr_adapter_status": report.get("hist_trsr_adapter_status"),
-            "adapter_summary": report.get("adapter_summary", {}),
             "ablation_status": report.get("ablation_status"),
             "relation_ablation_gain_status": report.get("relation_ablation_gain_status"),
             "ablation_summary": {
@@ -57,7 +55,7 @@ def relation_graph_payload(research_boundary: str) -> dict[str, Any]:
                 for name, item in ablation.get("configs", {}).items()
             },
             "graph_summary": graph_summary,
-            "network": relation_network_payload(str(root)),
+            **({"network": relation_network_payload(str(root))} if include_network else {}),
             "leakage_check_status": report.get("leakage_check_status"),
             "latest_available_time": report.get("latest_available_time"),
             "artifacts": report.get("artifacts", {}),
@@ -67,5 +65,5 @@ def relation_graph_payload(research_boundary: str) -> dict[str, Any]:
         "status": "relation_graph_relation_graph_pending",
         "maturity": "L1-contract-and-route-stub",
         "research_boundary": research_boundary,
-        "description": "股票关系边、NetworkX centrality、传播因子、HIST/TRSR 适配和图谱页",
+        "description": "股票关系边、NetworkX centrality、传播因子和图谱页",
     }

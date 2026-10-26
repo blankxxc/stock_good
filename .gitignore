@@ -73,24 +73,16 @@ logs/
 *.duckdb
 *.duckdb.wal
 
-# Docker / compose local state
-.docker/
-docker-data/
-volumes/
-
 # Generated lakehouse and research data artifacts
 # Keep code/config under lakehouse/, configs/, spark/, backend/, frontend/ tracked;
 # regenerate these outputs via scripts/run_lakehouse_pipeline.py or scripts/run_data_trust_data_trust.py.
 data/bronze/
 data/silver/
 data/gold/
-data/realtime/
 data/ads/
 data/samples/
 data/quarantine/
 data/snapshots/*.json
-data/real/finmamba_csi300/
-data/real/finmamba_relations/
 lakehouse/delta/*
 !lakehouse/delta/.gitkeep
 lakehouse/iceberg/*
@@ -106,6 +98,8 @@ configs/env/**
 !configs/env/**/.gitkeep
 
 # Generated reports; keep markdown summaries trackable.
+reports/test_tmp/
+reports/strategy_lab/*.xml
 reports/**/*.json
 reports/**/*.html
 reports/**/*.yaml

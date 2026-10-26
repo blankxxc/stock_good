@@ -11,7 +11,7 @@ export default function Page() {
         <div>
           <span className="badge">候选池功能已迁移</span>
           <h2>候选池已放入“股票预测选股”页面</h2>
-          <p>为了避免你在“候选池”和“股票预测选股”之间来回切换，候选池 Top20、入池原因、个股详情入口和回测风险入口已经统一放到 /scores 页面。</p>
+          <p>为了避免你在“候选池”和“股票预测选股”之间来回切换，候选池 Top20、入池原因和个股详情入口已经统一放到 /scores 页面。</p>
         </div>
         <a className="button primary" href="/scores#candidate-pool">打开股票预测选股里的候选池</a>
       </div>

@@ -7,11 +7,8 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 REQUIRED_DIRS = [
     "backend/app/api",
-    "backend/app/core",
     "backend/app/db",
     "backend/app/services",
-    "backend/app/schemas",
-    "backend/app/workers",
     "backend/app/security",
     "frontend/src/app",
     "data/raw",
@@ -33,13 +30,7 @@ REQUIRED_DIRS = [
     "spark/libs",
     "spark/tests",
     "spark/conf",
-    "streaming/kafka",
-    "streaming/flink",
-    "streaming/producers",
-    "streaming/jobs",
-    "streaming/schemas",
     "factors/offline",
-    "factors/realtime",
     "factors/event",
     "factors/regime",
     "factors/relation",
@@ -56,14 +47,6 @@ REQUIRED_DIRS = [
     "rag/evidence",
     "rag/evals",
     "rag/schemas",
-    "models/qlib",
-    "models/lightgbm",
-    "models/master",
-    "models/stockmixer",
-    "models/hist",
-    "models/trsr",
-    "models/text",
-    "models/adapters",
     "backtest/engine",
     "backtest/metrics",
     "backtest/attribution",
@@ -82,8 +65,6 @@ REQUIRED_DIRS = [
     "tests/leakage",
     "tests/smoke",
     "tests/e2e",
-    "deploy/docker",
-    "deploy/k8s",
     "deploy/monitoring",
     "deploy/backup",
     "docs/adr",
@@ -91,17 +72,12 @@ REQUIRED_DIRS = [
 
 SCHEMA_FILES = [
     "market_daily.schema.yaml",
-    "market_minute.schema.yaml",
-    "market_tick.schema.yaml",
-    "trade.schema.yaml",
-    "orderbook.schema.yaml",
     "financial_statement.schema.yaml",
     "announcement_event.schema.yaml",
     "news_event.schema.yaml",
     "macro_event.schema.yaml",
     "stock_relation_edge.schema.yaml",
     "factor_daily_panel.schema.yaml",
-    "factor_intraday_panel.schema.yaml",
     "label_cross_sectional_return.schema.yaml",
     "model_training_sample.schema.yaml",
     "model_signal_cross_sectional.schema.yaml",
@@ -132,7 +108,6 @@ REQUIRED_TABLES = [
     "experiment_run",
     "pipeline_task_run",
     "spark_job_run",
-    "flink_job_run",
     "report_registry",
     "rag_document",
     "rag_chunk",
@@ -156,8 +131,6 @@ BACKEND_ROUTE_PREFIXES = [
     "/api/lineage",
     "/api/lakehouse",
     "/api/spark-jobs",
-    "/api/realtime",
-    "/api/flink-jobs",
     "/api/factors",
     "/api/features",
     "/api/graph",
@@ -177,18 +150,15 @@ FRONTEND_ROUTES = [
     "dashboard/page.tsx",
     "scores/page.tsx",
     "candidates/page.tsx",
-    "backtests/page.tsx",
-    "factors/page.tsx",
+    "strategy-lab/page.tsx",
+    "visualization/page.tsx",
     "experiments/page.tsx",
     "rag/page.tsx",
     "data-quality/page.tsx",
     "lineage/page.tsx",
     "lakehouse/page.tsx",
     "spark-jobs/page.tsx",
-    "realtime/page.tsx",
-    "flink-jobs/page.tsx",
     "graph/page.tsx",
-    "models/page.tsx",
     "simulation/page.tsx",
     "reports/page.tsx",
     "settings/licenses/page.tsx",
@@ -199,27 +169,8 @@ FRONTEND_ROUTES = [
 ADR_FILES = [
     "ADR-001-scope-full-two-week-demo.md",
     "ADR-002-point-in-time-time-semantics.md",
-    "ADR-003-spark-flink-responsibility-boundary.md",
     "ADR-004-lakehouse-format-choice.md",
 ]
-
-COMPOSE_SERVICES = {
-    "postgres",
-    "redis",
-    "qdrant",
-    "redpanda",
-    "flink-jobmanager",
-    "flink-taskmanager",
-    "spark-master",
-    "spark-worker",
-    "clickhouse",
-    "backend",
-    "worker",
-    "frontend",
-    "prometheus",
-    "grafana",
-    "backup",
-}
 
 ALEMBIC_FILES = [
     "alembic.ini",
@@ -287,16 +238,7 @@ def test_frontend_routes_and_governance_docs_are_stubbed():
     assert missing_adrs == []
     assert (PROJECT_ROOT / "docs" / "risk_register.md").is_file()
     assert (PROJECT_ROOT / "feature_store" / "feature_registry.yaml").is_file()
-    assert (PROJECT_ROOT / "deploy" / "docker" / "docker-compose.yml").is_file()
     assert (PROJECT_ROOT / "README.md").is_file()
-
-
-def test_compose_manifest_contains_all_foundation_services():
-    compose_path = PROJECT_ROOT / "deploy" / "docker" / "docker-compose.yml"
-    compose = yaml.safe_load(compose_path.read_text(encoding="utf-8"))
-    services = set(compose["services"])
-    missing_services = sorted(COMPOSE_SERVICES - services)
-    assert missing_services == []
 
 
 def test_alembic_foundation_migration_scaffold_exists():
@@ -308,8 +250,6 @@ def test_alembic_foundation_migration_scaffold_exists():
     assert missing_tables == []
 
 
-def test_spark_and_flink_smoke_artifacts_exist():
+def test_spark_smoke_artifacts_exist():
     assert (PROJECT_ROOT / "spark" / "jobs" / "foundation_spark_smoke.py").is_file()
     assert (PROJECT_ROOT / "spark" / "conf" / "spark-defaults.conf").is_file()
-    assert (PROJECT_ROOT / "streaming" / "flink" / "foundation_flink_job_graph.py").is_file()
-    assert (PROJECT_ROOT / "streaming" / "kafka" / "topics.yaml").is_file()

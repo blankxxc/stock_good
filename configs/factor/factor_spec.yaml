@@ -1,8 +1,8 @@
 schema_version: v0.4.0
-factor_version: factor_v004
+factor_version: factor_v005
 feature_set_version: feature_set_factor_store_v001
 research_boundary: research_signals_only_not_investment_advice
-generated_at: '2026-07-28T13:16:00+00:00'
+generated_at: '2026-10-19T14:42:16+00:00'
 factors:
   return_1d:
     category: price_return
@@ -43,7 +43,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   return_5d:
     category: price_return
     economic_hypothesis: Recent realized return captures short/medium horizon price
@@ -83,7 +83,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   return_10d:
     category: price_return
     economic_hypothesis: Recent realized return captures short/medium horizon price
@@ -123,7 +123,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   return_20d:
     category: price_return
     economic_hypothesis: Recent realized return captures short/medium horizon price
@@ -163,7 +163,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   return_60d:
     category: price_return
     economic_hypothesis: Recent realized return captures short/medium horizon price
@@ -203,7 +203,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   return_120d:
     category: price_return
     economic_hypothesis: Recent realized return captures short/medium horizon price
@@ -243,7 +243,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   momentum_20d:
     category: momentum
     economic_hypothesis: Medium-term winners may keep relative strength before reversal
@@ -283,7 +283,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   momentum_60d:
     category: momentum
     economic_hypothesis: Medium-term winners may keep relative strength before reversal
@@ -323,7 +323,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   momentum_120d:
     category: momentum
     economic_hypothesis: Medium-term winners may keep relative strength before reversal
@@ -363,7 +363,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   reversal_1d:
     category: reversal
     economic_hypothesis: Short-term overreaction may mean-revert after costs and tradability
@@ -403,7 +403,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   reversal_5d:
     category: reversal
     economic_hypothesis: Short-term overreaction may mean-revert after costs and tradability
@@ -443,7 +443,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   reversal_10d:
     category: reversal
     economic_hypothesis: Short-term overreaction may mean-revert after costs and tradability
@@ -483,7 +483,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volatility_5d:
     category: volatility
     economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
@@ -522,7 +522,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volatility_10d:
     category: volatility
     economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
@@ -561,7 +561,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volatility_20d:
     category: volatility
     economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
@@ -600,7 +600,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volatility_60d:
     category: volatility
     economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
@@ -639,7 +639,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volatility_120d:
     category: volatility
     economic_hypothesis: Higher realized volatility proxies uncertainty and risk premium.
@@ -678,7 +678,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   downside_volatility_20d:
     category: volatility
     economic_hypothesis: Downside-only volatility captures asymmetric risk.
@@ -717,7 +717,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   high_low_volatility_20d:
     category: volatility
     economic_hypothesis: Intraday range captures realized uncertainty beyond close-to-close
@@ -757,7 +757,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   skew_20d:
     category: volatility
     economic_hypothesis: Return skewness describes lottery/crash asymmetry.
@@ -796,7 +796,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   kurtosis_20d:
     category: volatility
     economic_hypothesis: Fat tails indicate instability and tail-risk exposure.
@@ -835,7 +835,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   downside_volatility_60d:
     category: volatility
     economic_hypothesis: Downside-only volatility captures asymmetric risk.
@@ -874,7 +874,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   high_low_volatility_60d:
     category: volatility
     economic_hypothesis: Intraday range captures realized uncertainty beyond close-to-close
@@ -914,7 +914,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   skew_60d:
     category: volatility
     economic_hypothesis: Return skewness describes lottery/crash asymmetry.
@@ -953,7 +953,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   kurtosis_60d:
     category: volatility
     economic_hypothesis: Fat tails indicate instability and tail-risk exposure.
@@ -992,7 +992,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   turnover_proxy_5d:
     category: liquidity
     economic_hypothesis: Turnover proxy captures abnormal trading intensity.
@@ -1031,7 +1031,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   amount_mean_5d:
     category: liquidity
     economic_hypothesis: Higher traded amount improves capacity and lowers implementation
@@ -1071,7 +1071,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volume_mean_5d:
     category: liquidity
     economic_hypothesis: Volume depth proxies tradability.
@@ -1110,7 +1110,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   turnover_proxy_20d:
     category: liquidity
     economic_hypothesis: Turnover proxy captures abnormal trading intensity.
@@ -1149,7 +1149,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   amount_mean_20d:
     category: liquidity
     economic_hypothesis: Higher traded amount improves capacity and lowers implementation
@@ -1189,7 +1189,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volume_mean_20d:
     category: liquidity
     economic_hypothesis: Volume depth proxies tradability.
@@ -1228,7 +1228,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   turnover_proxy_60d:
     category: liquidity
     economic_hypothesis: Turnover proxy captures abnormal trading intensity.
@@ -1267,7 +1267,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   amount_mean_60d:
     category: liquidity
     economic_hypothesis: Higher traded amount improves capacity and lowers implementation
@@ -1307,7 +1307,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volume_mean_60d:
     category: liquidity
     economic_hypothesis: Volume depth proxies tradability.
@@ -1346,7 +1346,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   amihud_20d:
     category: liquidity
     economic_hypothesis: Amihud illiquidity penalizes high price impact names.
@@ -1385,7 +1385,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   zero_trade_ratio_20d:
     category: liquidity
     economic_hypothesis: Zero-volume days flag illiquidity and stale prices.
@@ -1424,7 +1424,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   amount_percentile_20d:
     category: liquidity
     economic_hypothesis: Amount percentile normalizes liquidity relative to own recent
@@ -1464,7 +1464,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   amihud_60d:
     category: liquidity
     economic_hypothesis: Amihud illiquidity penalizes high price impact names.
@@ -1503,7 +1503,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   zero_trade_ratio_60d:
     category: liquidity
     economic_hypothesis: Zero-volume days flag illiquidity and stale prices.
@@ -1542,7 +1542,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   amount_percentile_60d:
     category: liquidity
     economic_hypothesis: Amount percentile normalizes liquidity relative to own recent
@@ -1582,7 +1582,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   liquidity_zscore_20d:
     category: liquidity
     economic_hypothesis: Cross-sectional liquidity helps identify capacity-friendly
@@ -1622,14 +1622,15 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   vwap_deviation:
     category: price_volume_structure
-    economic_hypothesis: Close vs daily VWAP proxy captures intraday pressure.
-    formula: close / (amount/volume) - 1
+    economic_hypothesis: Unadjusted close vs daily VWAP captures intraday pressure
+      on the same price basis.
+    formula: raw_close / (amount/volume) - 1
     input_tables:
+    - data/real/csi300_daily
     - data/samples/synthetic_mini_market
-    - data/quarantine/data_trust_synthetic_market
     required_fields:
     - trade_date
     - symbol
@@ -1641,27 +1642,30 @@ factors:
     - amount
     - available_time
     - prediction_time
+    - raw_close
+    - adjustment_mode
     time_semantics:
       event_time: market close or original source event_time
       publish_time: source publish_time must be <= available_time
       available_time: feature row visible only when available_time <= prediction_time
-    prediction_time: source prediction_time from data_trust synthetic mini market;
-      factor value never uses future rows
-    universe: eligible_universe and non-delist clean synthetic mini market rows
+    prediction_time: daily_after_close; all input available_time <= prediction_time
+    universe: eligible_universe and non-delist clean daily stock rows
     horizon: validation label uses 5d forward return only for reports
     winsorization: median_abs_deviation_or_1pct_99pct_clip_before_model_training
     standardization: cross_sectional_zscore_or_rank_at_trade_date_only
     neutralization: industry_neutral_variant_when_available
-    missing_value_rule: leave_null_for_insufficient_lookback_then_model_side_impute
+    missing_value_rule: leave_null_when_raw_close_is_missing_for_adjusted_prices_or_amount_or_volume_is_invalid
     rebalancing_frequency: daily_after_close
     expected_decay: 1d
     known_risks:
-    - synthetic_data_only
-    - short_local_history
-    - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
+    - missing_unadjusted_close_returns_null
+    - amount_and_volume_units_must_match
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
+    price_basis: amount in currency and volume in shares; raw_close is unadjusted
+    compatibility_rule: close fallback only for explicitly unadjusted rows or legacy
+      sources without adjustment_mode; never for hfq/qfq or unknown modes
   close_to_high:
     category: price_volume_structure
     economic_hypothesis: Close near high indicates buying pressure; near low indicates
@@ -1701,7 +1705,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   close_to_low:
     category: price_volume_structure
     economic_hypothesis: Close position in range captures intraday strength.
@@ -1740,7 +1744,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   intraday_return:
     category: price_volume_structure
     economic_hypothesis: Open-to-close return proxies same-day demand.
@@ -1779,7 +1783,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   overnight_gap:
     category: price_volume_structure
     economic_hypothesis: Overnight information arrival can predict continuation or
@@ -1819,7 +1823,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   high_low_range:
     category: price_volume_structure
     economic_hypothesis: Single-day range captures volatility and liquidity stress.
@@ -1858,7 +1862,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   close_position_in_range:
     category: price_volume_structure
     economic_hypothesis: Range position measures close auction strength.
@@ -1897,7 +1901,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volume_shock_5d:
     category: price_volume_structure
     economic_hypothesis: Volume shock flags unusual attention or liquidity events.
@@ -1936,7 +1940,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   volume_shock_20d:
     category: price_volume_structure
     economic_hypothesis: Volume shock flags unusual attention or liquidity events.
@@ -1975,7 +1979,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   price_volume_corr_20d:
     category: price_volume_structure
     economic_hypothesis: Price-volume correlation captures confirmation/divergence.
@@ -2014,7 +2018,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   price_volume_corr_60d:
     category: price_volume_structure
     economic_hypothesis: Price-volume correlation captures confirmation/divergence.
@@ -2053,7 +2057,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   ma5_gap:
     category: moving_average_gap
     economic_hypothesis: Distance from moving average measures trend extension.
@@ -2092,7 +2096,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   ma10_gap:
     category: moving_average_gap
     economic_hypothesis: Distance from moving average measures trend extension.
@@ -2131,7 +2135,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   ma20_gap:
     category: moving_average_gap
     economic_hypothesis: Distance from moving average measures trend extension.
@@ -2170,7 +2174,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   ma60_gap:
     category: moving_average_gap
     economic_hypothesis: Distance from moving average measures trend extension.
@@ -2209,7 +2213,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   ma120_gap:
     category: moving_average_gap
     economic_hypothesis: Distance from moving average measures trend extension.
@@ -2248,7 +2252,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   size_log_amount:
     category: style_proxy
     economic_hypothesis: Size proxy helps control liquidity and capacity exposure.
@@ -2287,7 +2291,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   market_cap_proxy:
     category: style_proxy
     economic_hypothesis: Synthetic market-cap proxy for style/risk control when shares
@@ -2327,7 +2331,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   float_market_cap_proxy:
     category: style_proxy
     economic_hypothesis: Synthetic float-cap proxy for capacity screens.
@@ -2366,7 +2370,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   beta_20d:
     category: style_proxy
     economic_hypothesis: Beta controls market exposure in cross-sectional ranking.
@@ -2405,7 +2409,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   beta_60d:
     category: style_proxy
     economic_hypothesis: Beta controls market exposure in cross-sectional ranking.
@@ -2444,7 +2448,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   value_proxy:
     category: style_proxy
     economic_hypothesis: Lower price proxy stands in for value until PE/PB/PS fields
@@ -2484,7 +2488,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   quality_proxy:
     category: style_proxy
     economic_hypothesis: Quality proxy uses price stability/close strength until accounting
@@ -2524,7 +2528,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   growth_proxy_20d:
     category: style_proxy
     economic_hypothesis: Growth proxy uses medium-term improvement until revenue/profit
@@ -2564,7 +2568,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   low_volatility_proxy:
     category: style_proxy
     economic_hypothesis: Low-volatility style proxy helps risk-balanced candidate
@@ -2604,7 +2608,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   liquidity_proxy:
     category: style_proxy
     economic_hypothesis: Higher liquidity / lower Amihud improves implementability.
@@ -2643,7 +2647,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   industry_return_1d:
     category: industry_neutral
     economic_hypothesis: Industry return captures same-industry common movement.
@@ -2682,7 +2686,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   industry_neutral_return_20d:
     category: industry_neutral
     economic_hypothesis: Industry neutralization reduces sector crowding.
@@ -2721,7 +2725,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   industry_rank_return_20d:
     category: industry_neutral
     economic_hypothesis: Industry rank compares names within a fair peer group.
@@ -2760,7 +2764,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   cs_zscore_return_20d:
     category: cross_sectional
     economic_hypothesis: Cross-sectional standardized momentum is model-friendly.
@@ -2799,7 +2803,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   cs_rank_return_20d:
     category: cross_sectional
     economic_hypothesis: Rank transformation is robust to outliers.
@@ -2838,7 +2842,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   cs_zscore_liquidity:
     category: cross_sectional
     economic_hypothesis: Liquidity z-score supports risk/capacity screens.
@@ -2877,7 +2881,7 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
   industry_zscore_liquidity:
     category: industry_neutral
     economic_hypothesis: Industry-neutral liquidity compares peers rather than sectors.
@@ -2916,4 +2920,89 @@ factors:
     - accounting/fund-flow/vendor fields are proxy-only until licensed data is connected
     - not_investment_advice
     owner: research-platform
-    version: factor_v004
+    version: factor_v005
+  return_10d_gt_100pct:
+    category: abnormal_movement
+    economic_hypothesis: 十日涨幅大于100%；不扣指数涨幅，等于100%不触发。
+    formula: int(close / close.shift(10) - 1 > 1.00)
+    input_tables:
+    - data/real/csi300_daily
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: daily_after_close; all input available_time <= prediction_time
+    universe: clean daily stock rows; SH/SZ benchmark mapping for abnormal moves
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: none_binary_indicator
+    standardization: none_binary_indicator
+    neutralization: none
+    missing_value_rule: leave_null_for_insufficient_history; never_fill_as_false
+    rebalancing_frequency: daily_after_close
+    expected_decay: 10d
+    known_risks:
+    - user_defined_rule_not_exchange_announcement
+    - missing_history_returns_null
+    owner: research-platform
+    version: factor_v005
+    display_name: 十日涨幅大于100%
+  abnormal_move_4_times_10d:
+    category: abnormal_movement
+    economic_hypothesis: 十日内至少四次异动；1至3个交易日的累计涨幅减去同期沪指或深指涨幅大于20个百分点，触发后从当日收盘重新计数。
+    formula: int(count(non_overlapping_excess_return_events_gt_20pct, last_10_sessions)
+      >= 4)
+    input_tables:
+    - data/real/csi300_daily
+    - data/real/benchmark_daily
+    required_fields:
+    - trade_date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount
+    - available_time
+    - prediction_time
+    - index_symbol
+    - index_close
+    - index_available_time
+    time_semantics:
+      event_time: market close or original source event_time
+      publish_time: source publish_time must be <= available_time
+      available_time: feature row visible only when available_time <= prediction_time
+    prediction_time: daily_after_close; all input available_time <= prediction_time
+    universe: clean daily stock rows; SH/SZ benchmark mapping for abnormal moves
+    horizon: validation label uses 5d forward return only for reports
+    winsorization: none_binary_indicator
+    standardization: none_binary_indicator
+    neutralization: none
+    missing_value_rule: leave_null_for_insufficient_history_or_missing_benchmark;
+      never_fill_as_false
+    rebalancing_frequency: daily_after_close
+    expected_decay: 10d
+    known_risks:
+    - user_defined_rule_not_exchange_announcement
+    - missing_history_returns_null
+    owner: research-platform
+    version: factor_v005
+    display_name: 十日内至少四次异动
+    benchmark_mapping:
+      SH: 000001.SH
+      SZ: 399001.SZ
+    event_rule: compound stock return minus compound index return > 0.20 over 1-3
+      sessions; reset after trigger
+    count_rule: at least 4 event end dates in [t-9, t]; missing input restarts 10-return
+      warmup

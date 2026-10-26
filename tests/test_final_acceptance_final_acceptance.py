@@ -5,7 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from fastapi.testclient import TestClient
+from tests.auth_helpers import authenticated_admin_client
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -13,7 +13,6 @@ REQUIRED_DOCS = [
     "docs/architecture.md",
     "docs/data_contracts.md",
     "docs/lakehouse_spark.md",
-    "docs/realtime_streaming.md",
     "docs/factor_system.md",
     "docs/feature_store.md",
     "docs/modeling.md",
@@ -32,7 +31,6 @@ REQUIRED_DEMO_ASSETS = [
     "docs/diagrams/system_architecture.mmd",
     "docs/diagrams/data_lineage.mmd",
     "docs/diagrams/spark_lakehouse_etl.mmd",
-    "docs/diagrams/realtime_streaming.mmd",
     "docs/demo/model_experiment_comparison.md",
     "docs/demo/backtest_report.md",
     "docs/demo/risk_attribution_report.md",
@@ -50,11 +48,7 @@ REQUIRED_FINAL_AREAS = [
     "lakehouse_format",
     "lakehouse_layers",
     "clickhouse_olap",
-    "kafka_redpanda",
-    "flink_realtime",
-    "online_feature_store",
     "offline_factors",
-    "realtime_factors",
     "event_factors",
     "market_regime",
     "relation_graph",
@@ -62,7 +56,7 @@ REQUIRED_FINAL_AREAS = [
     "labels",
     "leakage_check",
     "baseline_model",
-    "advanced_models",
+    "daily_models",
     "backtest",
     "risk_attribution",
     "rag_evidence",
@@ -90,13 +84,13 @@ def _run_acceptance() -> dict:
     return json.loads(result.stdout)
 
 
-def test_final_acceptance_acceptance_script_covers_full_two_week_scope() -> None:
+def test_final_acceptance_acceptance_script_covers_daily_research_scope() -> None:
     report = _run_acceptance()
     assert report["status"] == "ok"
     assert report["checks"] >= 34
     assert report["failed"] == []
     assert report["final_status"] == "final_acceptance_final_acceptance_ready"
-    assert report["completed_modules"] == 14
+    assert report["completed_modules"] == 13
     assert report["coverage_area_count"] >= len(REQUIRED_FINAL_AREAS)
     assert report["document_count"] >= len(REQUIRED_DOCS)
     assert report["demo_asset_count"] >= len(REQUIRED_DEMO_ASSETS)
@@ -131,21 +125,21 @@ def test_final_acceptance_docs_demo_assets_and_api_are_ready() -> None:
     assert "不是 AI 荐股网站" in final_report
 
     coverage = (PROJECT_ROOT / "docs" / "demo" / "coverage_matrix.md").read_text(encoding="utf-8")
-    for required in ["Spark", "Lakehouse", "Flink", "RAG", "风险归因", "导出合规"]:
+    for required in ["Spark", "Lakehouse", "RAG", "风险归因", "导出合规"]:
         assert required in coverage
 
     risk_register = (PROJECT_ROOT / "docs" / "risk_register.md").read_text(encoding="utf-8")
-    for risk in ["Spark", "Flink", "高级模型", "许可证", "实盘"]:
+    for risk in ["Spark", "日频模型", "许可证", "实盘"]:
         assert risk in risk_register
 
     from backend.app.main import app
 
-    client = TestClient(app)
+    client = authenticated_admin_client(app)
     response = client.get("/api/final-acceptance")
     assert response.status_code == 200
     payload = response.json()
     assert payload["status"] == "final_acceptance_final_acceptance_ready"
-    assert payload["completed_modules"] == 14
+    assert payload["completed_modules"] == 13
     assert payload["coverage_area_count"] == report["coverage_area_count"]
 
 

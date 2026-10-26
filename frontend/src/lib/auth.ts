@@ -207,6 +207,7 @@ export function subscribeSessionInvalidation(
 export function safeNextPath(raw: string | null, fallback: string, allowBackendAdmin = false): string {
   if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return fallback;
   const allowed = raw === '/'
+    || raw === '/account'
     || raw === '/watchlist'
     || (allowBackendAdmin && (raw === '/admin-console' || raw === '/backend-admin'))
     || /^\/stocks\/[0-9A-Za-z._-]+$/.test(raw);

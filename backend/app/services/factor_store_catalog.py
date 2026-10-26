@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from backend.app.services.file_payload_cache import file_payload_cache
 
 
 def project_root() -> Path:
@@ -104,6 +105,7 @@ def _build_factor_catalog(
         catalog.append(
             {
                 "factor_name": name,
+                "display_name": spec.get("display_name", name),
                 "category": category,
                 "formula": spec.get("formula"),
                 "economic_hypothesis": spec.get("economic_hypothesis") or registry_item.get("description"),
@@ -181,6 +183,23 @@ def _build_factor_catalog(
     }
 
 
+def _factor_catalog_inputs() -> list[Path]:
+    root = project_root()
+    return [root / path for path in (
+        "reports/factor_store/factor_store_factor_report.json",
+        "reports/factor_store/point_in_time_join_report.json",
+        "reports/factor_store/spark_factor_materialization_report.json",
+        "feature_store/feature_registry.yaml", "configs/factor/factor_spec.yaml",
+        "reports/event_regime/event_regime_event_regime_report.json",
+        "reports/event_regime/event_regime_ablation_report.json",
+        "reports/relation_graph/relation_graph_relation_graph_report.json",
+        "reports/relation_graph/relation_factor_ablation_report.json",
+        "reports/relation_graph/graph_summary.json",
+        "reports/relation_graph/spark_price_corr_edge_job.json",
+    )]
+
+
+@file_payload_cache(_factor_catalog_inputs)
 def factor_payload(research_boundary: str) -> dict[str, Any]:
     from backend.app.services.event_regime_catalog import event_regime_payload
     from backend.app.services.relation_graph_catalog import relation_graph_payload
@@ -192,7 +211,8 @@ def factor_payload(research_boundary: str) -> dict[str, Any]:
     registry = _read_yaml(root / "feature_store" / "feature_registry.yaml")
     factor_spec = _read_yaml(root / "configs" / "factor" / "factor_spec.yaml")
     event_regime_event_regime = event_regime_payload(research_boundary)
-    relation_graph_relation_graph = relation_graph_payload(research_boundary)
+    # The library displays graph metadata; the interactive network belongs to /graph.
+    relation_graph_relation_graph = relation_graph_payload(research_boundary, include_network=False)
 
     if report.get("status") == "ok":
         catalog_payload = _build_factor_catalog(factor_spec, registry, report, point_in_time)
@@ -205,7 +225,7 @@ def factor_payload(research_boundary: str) -> dict[str, Any]:
             "factor_version": report.get("factor_version"),
             "feature_set_version": report.get("feature_set_version"),
             "engine": report.get("engine"),
-            "factor_count": report.get("factor_count", 0),
+            "factor_count": len(factor_spec.get("factors", {})),
             "factor_rows": report.get("factor_rows", 0),
             "feature_matrix_rows": report.get("feature_matrix_rows", 0),
             "feature_registry_count": len(registry.get("features", [])),
@@ -235,7 +255,7 @@ def factor_payload(research_boundary: str) -> dict[str, Any]:
         "status": "factor_store_factor_store_pending",
         "maturity": "L1-contract-and-route-stub",
         "research_boundary": research_boundary,
-        "description": "离线/实时/事件/市场环境/关系因子库",
+        "description": "日频/事件/市场环境/关系因子库",
     }
 
 

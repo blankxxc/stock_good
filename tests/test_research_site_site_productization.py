@@ -7,12 +7,11 @@ from fastapi.testclient import TestClient
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_APP = PROJECT_ROOT / "frontend" / "src" / "app"
-USER_VISIBLE_ROUTES = ["scores", "condition-screen", "backtests", "factors"]
-INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "realtime", "flink-jobs", "ops"]
+from backend.app.services.research_site_catalog import PUBLIC_ROUTES, USER_VISIBLE_ROUTES
+INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "ops"]
 INTERNAL_GOVERNANCE_ROUTES = ["rag", "simulation", "reports", "settings/licenses", "settings/users", "settings/audit"]
-PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login", "watchlist"]
 FORBIDDEN_COPY = ["AI 荐股", "今日牛股", "稳赚", "买入卖出建议", "目标价", "一键跟投"]
-FORBIDDEN_USER_NAV = ["Data Fabric", "数据工程", "/dashboard", "/data-quality", "/lineage", "/lakehouse", "/spark-jobs", "/realtime", "/flink-jobs", "/ops", "Research Console"]
+FORBIDDEN_USER_NAV = ["Data Fabric", "数据工程", "/dashboard", "/data-quality", "/lineage", "/lakehouse", "/spark-jobs", "/ops", "Research Console"]
 
 
 def _read_page(route: str) -> str:
@@ -41,13 +40,16 @@ def test_public_stock_selection_site_hides_internal_data_fabric_from_user_naviga
     assert "投研实验工作台" not in home
     assert "Research Console" not in layout
     assert "fixed-disclaimer" in layout
-    assert "沪深300 · 概率评分 · 条件筛选 · 回测风险" in layout
+    assert "沪深300 · 模型评分 · 条件筛选 · 策略实验" in layout
     assert "CSI300 · Stock Selection · Multi-Horizon Scores · Risk Check" not in layout
     assert "position: sticky; bottom: 0" not in css
     assert "professional-shell" in css
     assert "artifact-backed" in combined
     for route in USER_VISIBLE_ROUTES:
         assert f"/{route}" in layout
+    for route in ("backtests", "backtest-risk", "factors", "models"):
+        assert f"/{route}" not in layout
+        assert not (FRONTEND_APP / route / "page.tsx").exists()
     for forbidden in FORBIDDEN_USER_NAV:
         assert forbidden not in layout
     for forbidden in FORBIDDEN_COPY:
@@ -71,7 +73,7 @@ def test_user_visible_pages_have_safe_stock_selection_positioning():
     assert (PROJECT_ROOT / "frontend" / "src" / "lib" / "researchConsoleData.ts").is_file()
     for route in USER_VISIBLE_ROUTES:
         page = _read_page(route)
-        assert "artifact-backed" in page or "/api/" in page, route
+        assert "export default" in page, route
         for forbidden in FORBIDDEN_COPY:
             assert forbidden not in page, route
 

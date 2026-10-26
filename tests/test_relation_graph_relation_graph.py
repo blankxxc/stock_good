@@ -91,29 +91,10 @@ def test_relation_graph_relation_factor_panel_and_feature_matrix_are_model_ready
     assert feature["feature_set_version"].astype(str).str.contains("relation_graph_relation_graph").all()
 
 
-def test_relation_graph_hist_trsr_adapter_artifacts_and_relation_ablation_are_ready():
+def test_relation_graph_relation_ablation_is_ready():
     report = _ensure_relation_graph()
-    assert report["hist_trsr_adapter_status"] == "hist_trsr_relation_inputs_ready"
     assert report["ablation_status"] in {"lightgbm_smoke_trained", "linear_fallback_smoke_trained"}
     assert report["relation_ablation_gain_status"] in {"measured_not_approved", "no_positive_gain_observed_not_approved"}
-
-    adapter_dir = PROJECT_ROOT / "data" / "gold" / "graph_model_adapters" / "hist_trsr"
-    required_files = [
-        "stock_id_mapping.json",
-        "relation_type_mapping.json",
-        "relation_matrix.parquet",
-        "concept_matrix.parquet",
-        "stock_feature_tensor.parquet",
-        "label_tensor.parquet",
-    ]
-    for file_name in required_files:
-        assert (adapter_dir / file_name).is_file(), file_name
-    relation_matrix = pd.read_parquet(adapter_dir / "relation_matrix.parquet")
-    stock_tensor = pd.read_parquet(adapter_dir / "stock_feature_tensor.parquet")
-    label_tensor = pd.read_parquet(adapter_dir / "label_tensor.parquet")
-    assert {"src_id", "dst_id", "relation_type_id", "weight"}.issubset(relation_matrix.columns)
-    assert {"stock_id", "trade_date", "feature_name", "feature_value"}.issubset(stock_tensor.columns)
-    assert {"stock_id", "trade_date", "horizon", "label_value"}.issubset(label_tensor.columns)
 
     ablation = json.loads((PROJECT_ROOT / "reports" / "relation_graph" / "relation_factor_ablation_report.json").read_text(encoding="utf-8"))
     assert ablation["leakage_check_status"] == "passed"

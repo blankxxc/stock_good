@@ -22,7 +22,6 @@ CONFIG_FILES = [
     "configs/label/label_5d_10d_v001.yaml",
     "configs/model/lightgbm_baseline.yaml",
     "configs/backtest/top50_weekly_vwap.yaml",
-    "configs/streaming/flink_realtime_poc.yaml",
     "configs/spark/spark_local.yaml",
 ]
 MVP_DAG = [
@@ -43,13 +42,7 @@ MVP_DAG = [
     "publish_to_research_console",
 ]
 EXTENDED_DAG = [
-    "replay_minute_data",
-    "kafka_produce_raw_topics",
-    "flink_realtime_factor_jobs",
-    "compare_realtime_offline_factors",
-    "update_online_features",
     "update_graph",
-    "run_advanced_model_small_sample",
     "run_simulation",
     "export_reports",
 ]
@@ -70,7 +63,6 @@ class ops_deploymentConfig(BaseModel):
     label: dict[str, Any]
     model: dict[str, Any]
     backtest: dict[str, Any]
-    streaming: dict[str, Any]
     spark: dict[str, Any]
 
 
@@ -106,7 +98,6 @@ def resolve_config(*, write_artifact: bool = True) -> tuple[ops_deploymentConfig
         "label": _load_yaml("configs/label/label_5d_10d_v001.yaml"),
         "model": _load_yaml("configs/model/lightgbm_baseline.yaml"),
         "backtest": _load_yaml("configs/backtest/top50_weekly_vwap.yaml"),
-        "streaming": _load_yaml("configs/streaming/flink_realtime_poc.yaml"),
         "spark": _load_yaml("configs/spark/spark_local.yaml"),
     }
     config = ops_deploymentConfig(**resolved)
@@ -203,7 +194,6 @@ def build_snapshot_manifest(config_hash: str) -> dict[str, Any]:
             {"restore_key": "data_version", "value": f"data_v_ops_deployment_{config_hash[:8]}", "restore_command": "python scripts/run_ops_deployment_pipeline.py --data-version data_v_ops_deployment"},
             {"restore_key": "run_id", "value": f"run_ops_deployment_{config_hash[:8]}", "restore_command": "python scripts/run_ops_deployment_pipeline.py --run-id run_ops_deployment"},
             {"restore_key": "trade_date", "value": "2026-01-31", "restore_command": "python scripts/run_ops_deployment_pipeline.py --trade-date 2026-01-31"},
-            {"restore_key": "kafka_offset", "value": "raw.market.minute:0:128", "restore_command": "python scripts/run_ops_deployment_pipeline.py --replay-offset raw.market.minute:0:128"},
             {"restore_key": "model_version", "value": "lightgbm_baseline_v1", "restore_command": "python scripts/run_ops_deployment_pipeline.py --model-version lightgbm_baseline_v1"},
             {"restore_key": "rag_index_version", "value": "rag_claim_index_rag_evidence_v1", "restore_command": "python scripts/run_ops_deployment_pipeline.py --rag-index-version rag_claim_index_rag_evidence_v1"},
         ],
@@ -212,12 +202,9 @@ def build_snapshot_manifest(config_hash: str) -> dict[str, Any]:
 
 def build_observability() -> dict[str, Any]:
     components = [
-        ("spark", "spark-master:8080", "factor_store/ops_deployment spark local jobs observable"),
-        ("flink", "flink-jobmanager:8081", "checkpoint/savepoint observable"),
-        ("kafka", "redpanda:9644", "topic lag observable"),
-        ("clickhouse", "clickhouse:8123", "ADS OLAP observable"),
-        ("postgresql", "postgres:5432", "metadata/RBAC/audit observable"),
-        ("redis", "redis:6379", "online feature cache observable"),
+        ("spark", "127.0.0.1:8080", "factor_store/ops_deployment spark local jobs observable"),
+        ("clickhouse", "127.0.0.1:8123", "ADS OLAP observable"),
+        ("postgresql", "127.0.0.1:5432", "metadata/RBAC/audit observable"),
     ]
     return {
         "status": "ops_deployment_observability_ready",
@@ -240,8 +227,6 @@ def build_observability() -> dict[str, Any]:
             "output_rows": 16792,
             "backfill_progress": 1.0,
             "spark_job_status": "observable",
-            "flink_checkpoint_status": "observable",
-            "kafka_lag": 0,
         },
         "model_metrics": {
             "score_distribution": "histogram_ready",
@@ -283,14 +268,12 @@ def build_ci_cd() -> dict[str, Any]:
         "leakage_tests",
         "synthetic_mini_market_tests",
         "spark_job_smoke",
-        "flink_job_smoke",
-        "small_sample_training_smoke",
+        "daily_model_catalog_smoke",
         "small_sample_backtest_smoke",
         "rag_citation_rule_test",
         "frontend_lint",
         "frontend_build",
         "api_smoke",
-        "docker_build",
         "database_migration_dry_run",
     ]
     return {"status": "ops_deployment_ci_cd_gates_ready", "gates": gates, "workflow": ".github/workflows/ci.yml"}
@@ -299,10 +282,10 @@ def build_ci_cd() -> dict[str, Any]:
 def build_deployment() -> dict[str, Any]:
     return {
         "status": "ops_deployment_deployment_backup_ready",
-        "compose_file": "deploy/docker/docker-compose.yml",
-        "env_example": "deploy/docker/.env.example",
+        "deployment_mode": "native_processes",
+        "deployment_guide": "docs/deployment.md",
+        "env_example": ".env.example",
         "reverse_proxy": "deploy/proxy/Caddyfile",
-        "kubernetes_manifest": "deploy/k8s/ops_deployment-platform.yaml",
         "prometheus_config": "deploy/monitoring/prometheus.yml",
         "grafana_dashboard": "deploy/monitoring/grafana/ops_deployment_ops_dashboard.json",
         "backup_script": "deploy/backup/backup_ops_deployment.sh",
@@ -319,7 +302,7 @@ def build_deployment() -> dict[str, Any]:
             "config_files",
             "database_migrations",
         ],
-        "restore_modes": ["data_version", "run_id", "trade_date", "kafka_offset", "model_version", "rag_index_version"],
+        "restore_modes": ["data_version", "run_id", "trade_date", "model_version", "rag_index_version"],
     }
 
 

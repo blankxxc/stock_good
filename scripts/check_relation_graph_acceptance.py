@@ -71,11 +71,6 @@ def run_acceptance() -> dict[str, Any]:
         "industry_spillover", "concept_spillover", "supply_chain_spillover", "lead_lag_signal",
         "relation_risk_score", "centrality_score", "community_momentum", "correlation_cluster_momentum",
     }
-    adapter_dir = ROOT / "data" / "gold" / "graph_model_adapters" / "hist_trsr"
-    adapter_files = [
-        "stock_id_mapping.json", "relation_type_mapping.json", "relation_matrix.parquet", "concept_matrix.parquet",
-        "stock_feature_tensor.parquet", "label_tensor.parquet",
-    ]
     expected_ablation = {"base_event_regime", "base_plus_relation_graph", "full_minus_relation_graph"}
     graph_page = (ROOT / "frontend" / "src" / "app" / "graph" / "page.tsx").read_text(encoding="utf-8")
     graph_explorer = (ROOT / "frontend" / "src" / "components" / "StockRelationNetwork.tsx").read_text(encoding="utf-8")
@@ -101,7 +96,6 @@ def run_acceptance() -> dict[str, Any]:
     check("relation_factor_time_semantics", not relation.empty and pd.to_datetime(relation["available_time"], utc=True).le(pd.to_datetime(relation["prediction_time"], utc=True)).all())
     check("factor_daily_relation_written", not daily.empty and required_factor_cols.issubset(set(daily.get("factor_name", pd.Series(dtype=str)).astype(str))))
     check("relation_graph_feature_matrix_written", not feature.empty and required_factor_cols.issubset(feature.columns) and feature["feature_set_version"].astype(str).str.contains("relation_graph_relation_graph").all())
-    check("hist_trsr_adapter_files_ready", all((adapter_dir / name).is_file() for name in adapter_files) and report.get("hist_trsr_adapter_status") == "hist_trsr_relation_inputs_ready")
     check("relation_ablation_report_written", bool(ablation) and expected_ablation.issubset(set(ablation.get("configs", {}).keys())))
     check("ablation_not_auto_approved", ablation.get("approval_status") == "not_approved_research_candidate_only" and report.get("relation_ablation_gain_status") in {"measured_not_approved", "no_positive_gain_observed_not_approved"})
     check("leakage_check_passed", report.get("leakage_check_status") == "passed" and ablation.get("leakage_check_status") == "passed")
@@ -142,7 +136,6 @@ def run_acceptance() -> dict[str, Any]:
         "enhanced_feature_rows": report.get("enhanced_feature_rows"),
         "networkx_status": report.get("networkx_status"),
         "spark_price_corr_status": report.get("spark_price_corr_status"),
-        "hist_trsr_adapter_status": report.get("hist_trsr_adapter_status"),
         "relation_ablation_gain_status": report.get("relation_ablation_gain_status"),
         "latest_available_time": report.get("latest_available_time"),
         "artifacts": report.get("artifacts", {}),

@@ -13,11 +13,10 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 FRONTEND_APP = ROOT / "frontend" / "src" / "app"
 REPORT_DIR = ROOT / "reports" / "research_site"
-PUBLIC_ROUTES = ["capabilities", "methodology", "data-security", "backtest-risk", "login"]
-USER_VISIBLE_ROUTES = ["scores", "condition-screen", "backtests", "factors", "models", "graph"]
-INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "realtime", "flink-jobs", "ops"]
+from backend.app.services.research_site_catalog import PUBLIC_ROUTES, USER_VISIBLE_ROUTES
+INTERNAL_DATA_FABRIC_ROUTES = ["dashboard", "data-quality", "lineage", "lakehouse", "spark-jobs", "ops"]
 FORBIDDEN_COPY = ["AI 荐股", "今日牛股", "稳赚", "买入卖出建议", "目标价", "一键跟投"]
-FORBIDDEN_USER_NAV = ["Data Fabric", "数据工程", "/dashboard", "/data-quality", "/lineage", "/lakehouse", "/spark-jobs", "/realtime", "/flink-jobs", "/ops", "Research Console"]
+FORBIDDEN_USER_NAV = ["Data Fabric", "数据工程", "/dashboard", "/data-quality", "/lineage", "/lakehouse", "/spark-jobs", "/ops", "Research Console"]
 
 
 def _page_path(route: str) -> Path:
@@ -42,7 +41,7 @@ def run_acceptance() -> dict[str, Any]:
     missing_internal = [route for route in internal_routes if not _page_path(route).is_file()]
     check("user_visible_pages_exist", not missing_user, missing_user)
     check("internal_data_fabric_pages_still_exist_for_compatibility", not missing_internal, missing_internal)
-    check("route_counts", len(PUBLIC_ROUTES) == 5 and len(USER_VISIBLE_ROUTES) >= 4 and len(INTERNAL_DATA_FABRIC_ROUTES) >= 7, None)
+    check("route_counts", len(PUBLIC_ROUTES) == 6 and len(USER_VISIBLE_ROUTES) >= 4 and len(INTERNAL_DATA_FABRIC_ROUTES) == 6, None)
 
     layout = (FRONTEND_APP / "layout.tsx").read_text(encoding="utf-8")
     application_shell = (

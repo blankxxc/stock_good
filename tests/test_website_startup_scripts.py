@@ -24,6 +24,10 @@ def test_website_launcher_completes_incremental_update_before_starting_services(
     assert "-Wait" in script
     assert script.index("$startupUpdateProcess = Start-Process") < script.index("backend.app.main:app")
     assert "Startup data freshness check or incremental refresh failed" in script
+    assert "[switch]$Dev" in script
+    assert "$nodeExecutable $nextEntrypoint build" in script
+    assert "start_standalone.mjs" in script
+    assert '$env:BACKEND_INTERNAL_ORIGIN = "http://127.0.0.1:${BackendPort}"' in script
 
 
 def test_daily_task_installer_is_idempotent_and_uses_full_pipeline() -> None:

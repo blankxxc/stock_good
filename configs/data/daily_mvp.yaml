@@ -8,11 +8,6 @@ time_window:
 partitioning: [trade_date]
 primary_frequency: daily
 enabled_frequencies: [daily]
-deferred_frequencies:
-  - frequency: minute
-    reason: 当前本地存储优先保证日频闭环，分钟数据量较大，暂不落库处理。
-  - frequency: tick
-    reason: 逐笔和盘口数据需要更大存储与供应商授权，暂不进入 MVP。
 data_sources:
   - dataset_name: market_daily_ohlcv
     layer: bronze_to_gold

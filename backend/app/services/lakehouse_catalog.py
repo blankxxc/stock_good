@@ -125,5 +125,5 @@ def lineage_payload(research_boundary: str) -> dict[str, Any]:
         "status": "foundation_placeholder_ready",
         "maturity": "L1-contract-and-route-stub",
         "research_boundary": research_boundary,
-        "description": "ODS/DWD/DWS/ADS、Spark/Flink job 到结果快照的血缘",
+        "description": "ODS/DWD/DWS/ADS、Spark job 到结果快照的血缘",
     }

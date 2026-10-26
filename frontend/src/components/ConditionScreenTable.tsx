@@ -1,5 +1,9 @@
 'use client';
 
+import { useAssistantContext } from './AssistantRoot';
+
+import Link from 'next/link';
+
 import { useEffect, useMemo, useState } from 'react';
 import { formatPercent } from '../lib/formatters';
 import { useApiPayload } from '../lib/useApiPayload';
@@ -79,15 +83,19 @@ const COLUMN_LABELS: Record<string, string> = {
   liquidity_proxy: '流动性代理',
   industry_neutral_return_20d: '行业中性收益',
   cs_rank_return_20d: '截面收益排名',
+  return_10d_gt_100pct: '十日涨幅大于100%',
+  abnormal_move_4_times_10d: '十日内至少四次异动',
 };
 
-const DEFAULT_FACTOR_COLUMNS = ['return_10d', 'momentum_20d', 'volatility_20d', 'value_proxy', 'quality_proxy', 'growth_proxy_20d', 'beta_20d', 'low_volatility_proxy'];
+const DEFAULT_FACTOR_COLUMNS = ['return_10d', 'return_10d_gt_100pct', 'abnormal_move_4_times_10d', 'momentum_20d', 'volatility_20d', 'value_proxy', 'quality_proxy', 'growth_proxy_20d', 'beta_20d', 'low_volatility_proxy'];
+
+function percentageColumn(column: string) { return column.includes('return') || column === 'pct_change'; }
 
 function formatCell(column: string, value: unknown) {
   if (typeof value === 'boolean') return value ? '是' : '否';
   if (value === null || typeof value === 'undefined') return '—';
   if (typeof value === 'number') {
-    if (column.includes('return') || column === 'pct_change') return formatPercent(value);
+    if (percentageColumn(column)) return formatPercent(value);
     if (column === 'estimated_market_cap_billion' || column === 'amount_billion') return value.toFixed(2);
     if (column === 'volume') return value.toFixed(0);
     return value.toFixed(3);
@@ -122,7 +130,7 @@ function optionParts(option: NonNullable<ColumnSchema['options']>[number]) {
   return { label: String(option), value: normalizedDiscreteValue(option) };
 }
 
-function rowMatchesFilter(row: ConditionRow, column: string, schema: ColumnSchema | undefined, filter: FilterState | undefined) {
+export function rowMatchesFilter(row: ConditionRow, column: string, schema: ColumnSchema | undefined, filter: FilterState | undefined) {
   const value = (filter?.value ?? '').trim();
   const value2 = (filter?.value2 ?? '').trim();
   if (!value && !value2) return true;
@@ -130,15 +138,18 @@ function rowMatchesFilter(row: ConditionRow, column: string, schema: ColumnSchem
   const operator = filter?.operator ?? (type === 'number' ? 'gte' : type === 'text' ? 'contains' : 'eq');
 
   if (type === 'number') {
-    const actual = Number(row[column]);
-    const target = Number(value);
-    const target2 = Number(value2);
+    const raw = row[column];
+    if (typeof raw !== 'number' || !Number.isFinite(raw) || !value) return false;
+    const actual = raw;
+    const scale = percentageColumn(column) ? 100 : 1;
+    const target = Number(value) / scale;
+    const target2 = Number(value2) / scale;
     if (!Number.isFinite(actual) || !Number.isFinite(target)) return false;
     if (operator === 'gt') return actual > target;
     if (operator === 'gte') return actual >= target;
     if (operator === 'lt') return actual < target;
     if (operator === 'lte') return actual <= target;
-    if (operator === 'between') return Number.isFinite(target2) && actual >= Math.min(target, target2) && actual <= Math.max(target, target2);
+    if (operator === 'between') return Boolean(value2) && Number.isFinite(target2) && actual >= Math.min(target, target2) && actual <= Math.max(target, target2);
     return actual === target;
   }
 
@@ -161,10 +172,13 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
   const [signalDateFilterTouched, setSignalDateFilterTouched] = useState(false);
   const [factorQuery, setFactorQuery] = useState('');
   const [onlyMatched, setOnlyMatched] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
 
   const baseColumns = payload?.base_columns ?? [];
   const availableFactors = payload?.available_factor_columns ?? [];
-  const visibleColumns = useMemo(() => Array.from(new Set([...baseColumns, ...selectedFactors])), [baseColumns, selectedFactors]);
+  const visibleFactors = useMemo(() => selectedFactors.filter(factor => availableFactors.includes(factor)), [selectedFactors, availableFactors]);
+  const visibleColumns = useMemo(() => Array.from(new Set([...baseColumns, ...visibleFactors])), [baseColumns, visibleFactors]);
   const columnSchema = payload?.column_schema ?? {};
 
   const rows = payload?.rows ?? [];
@@ -180,9 +194,24 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
     if (!keyword) return availableFactors;
     return availableFactors.filter((factor) => `${COLUMN_LABELS[factor] ?? factor} ${factor} ${payload?.factor_column_catalog?.[factor] ?? ''}`.toLowerCase().includes(keyword));
   }, [availableFactors, factorQuery, payload?.factor_column_catalog]);
-  const activeFilterCount = Object.values(filters).filter((filter) => Boolean(filter.value?.trim() || filter.value2?.trim())).length;
+  const activeFilters = Object.fromEntries(Object.entries(filters).filter(([column]) => visibleColumns.includes(column)));
+  const activeFilterCount = Object.values(activeFilters).filter((filter) => Boolean(filter.value?.trim() || filter.value2?.trim())).length;
+  const pageCount = Math.max(1, Math.ceil(displayedRows.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const pageRows = displayedRows.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const summary = payload?.summary ?? {};
+  useAssistantContext({ factor_names: visibleFactors.slice(0, 12), page_state: {
+    screening: { filters: activeFilters, filter_units: '百分比列按百分数输入，10表示10%；其他列按显示原值', only_matched: onlyMatched, matched_count: displayedRows.length,
+      visible_symbols: pageRows.slice(0, 8).map(row => row.symbol), sampled_rows: Math.min(pageRows.length, 8), page: currentPage },
+  } });
+
+  useEffect(() => { setPage(1); }, [filters, selectedFactors, onlyMatched, pageSize, payload]);
+
+  function chooseFactors(next: string[]) {
+    setSelectedFactors(next);
+    setFilters(current => Object.fromEntries(Object.entries(current).filter(([column]) => baseColumns.includes(column) || next.includes(column))));
+  }
 
   useEffect(() => {
     const latestTradeDate = payload?.latest_trade_date?.trim();
@@ -205,6 +234,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
     setSignalDateFilterTouched(false);
     setFactorQuery('');
     setOnlyMatched(false);
+    setPage(1);
   };
 
   return (
@@ -230,7 +260,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
       <div className="market-ticker-row">
         <div><strong>{payload?.row_count ?? rows.length}</strong><span>最新完整沪深300截面</span></div>
         <div><strong>{String(summary.matched_count ?? 0)}</strong><span>预设综合条件通过</span></div>
-        <div><strong>{displayedRows.length}</strong><span>当前显示结果</span></div>
+        <div><strong>{displayedRows.length}</strong><span>当前匹配结果</span></div>
         <div><strong>{payload?.latest_trade_date ?? '加载中'}</strong><span>最新行情日期</span></div>
       </div>
 
@@ -238,7 +268,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
         <div className="artifact-card__topline">
           <div>
             <strong>选择要分析的因子列</strong>
-            <p className="muted">已选 {selectedFactors.length} 项 · 当前表格共 {visibleColumns.length} 列</p>
+            <p className="muted">已选 {visibleFactors.length} 项 · 当前表格共 {visibleColumns.length} 列</p>
           </div>
           <span className="muted">搜索或使用快捷操作，避免在 70+ 因子中逐项查找。</span>
         </div>
@@ -248,9 +278,9 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
             <input type="search" value={factorQuery} onChange={(event) => setFactorQuery(event.target.value)} placeholder="名称、代码或分类" />
           </label>
           <div className="factor-picker-actions" aria-label="因子列快捷选择">
-            <button type="button" onClick={() => setSelectedFactors(DEFAULT_FACTOR_COLUMNS)}>核心因子</button>
-            <button type="button" onClick={() => setSelectedFactors(availableFactors)}>选择全部</button>
-            <button type="button" onClick={() => setSelectedFactors([])}>清空选择</button>
+            <button type="button" onClick={() => chooseFactors(DEFAULT_FACTOR_COLUMNS)}>核心因子</button>
+            <button type="button" onClick={() => chooseFactors(availableFactors)}>选择全部</button>
+            <button type="button" onClick={() => chooseFactors([])}>清空选择</button>
           </div>
         </div>
         <div className="factor-checkbox-grid">
@@ -260,9 +290,9 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                 type="checkbox"
                 checked={selectedFactors.includes(factor)}
                 onChange={(event) => {
-                  setSelectedFactors((current) => event.target.checked
-                    ? Array.from(new Set([...current, factor]))
-                    : current.filter((item) => item !== factor));
+                  chooseFactors(event.target.checked
+                    ? Array.from(new Set([...selectedFactors, factor]))
+                    : selectedFactors.filter((item) => item !== factor));
                 }}
               />
               <span>{COLUMN_LABELS[factor] ?? factor}</span>
@@ -274,9 +304,17 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
       </div>
 
       <div className="condition-result-bar" role="status" aria-live="polite">
-        <span>当前显示 <strong>{displayedRows.length}</strong> / {rows.length} 只股票</span>
+        <span>匹配 <strong>{displayedRows.length}</strong> / {rows.length} 只股票 · 本页 {pageRows.length} 只</span>
         <span>{activeFilterCount} 个列筛选{onlyMatched ? ' · 仅综合通过' : ''}</span>
         {activeFilterCount || onlyMatched ? <button type="button" onClick={resetScreen}>清除全部筛选</button> : null}
+      </div>
+
+      <div className="condition-pagination" aria-label="股票结果分页">
+        <span>百分比列按百分数筛选，例如输入 10 表示 10%。</span>
+        <label>每页 <select aria-label="每页股票数量" value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>{[25, 50, 100].map(n => <option key={n} value={n}>{n} 只</option>)}</select></label>
+        <button type="button" aria-label="上一页股票" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>上一页</button>
+        <span aria-live="polite">{currentPage} / {pageCount}</span>
+        <button type="button" aria-label="下一页股票" disabled={currentPage >= pageCount} onClick={() => setPage(currentPage + 1)}>下一页</button>
       </div>
 
       <div className="stock-table-shell condition-table-shell" role="region" aria-label="条件选股结果表格，可横向滚动" tabIndex={0}>
@@ -285,6 +323,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
           <thead>
             <tr>
               {visibleColumns.map((column) => <th id={`condition-column-${column}`} scope="col" key={column}>{COLUMN_LABELS[column] ?? column}</th>)}
+              <th scope="col">AI 预测</th>
             </tr>
             <tr>
               {visibleColumns.map((column) => {
@@ -296,6 +335,7 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                     const current = filters[column] ?? {};
                     if (schema.type === 'number') {
                       const operator = current.operator ?? 'gte';
+                      const unit = percentageColumn(column) ? '（%）' : '';
                       return (
                         <div className="column-filter-control numeric-filter-control">
                           <select
@@ -310,18 +350,21 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                             className="column-filter-input numeric-filter-value"
                             aria-label={operator === 'between' ? `${columnLabel}下限` : `${columnLabel}筛选数值`}
                             type="number"
+                            step="any"
+                            title={unit ? '按百分数输入，例如10表示10%' : '按表格显示原值输入'}
                             value={current.value ?? ''}
                             onChange={(event) => updateColumnFilter(column, (current) => ({ ...current, value: event.target.value }))}
-                            placeholder={operator === 'between' ? '下限' : `数值筛选${COLUMN_LABELS[column] ?? column}`}
+                            placeholder={operator === 'between' ? `下限${unit}` : `数值${unit}`}
                           />
                           {operator === 'between' ? (
                             <input
                               className="column-filter-input numeric-filter-value"
                               aria-label={`${columnLabel}上限`}
                               type="number"
+                              step="any"
                               value={current.value2 ?? ''}
                               onChange={(event) => updateColumnFilter(column, (current) => ({ ...current, value2: event.target.value }))}
-                              placeholder="上限"
+                              placeholder={`上限${unit}`}
                             />
                           ) : null}
                         </div>
@@ -355,19 +398,21 @@ export function ConditionScreenTable({ initialPayload = null }: { initialPayload
                   })()}
                 </th>
               );})}
+              <th aria-label="AI 预测入口" />
             </tr>
           </thead>
           <tbody>
-            {displayedRows.map((row, index) => (
+            {pageRows.map((row, index) => (
               <tr key={`${row.symbol}-${row.trade_date}-${index}`}>
                 {visibleColumns.map((column) => (
                   <td key={column} className={typeof row[column] === 'number' && String(column).includes('return') ? ((row[column] as number) >= 0 ? 'positive' : 'negative') : ''}>
-                    {column === 'symbol' && row.symbol ? <a className="code-link" href={`/stocks/${row.symbol}?from=condition-screen`}>{formatCell(column, row[column])}</a> : formatCell(column, row[column])}
+                    {column === 'symbol' && row.symbol ? <Link prefetch={false} className="code-link" href={`/stocks/${row.symbol}?from=condition-screen`}>{formatCell(column, row[column])}</Link> : formatCell(column, row[column])}
                   </td>
                 ))}
+                <td>{row.symbol ? <Link prefetch={false} className="code-link" href={`/scores?model=api_llm&symbol=${encodeURIComponent(String(row.symbol))}`}>AI 概率</Link> : '—'}</td>
               </tr>
             ))}
-            {!displayedRows.length ? <tr><td className="table-empty-cell" colSpan={visibleColumns.length || 1}>暂无匹配记录，请调整筛选条件或恢复默认设置。</td></tr> : null}
+            {!displayedRows.length ? <tr><td className="table-empty-cell" colSpan={visibleColumns.length + 1}>暂无匹配记录，请调整筛选条件或恢复默认设置。</td></tr> : null}
           </tbody>
         </table>
       </div>

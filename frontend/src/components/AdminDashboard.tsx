@@ -552,7 +552,7 @@ export function AdminDashboard() {
           </div>
           <div className="admin-header-actions">
             <label className="admin-auto-refresh"><input type="checkbox" checked={autoRefresh} onChange={(event) => setAutoRefresh(event.target.checked)} /><span>30 秒自动刷新</span></label>
-            <div className="admin-freshness"><i /><span>实时快照<small>{lastUpdated ? `${formatAdminDate(lastUpdated.toISOString())} 更新` : '等待数据'}</small></span></div>
+            <div className="admin-freshness"><i /><span>后台快照<small>{lastUpdated ? `${formatAdminDate(lastUpdated.toISOString())} 更新` : '等待数据'}</small></span></div>
             <button type="button" onClick={() => void loadDashboard(true)} disabled={refreshing}>
               {refreshing ? '更新中…' : '刷新数据'}
             </button>

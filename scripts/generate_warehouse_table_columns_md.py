@@ -2,7 +2,7 @@ from pathlib import Path
 import json
 import pyarrow.parquet as pq
 
-root = Path(r"C:/Users/blankxxc/Desktop/work_space/stock_good")
+root = Path(__file__).resolve().parents[1]
 out = root / "docs" / "warehouse_table_columns.md"
 
 layers = [
@@ -14,10 +14,6 @@ layers = [
 
 purpose = {
     "ods_market_daily_raw": "日频行情原始表，作为日频因子、标签、回测的基础输入。",
-    "ods_market_minute_raw": "分钟行情原始表，用于分钟因子、实时特征和回放验证。",
-    "ods_market_tick_raw": "tick 行情原始表，用于盘口、微观结构和实时因子研究。",
-    "ods_trade_raw": "逐笔成交原始表，用于成交方向、成交冲击和短周期流动性研究。",
-    "ods_orderbook_raw": "盘口原始表，用于买卖盘压力、价差、订单簿不平衡等因子。",
     "ods_financial_statement_raw": "财报原始明细表，采用 item_name/item_value 长表结构，是基本面因子来源。",
     "ods_announcement_raw": "公告原始事件表，用于公告事件、公告情绪和 RAG 证据。",
     "ods_news_raw": "新闻原始事件表，用于新闻情绪、事件因子和 RAG 文档入口。",
@@ -26,7 +22,6 @@ purpose = {
     "ods_northbound_raw": "北向资金原始表，用于外资流入、北向持仓类因子，并受许可证治理约束。",
     "dwd_stock_daily_bar": "清洗后的日频行情事实表，补充复权、停牌、ST、涨跌停，是离线日频因子的主输入。",
     "dwd_stock_daily_bar_spark": "Spark 检查/验证版本的日频行情事实表。",
-    "dwd_stock_minute_bar": "清洗后的分钟行情事实表，用于分钟因子和实时链路验证。",
     "dwd_financial_statement": "清洗后的财报明细表，用于构建真实基本面因子。",
     "news_document": "新闻文档表，保存新闻正文和文档元数据，供事件抽取和 RAG 使用。",
     "announcement_document": "公告文档表，保存公告正文和文档元数据，供事件抽取和 RAG 使用。",
@@ -38,7 +33,6 @@ purpose = {
     "factor_daily_panel_long": "正式日频因子长表，一行一个股票-日期-因子，便于因子治理和单因子分析。",
     "factor_daily_panel": "早期/简版日频因子表，用于 lakehouse MVP 链路验证。",
     "factor_daily_panel_spark_check": "Spark 检查用因子长表。",
-    "factor_intraday_panel": "分钟/实时因子面板。",
     "factor_news_sentiment_panel": "新闻情绪因子面板。",
     "factor_daily_panel_event_regime_event_regime": "事件和市场状态类因子的长表。",
     "factor_market_regime_panel": "市场状态/regime 因子表，用于描述市场宽度、波动、风险偏好和风格环境。",
@@ -51,7 +45,6 @@ purpose = {
     "model_feature_matrix_wide_relation_graph": "在事件/regime 宽表上增加关系图谱传播特征。",
     "label_cross_sectional_return": "横截面收益预测标签表，是监督学习 y 值来源。",
     "model_signal_cross_sectional": "模型横截面信号表，保存 score、rank、概率、置信度等预测结果。",
-    "advanced_model_predictions": "高级模型预测表，服务 MASTER、StockMixer、HIST、TRSR 等 adapter。",
     "portfolio_backtest_result": "组合回测日度结果表。",
     "portfolio_risk_report": "组合风险和归因报告表。",
     "risk_factor_exposure": "股票风险因子暴露表。",
@@ -60,7 +53,6 @@ purpose = {
     "rag_documents": "RAG 文档元数据表。",
     "rag_chunks": "RAG 文档切片表。",
     "rag_claims": "claim-level RAG 证据表。",
-    "graph_model_adapters": "图模型适配产物目录，包含 HIST/TRSR 所需矩阵、张量和映射。",
     "ads_dashboard_summary": "首页/控制台总览摘要表。",
     "ads_score_latest": "最新选股分数表，前端股票列表和条件筛选页面优先读取。",
     "ads_backtest_summary": "回测摘要表，前端展示策略关键绩效指标。",
@@ -68,12 +60,13 @@ purpose = {
 }
 
 exact = {
+    "return_10d_gt_100pct": "近十个交易日累计涨幅严格大于100%，不扣指数；1/0，历史不足为空。",
+    "abnormal_move_4_times_10d": "近十个交易日至少四次向上异动；三日内超额涨幅大于20个百分点，触发后重新计数；缺数据为空。",
     "trade_date":"交易日期。", "symbol":"股票代码。", "event_time":"事件发生时间或行情 bar 时间。", "publish_time":"数据源发布时间。",
     "available_time":"系统/模型可用该数据的时间，防未来函数关键字段。", "prediction_time":"模型做预测的时间点。", "ingest_time":"入库时间。",
     "trace_id":"数据血缘追踪 ID。", "source":"数据来源。", "source_version":"源数据版本。", "schema_version":"表结构版本。", "data_version":"数据版本。",
     "research_boundary":"研究边界，强调研究用途而非投资建议。", "open":"开盘价。", "high":"最高价。", "low":"最低价。", "close":"收盘价。",
-    "volume":"成交量。", "amount":"成交额。", "vwap":"成交均价。", "price":"最新成交价。", "bid_price":"买盘价格。", "ask_price":"卖盘价格。",
-    "bid_volume":"买盘数量。", "ask_volume":"卖盘数量。", "trade_id":"逐笔成交 ID。", "trade_price":"成交价格。", "trade_volume":"成交数量。",
+    "volume":"成交量。", "amount":"成交额。", "vwap":"成交均价。", "price":"最新成交价。",
     "ods_table":"来源 ODS 表名。", "ingest_date":"入湖日期分区。", "report_period":"财报报告期。", "announce_time":"公告/财报披露时间。",
     "statement_type":"报表类型。", "item_name":"财务科目名称。", "item_value":"财务科目值。", "event_id":"事件 ID。", "document_id":"文档 ID。",
     "document_type":"文档类型。", "doc_id":"RAG 文档 ID。", "chunk_id":"RAG 切片 ID。", "claim_id":"RAG claim ID。", "title":"标题。", "content":"正文内容。",
@@ -168,18 +161,6 @@ for layer, rel, intro in layers:
     base = root / rel
     for d in sorted([p for p in base.iterdir() if p.is_dir()]):
         name = d.name
-        if name == "graph_model_adapters":
-            md += [f"### {name}", "", f"用途：{purpose[name]}", ""]
-            h = d / "hist_trsr"
-            for p in sorted(h.glob("*")):
-                md += [f"#### hist_trsr/{p.name}", ""]
-                if p.suffix == ".parquet":
-                    cols = pq.ParquetFile(p).schema.names
-                    md += [f"用途：图模型适配文件 `{p.name}`。", ""] + column_table(list(cols)) + [""]
-                elif p.suffix == ".json":
-                    md += [f"用途：图模型映射文件 `{p.name}`。", "", "| 结构 | 简单说明 |", "|---|---|", "| JSON mapping | ID 与名称/代码之间的映射字典。 |", ""]
-            continue
-
         files = list(d.glob("**/*.parquet"))
         jsons = list(d.glob("*.json"))
         if files:

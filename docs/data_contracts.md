@@ -14,7 +14,7 @@
 
 ## 核心契约
 
-覆盖 market_daily、minute、tick、orderbook、financial、announcement、news、macro、fund_flow、factor、label、signal、backtest、RAG claim、simulation、export_manifest。
+覆盖 market_daily、financial、announcement、news、macro、fund_flow、factor、label、signal、backtest、RAG claim、simulation、export_manifest。
 
 ## 质量门禁
 

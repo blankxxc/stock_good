@@ -7,8 +7,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT_PYTHON = (ROOT / ".venv" / "Scripts" / "python.exe") if (ROOT / ".venv" / "Scripts" / "python.exe").exists() else Path(sys.executable)
-DOCKER = Path(r"C:\Program Files\Docker\Docker\resources\bin\docker.exe")
-DOCKER_CMD = str(DOCKER) if DOCKER.exists() else "docker"
 
 def run(cmd: list[str], cwd: Path = ROOT) -> dict:
     # Windows Python does not always resolve .cmd shims (for example npm.cmd)
@@ -34,10 +32,8 @@ checks = [
     run([str(PROJECT_PYTHON), "backend/app/db/run_foundation_migration.py"]),
     run([str(PROJECT_PYTHON), "-m", "alembic", "-c", "alembic.ini", "upgrade", "head"]),
     run([str(PROJECT_PYTHON), "spark/jobs/foundation_spark_smoke.py"]),
-    run([str(PROJECT_PYTHON), "streaming/flink/foundation_flink_job_graph.py"]),
     run(["npm", "run", "validate:routes"], cwd=ROOT / "frontend"),
     run(["npm", "run", "build"], cwd=ROOT / "frontend"),
-    run([DOCKER_CMD, "compose", "-f", "deploy/docker/docker-compose.yml", "config", "--services"]),
 ]
 report = {"status": "ok" if all(c["returncode"] == 0 for c in checks) else "failed", "checks": checks}
 out = ROOT / "reports" / "foundation" / "acceptance_report.json"

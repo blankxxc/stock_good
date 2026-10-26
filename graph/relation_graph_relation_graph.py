@@ -26,7 +26,6 @@ EDGE_DIR = ROOT / "data" / "gold" / "stock_relation_edge"
 RELATION_FACTOR_DIR = ROOT / "data" / "gold" / "factor_relation_panel"
 RELATION_DAILY_DIR = ROOT / "data" / "gold" / "factor_daily_panel_relation_graph_relation"
 FEATURE_relation_graph_DIR = ROOT / "data" / "gold" / "model_feature_matrix_wide_relation_graph"
-ADAPTER_DIR = ROOT / "data" / "gold" / "graph_model_adapters" / "hist_trsr"
 
 
 def _now() -> str:
@@ -365,68 +364,6 @@ def build_relation_graph_feature_matrix(feature: pd.DataFrame, relation: pd.Data
     return merged
 
 
-def build_hist_trsr_adapter(feature: pd.DataFrame, edges: pd.DataFrame, write_outputs: bool = True) -> dict[str, Any]:
-    symbols = sorted(feature["symbol"].drop_duplicates().head(20).tolist())
-    stock_id = {symbol: idx for idx, symbol in enumerate(symbols)}
-    relation_types = sorted(edges["relation_type"].drop_duplicates().tolist())
-    relation_type_id = {relation_type: idx for idx, relation_type in enumerate(relation_types)}
-    relation_matrix = edges[edges["src_symbol"].isin(symbols) & edges["dst_symbol"].isin(symbols)].copy()
-    relation_matrix = relation_matrix.assign(
-        src_id=relation_matrix["src_symbol"].map(stock_id),
-        dst_id=relation_matrix["dst_symbol"].map(stock_id),
-        relation_type_id=relation_matrix["relation_type"].map(relation_type_id),
-        weight=relation_matrix["relation_weight"].astype(float),
-    )[["src_id", "dst_id", "relation_type_id", "weight", "src_symbol", "dst_symbol", "relation_type"]]
-
-    latest = feature[feature["symbol"].isin(symbols)].copy()
-    concept_rows = []
-    for symbol, group in latest.groupby("symbol"):
-        concept_rows.append({"stock_id": stock_id[symbol], "symbol": symbol, "concept_id": stock_id[symbol] % 5, "concept_weight": 1.0})
-        concept_rows.append({"stock_id": stock_id[symbol], "symbol": symbol, "concept_id": 100 + stock_id[symbol] % 4, "concept_weight": 0.7})
-    concept_matrix = pd.DataFrame(concept_rows)
-
-    feature_cols = ["return_1d", "return_5d", "news_sentiment_1d", "market_breadth", "neighbor_return_1d", "centrality_score"]
-    for col in feature_cols:
-        if col not in latest.columns:
-            latest[col] = 0.0
-    tensor = latest[latest["trade_date"].isin(sorted(latest["trade_date"].unique())[-20:])][["symbol", "trade_date", *feature_cols]].melt(
-        id_vars=["symbol", "trade_date"], var_name="feature_name", value_name="feature_value"
-    )
-    tensor["stock_id"] = tensor["symbol"].map(stock_id)
-    tensor["feature_value"] = pd.to_numeric(tensor["feature_value"], errors="coerce").fillna(0.0)
-    tensor = tensor[["stock_id", "symbol", "trade_date", "feature_name", "feature_value"]]
-
-    labels_dir = ROOT / "data" / "gold" / "label_cross_sectional_return"
-    labels = _read_parquet_dir(labels_dir) if list(labels_dir.glob("**/*.parquet")) else pd.DataFrame()
-    if labels.empty:
-        label_tensor = tensor[tensor["feature_name"].eq("return_1d")].rename(columns={"feature_value": "label_value"})
-        label_tensor["horizon"] = "5d"
-    else:
-        if "horizon" not in labels.columns and "label_horizon" in labels.columns:
-            labels = labels.rename(columns={"label_horizon": "horizon"})
-        if "cs_zscore_label" not in labels.columns and "label_value" in labels.columns:
-            labels["cs_zscore_label"] = pd.to_numeric(labels["label_value"], errors="coerce").fillna(0.0)
-        labels = labels[labels["symbol"].isin(symbols) & labels["horizon"].astype(str).eq("5d")].copy()
-        labels["stock_id"] = labels["symbol"].map(stock_id)
-        label_tensor = labels[["stock_id", "symbol", "trade_date", "horizon", "cs_zscore_label"]].rename(columns={"cs_zscore_label": "label_value"})
-    if write_outputs:
-        shutil.rmtree(ADAPTER_DIR, ignore_errors=True)
-        ADAPTER_DIR.mkdir(parents=True, exist_ok=True)
-        _write_json(ADAPTER_DIR / "stock_id_mapping.json", stock_id)
-        _write_json(ADAPTER_DIR / "relation_type_mapping.json", relation_type_id)
-        relation_matrix.to_parquet(ADAPTER_DIR / "relation_matrix.parquet", index=False)
-        concept_matrix.to_parquet(ADAPTER_DIR / "concept_matrix.parquet", index=False)
-        tensor.to_parquet(ADAPTER_DIR / "stock_feature_tensor.parquet", index=False)
-        label_tensor.to_parquet(ADAPTER_DIR / "label_tensor.parquet", index=False)
-    return {
-        "status": "hist_trsr_relation_inputs_ready",
-        "stock_count": len(stock_id),
-        "relation_type_count": len(relation_type_id),
-        "relation_matrix_rows": int(len(relation_matrix)),
-        "concept_matrix_rows": int(len(concept_matrix)),
-        "stock_feature_tensor_rows": int(len(tensor)),
-        "label_tensor_rows": int(len(label_tensor)),
-    }
 
 
 def build_relation_ablation(feature: pd.DataFrame, write_outputs: bool = True) -> dict[str, Any]:
@@ -482,7 +419,6 @@ def run_relation_graph_relation_graph_pipeline(write_outputs: bool = True) -> di
     edges = build_stock_relation_edges(feature, write_outputs=write_outputs)
     relation, daily = build_relation_factor_panel(feature, edges, write_outputs=write_outputs)
     feature8 = build_relation_graph_feature_matrix(feature, relation, write_outputs=write_outputs)
-    adapter = build_hist_trsr_adapter(feature8, edges, write_outputs=write_outputs)
     ablation = build_relation_ablation(feature8, write_outputs=write_outputs)
     relation_types = sorted(edges["relation_type"].drop_duplicates().astype(str).tolist())
     latest_available_time = str(max(pd.to_datetime(relation["available_time"], utc=True)).isoformat()) if not relation.empty else None
@@ -503,8 +439,6 @@ def run_relation_graph_relation_graph_pipeline(write_outputs: bool = True) -> di
         "enhanced_feature_rows": int(len(feature8)),
         "networkx_status": "networkx_centrality_ready",
         "spark_price_corr_status": "spark_compatible_price_corr_edges_ready",
-        "hist_trsr_adapter_status": adapter["status"],
-        "adapter_summary": adapter,
         "ablation_status": ablation["ablation_status"],
         "relation_ablation_gain_status": ablation["relation_ablation_gain_status"],
         "leakage_check_status": "passed",
@@ -516,7 +450,6 @@ def run_relation_graph_relation_graph_pipeline(write_outputs: bool = True) -> di
             "factor_relation_panel": "data/gold/factor_relation_panel",
             "factor_daily_panel_relation_graph_relation": "data/gold/factor_daily_panel_relation_graph_relation",
             "model_feature_matrix_wide_relation_graph": "data/gold/model_feature_matrix_wide_relation_graph",
-            "hist_trsr_adapter": "data/gold/graph_model_adapters/hist_trsr",
             "relation_ablation_report": "reports/relation_graph/relation_factor_ablation_report.json",
             "graph_summary": "reports/relation_graph/graph_summary.json",
             "spark_price_corr_job": "reports/relation_graph/spark_price_corr_edge_job.json",

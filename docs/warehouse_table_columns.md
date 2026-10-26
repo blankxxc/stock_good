@@ -124,61 +124,6 @@
 | `ods_table` | 来源 ODS 表名。 |
 | `ingest_date` | 入湖日期分区。 |
 
-### ods_market_minute_raw
-
-用途：分钟行情原始表，用于分钟因子、实时特征和回放验证。
-
-| 列名 | 简单说明 |
-|---|---|
-| `trade_date` | 交易日期。 |
-| `symbol` | 股票代码。 |
-| `event_time` | 事件发生时间或行情 bar 时间。 |
-| `open` | 开盘价。 |
-| `high` | 最高价。 |
-| `low` | 最低价。 |
-| `close` | 收盘价。 |
-| `volume` | 成交量。 |
-| `amount` | 成交额。 |
-| `vwap` | 成交均价。 |
-| `source` | 数据来源。 |
-| `source_version` | 源数据版本。 |
-| `schema_version` | 表结构版本。 |
-| `data_version` | 数据版本。 |
-| `ingest_time` | 入库时间。 |
-| `available_time` | 系统/模型可用该数据的时间，防未来函数关键字段。 |
-| `trace_id` | 数据血缘追踪 ID。 |
-| `ods_table` | 来源 ODS 表名。 |
-| `ingest_date` | 入湖日期分区。 |
-
-### ods_market_tick_raw
-
-用途：tick 行情原始表，用于盘口、微观结构和实时因子研究。
-
-| 列名 | 简单说明 |
-|---|---|
-| `trade_date` | 交易日期。 |
-| `symbol` | 股票代码。 |
-| `event_time` | 事件发生时间或行情 bar 时间。 |
-| `open` | 开盘价。 |
-| `high` | 最高价。 |
-| `low` | 最低价。 |
-| `close` | 收盘价。 |
-| `volume` | 成交量。 |
-| `amount` | 成交额。 |
-| `vwap` | 成交均价。 |
-| `price` | 最新成交价。 |
-| `bid_price` | 买盘价格。 |
-| `ask_price` | 卖盘价格。 |
-| `source` | 数据来源。 |
-| `source_version` | 源数据版本。 |
-| `schema_version` | 表结构版本。 |
-| `data_version` | 数据版本。 |
-| `ingest_time` | 入库时间。 |
-| `available_time` | 系统/模型可用该数据的时间，防未来函数关键字段。 |
-| `trace_id` | 数据血缘追踪 ID。 |
-| `ods_table` | 来源 ODS 表名。 |
-| `ingest_date` | 入湖日期分区。 |
-
 ### ods_news_raw
 
 用途：新闻原始事件表，用于新闻情绪、事件因子和 RAG 文档入口。
@@ -215,65 +160,6 @@
 | `symbol` | 股票代码。 |
 | `northbound_net_buy` | 项目当前数据资产字段。 |
 | `license_status` | 授权状态。 |
-| `source` | 数据来源。 |
-| `source_version` | 源数据版本。 |
-| `schema_version` | 表结构版本。 |
-| `data_version` | 数据版本。 |
-| `ingest_time` | 入库时间。 |
-| `available_time` | 系统/模型可用该数据的时间，防未来函数关键字段。 |
-| `trace_id` | 数据血缘追踪 ID。 |
-| `ods_table` | 来源 ODS 表名。 |
-| `ingest_date` | 入湖日期分区。 |
-
-### ods_orderbook_raw
-
-用途：盘口原始表，用于买卖盘压力、价差、订单簿不平衡等因子。
-
-| 列名 | 简单说明 |
-|---|---|
-| `trade_date` | 交易日期。 |
-| `symbol` | 股票代码。 |
-| `event_time` | 事件发生时间或行情 bar 时间。 |
-| `open` | 开盘价。 |
-| `high` | 最高价。 |
-| `low` | 最低价。 |
-| `close` | 收盘价。 |
-| `volume` | 成交量。 |
-| `amount` | 成交额。 |
-| `vwap` | 成交均价。 |
-| `bid_volume` | 买盘数量。 |
-| `ask_volume` | 卖盘数量。 |
-| `bid_price` | 买盘价格。 |
-| `ask_price` | 卖盘价格。 |
-| `source` | 数据来源。 |
-| `source_version` | 源数据版本。 |
-| `schema_version` | 表结构版本。 |
-| `data_version` | 数据版本。 |
-| `ingest_time` | 入库时间。 |
-| `available_time` | 系统/模型可用该数据的时间，防未来函数关键字段。 |
-| `trace_id` | 数据血缘追踪 ID。 |
-| `ods_table` | 来源 ODS 表名。 |
-| `ingest_date` | 入湖日期分区。 |
-
-### ods_trade_raw
-
-用途：逐笔成交原始表，用于成交方向、成交冲击和短周期流动性研究。
-
-| 列名 | 简单说明 |
-|---|---|
-| `trade_date` | 交易日期。 |
-| `symbol` | 股票代码。 |
-| `event_time` | 事件发生时间或行情 bar 时间。 |
-| `open` | 开盘价。 |
-| `high` | 最高价。 |
-| `low` | 最低价。 |
-| `close` | 收盘价。 |
-| `volume` | 成交量。 |
-| `amount` | 成交额。 |
-| `vwap` | 成交均价。 |
-| `trade_id` | 逐笔成交 ID。 |
-| `trade_price` | 成交价格。 |
-| `trade_volume` | 成交数量。 |
 | `source` | 数据来源。 |
 | `source_version` | 源数据版本。 |
 | `schema_version` | 表结构版本。 |
@@ -445,30 +331,6 @@
 | `trace_id` | 数据血缘追踪 ID。 |
 | `adj_close` | 复权收盘价。 |
 
-### dwd_stock_minute_bar
-
-用途：清洗后的分钟行情事实表，用于分钟因子和实时链路验证。
-
-| 列名 | 简单说明 |
-|---|---|
-| `trade_date` | 交易日期。 |
-| `symbol` | 股票代码。 |
-| `event_time` | 事件发生时间或行情 bar 时间。 |
-| `open` | 开盘价。 |
-| `high` | 最高价。 |
-| `low` | 最低价。 |
-| `close` | 收盘价。 |
-| `volume` | 成交量。 |
-| `amount` | 成交额。 |
-| `vwap` | 成交均价。 |
-| `source` | 数据来源。 |
-| `source_version` | 源数据版本。 |
-| `schema_version` | 表结构版本。 |
-| `data_version` | 数据版本。 |
-| `ingest_time` | 入库时间。 |
-| `available_time` | 系统/模型可用该数据的时间，防未来函数关键字段。 |
-| `trace_id` | 数据血缘追踪 ID。 |
-
 ### entity_symbol_mapping
 
 用途：实体到股票代码的映射表，用于把新闻、公告中的实体映射到 symbol。
@@ -561,37 +423,6 @@
 ## DWS / Gold
 
 研究资产层：沉淀因子、标签、训练样本、模型信号、回测、风险、RAG、图谱和模拟盘资产。
-
-### advanced_model_predictions
-
-用途：高级模型预测表，服务 MASTER、StockMixer、HIST、TRSR 等 adapter。
-
-| 列名 | 简单说明 |
-|---|---|
-| `trade_date` | 交易日期。 |
-| `symbol` | 股票代码。 |
-| `prediction_time` | 模型做预测的时间点。 |
-| `available_time` | 系统/模型可用该数据的时间，防未来函数关键字段。 |
-| `industry_name` | 行业名称。 |
-| `forward_return` | 未来收益，研究评估标签，前端实盘页面不应直接展示。 |
-| `cs_zscore_label` | 横截面标准化标签。 |
-| `quantile_label` | 分位标签。 |
-| `tradable_flag` | 是否可交易。 |
-| `model_name` | 模型名称。 |
-| `run_id` | 运行 ID。 |
-| `experiment_id` | 实验 ID。 |
-| `model_version` | 模型版本。 |
-| `horizon` | 预测/标签周期。 |
-| `score` | 模型综合分。 |
-| `rank` | 横截面排名。 |
-| `percentile` | 横截面分位。 |
-| `confidence` | 置信度。 |
-| `maturity` | 项目当前数据资产字段。 |
-| `admission_status` | 项目当前数据资产字段。 |
-| `approval_status` | 项目当前数据资产字段。 |
-| `leakage_check_status` | 未来函数/数据泄漏检查状态。 |
-| `research_boundary` | 研究边界，强调研究用途而非投资建议。 |
-| `model_rank_ic` | 项目当前数据资产字段。 |
 
 ### factor_daily_panel
 
@@ -687,25 +518,6 @@
 | `factor_name` | 因子名称。 |
 | `factor_value` | 因子值。 |
 
-### factor_intraday_panel
-
-用途：分钟/实时因子面板。
-
-| 列名 | 简单说明 |
-|---|---|
-| `event_time` | 事件发生时间或行情 bar 时间。 |
-| `trade_date` | 交易日期。 |
-| `symbol` | 股票代码。 |
-| `factor_name` | 因子名称。 |
-| `factor_value` | 因子值。 |
-| `window` | 项目当前数据资产字段。 |
-| `factor_version` | 因子版本。 |
-| `source_topic` | 项目当前数据资产字段。 |
-| `output_topic` | 项目当前数据资产字段。 |
-| `idempotent_key` | 项目当前数据资产字段。 |
-| `maturity` | 项目当前数据资产字段。 |
-| `research_boundary` | 研究边界，强调研究用途而非投资建议。 |
-
 ### factor_market_regime_panel
 
 用途：市场状态/regime 因子表，用于描述市场宽度、波动、风险偏好和风格环境。
@@ -790,75 +602,6 @@
 | `leakage_check_status` | 未来函数/数据泄漏检查状态。 |
 | `research_boundary` | 研究边界，强调研究用途而非投资建议。 |
 
-### graph_model_adapters
-
-用途：图模型适配产物目录，包含 HIST/TRSR 所需矩阵、张量和映射。
-
-#### hist_trsr/concept_matrix.parquet
-
-用途：图模型适配文件 `concept_matrix.parquet`。
-
-| 列名 | 简单说明 |
-|---|---|
-| `stock_id` | 模型内部股票 ID。 |
-| `symbol` | 股票代码。 |
-| `concept_id` | 概念 ID。 |
-| `concept_weight` | 股票与概念的权重。 |
-
-#### hist_trsr/label_tensor.parquet
-
-用途：图模型适配文件 `label_tensor.parquet`。
-
-| 列名 | 简单说明 |
-|---|---|
-| `stock_id` | 模型内部股票 ID。 |
-| `symbol` | 股票代码。 |
-| `trade_date` | 交易日期。 |
-| `horizon` | 预测/标签周期。 |
-| `label_value` | 标签值。 |
-
-#### hist_trsr/relation_matrix.parquet
-
-用途：图模型适配文件 `relation_matrix.parquet`。
-
-| 列名 | 简单说明 |
-|---|---|
-| `src_id` | 源股票内部 ID。 |
-| `dst_id` | 目标股票内部 ID。 |
-| `relation_type_id` | 关系类型 ID。 |
-| `weight` | 权重。 |
-| `src_symbol` | 源股票代码。 |
-| `dst_symbol` | 目标股票代码。 |
-| `relation_type` | 关系类型。 |
-
-#### hist_trsr/relation_type_mapping.json
-
-用途：图模型映射文件 `relation_type_mapping.json`。
-
-| 结构 | 简单说明 |
-|---|---|
-| JSON mapping | ID 与名称/代码之间的映射字典。 |
-
-#### hist_trsr/stock_feature_tensor.parquet
-
-用途：图模型适配文件 `stock_feature_tensor.parquet`。
-
-| 列名 | 简单说明 |
-|---|---|
-| `stock_id` | 模型内部股票 ID。 |
-| `symbol` | 股票代码。 |
-| `trade_date` | 交易日期。 |
-| `feature_name` | 特征名称。 |
-| `feature_value` | 特征值。 |
-
-#### hist_trsr/stock_id_mapping.json
-
-用途：图模型映射文件 `stock_id_mapping.json`。
-
-| 结构 | 简单说明 |
-|---|---|
-| JSON mapping | ID 与名称/代码之间的映射字典。 |
-
 ### label_cross_sectional_return
 
 用途：横截面收益预测标签表，是监督学习 y 值来源。
@@ -932,6 +675,11 @@
 | `prediction_time` | 模型做预测的时间点。 |
 | `feature_set_version` | 特征集合版本。 |
 | `available_time` | 系统/模型可用该数据的时间，防未来函数关键字段。 |
+| `industry_name` | 行业名称。 |
+| `data_version` | 数据版本。 |
+| `source_version` | 源数据版本。 |
+| `schema_version` | 表结构版本。 |
+| `trace_id` | 数据血缘追踪 ID。 |
 | `return_1d` | 过去 1d 收益。 |
 | `return_5d` | 过去 5d 收益。 |
 | `return_10d` | 过去 10d 收益。 |
@@ -1006,7 +754,8 @@
 | `cs_rank_return_20d` | 收益相关字段。 |
 | `cs_zscore_liquidity` | 标准化 z-score 特征。 |
 | `industry_zscore_liquidity` | 标准化 z-score 特征。 |
-| `research_boundary` | 研究边界，强调研究用途而非投资建议。 |
+| `return_10d_gt_100pct` | 近十个交易日累计涨幅严格大于100%，不扣指数；1/0，历史不足为空。 |
+| `abnormal_move_4_times_10d` | 近十个交易日至少四次向上异动；三日内超额涨幅大于20个百分点，触发后重新计数；缺数据为空。 |
 
 ### model_feature_matrix_wide_event_regime
 
@@ -1145,6 +894,11 @@
 | `prediction_time` | 模型做预测的时间点。 |
 | `feature_set_version` | 特征集合版本。 |
 | `available_time` | 系统/模型可用该数据的时间，防未来函数关键字段。 |
+| `industry_name` | 行业名称。 |
+| `data_version` | 数据版本。 |
+| `source_version` | 源数据版本。 |
+| `schema_version` | 表结构版本。 |
+| `trace_id` | 数据血缘追踪 ID。 |
 | `return_1d` | 过去 1d 收益。 |
 | `return_5d` | 过去 5d 收益。 |
 | `return_10d` | 过去 10d 收益。 |
@@ -1219,7 +973,6 @@
 | `cs_rank_return_20d` | 收益相关字段。 |
 | `cs_zscore_liquidity` | 标准化 z-score 特征。 |
 | `industry_zscore_liquidity` | 标准化 z-score 特征。 |
-| `research_boundary` | 研究边界，强调研究用途而非投资建议。 |
 | `news_sentiment_1d` | 情绪相关特征。 |
 | `news_sentiment_3d` | 情绪相关特征。 |
 | `news_sentiment_5d` | 情绪相关特征。 |
@@ -1252,7 +1005,7 @@
 | `ex_ante_regime_feature` | 项目当前数据资产字段。 |
 | `relation_spillover_placeholder` | 项目当前数据资产字段。 |
 | `event_regime_feature_version` | 版本字段。 |
-| `industry_name` | 行业名称。 |
+| `research_boundary` | 研究边界，强调研究用途而非投资建议。 |
 | `neighbor_return_5m` | 收益相关字段。 |
 | `neighbor_return_1d` | 收益相关字段。 |
 | `neighbor_volume_shock` | 项目当前数据资产字段。 |

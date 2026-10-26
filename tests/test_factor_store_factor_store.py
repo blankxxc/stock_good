@@ -43,7 +43,7 @@ def test_factor_store_factor_engine_writes_factor_spec_registry_and_gold_artifac
         spec = factor_spec["factors"][required]
         assert spec["economic_hypothesis"]
         assert spec["time_semantics"]["available_time"]
-        assert spec["version"] == "factor_v004"
+        assert spec["version"] == "factor_v005"
 
     assert any((PROJECT_ROOT / "data" / "gold" / "factor_daily_panel_long").glob("**/*.parquet"))
     assert any((PROJECT_ROOT / "data" / "gold" / "model_feature_matrix_wide").glob("**/*.parquet"))
@@ -89,7 +89,7 @@ def test_factor_store_spark_materialization_report_matches_polars_outputs():
     assert all((item["max_abs_diff"] or 0) <= 1e-8 for item in spark_report["max_abs_diff_by_factor"].values())
 
 
-def test_factor_store_backend_apis_and_frontend_factor_page_are_ready():
+def test_factor_store_backend_apis_are_ready():
     _ensure_factor_store_without_spark()
     from backend.app.main import app
 
@@ -106,14 +106,8 @@ def test_factor_store_backend_apis_and_frontend_factor_page_are_ready():
     assert features.json()["point_in_time_violations"] == 0
     assert spark_jobs.json()["status"] == "factor_store_spark_factor_materialization_ready"
 
-    page = (PROJECT_ROOT / "frontend" / "src" / "app" / "factors" / "page.tsx").read_text(encoding="utf-8")
-    assert "factor_store" in page
-    assert "74 个离线因子" in page
-    assert "point_in_time_violations=0" in page
-    assert "/api/factors" in page
 
-
-def test_factor_library_api_and_frontend_have_interactive_catalog_contract():
+def test_factor_library_api_has_catalog_contract():
     from backend.app.main import app
 
     client = authenticated_admin_client(app)
@@ -148,31 +142,6 @@ def test_factor_library_api_and_frontend_have_interactive_catalog_contract():
     assert {row["admission_status"] for row in payload["factor_catalog"]} & {"research_ready", "needs_review", "proxy_only"}
     assert len(payload["top_factors_by_icir"]) >= 5
     assert payload["factor_ui_hints"]["default_sort"] == "ICIR_desc"
-
-    page = (PROJECT_ROOT / "frontend" / "src" / "app" / "factors" / "page.tsx").read_text(encoding="utf-8")
-    component = (PROJECT_ROOT / "frontend" / "src" / "components" / "FactorLibraryDashboard.tsx").read_text(encoding="utf-8")
-    factor_ui = page + component
-    assert "因子搜索" in factor_ui
-    assert "分类筛选" in factor_ui
-    assert "准入状态" in factor_ui
-    assert "ICIR 排序" in factor_ui
-    assert "覆盖率" in factor_ui
-    assert "因子详情" in factor_ui
-    assert "因子库研究控制台" not in component
-    assert "factor-help-panel" not in component
-    assert "factor-education-card" not in component
-    assert "因子是什么" not in component
-    assert "干什么用" not in component
-    assert "IC / RankIC 怎么看" not in component
-    assert "factor-description" not in component
-    assert "factor-usage" not in component
-    assert "factor-compatibility-note" not in page
-    assert "terminal-strip" not in component
-    assert "data-api-path" not in component
-    assert "point_in_time_violations=0" not in factor_ui
-    assert "market regime publish_time / available_time" not in factor_ui
-    assert "long panel" not in component
-    assert "wide matrix" not in component
 
 
 def test_factor_store_acceptance_script_reports_ok():

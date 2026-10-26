@@ -7,6 +7,7 @@ param(
     [switch]$SkipStartupUpdate,
     [switch]$FetchNews,
     [switch]$InstallDailyTask,
+    [switch]$Dev,
     [switch]$OpenBrowser
 )
 
@@ -14,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $frontendRoot = Join-Path $projectRoot 'frontend'
 $pythonExecutable = Join-Path $projectRoot '.venv\Scripts\python.exe'
-$nodeExecutable = (Get-Command -Name 'node.exe' -CommandType Application -ErrorAction Stop).Source
+$nodeExecutable = (Get-Command -Name 'node.exe' -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 $nextEntrypoint = Join-Path $frontendRoot 'node_modules\next\dist\bin\next'
 $dailyUpdateRunner = Join-Path $PSScriptRoot 'run_daily_data_update.ps1'
 $taskInstaller = Join-Path $PSScriptRoot 'install_daily_update_task.ps1'
@@ -61,31 +62,33 @@ function Wait-HttpReady {
         [int]$Attempts = 60
     )
 
+    Add-Type -AssemblyName System.Net.Http
     $handler = [System.Net.Http.HttpClientHandler]::new()
     $handler.UseProxy = $false
     $client = [System.Net.Http.HttpClient]::new($handler)
     $client.Timeout = [TimeSpan]::FromSeconds(3)
+    $lastFailure = 'No successful response'
     try {
         for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
             try {
                 $response = $client.GetAsync($Url).GetAwaiter().GetResult()
                 try {
                     $statusCode = [int]$response.StatusCode
-                    if ($statusCode -ge 200 -and $statusCode -lt 500) {
+                    if ($statusCode -ge 200 -and $statusCode -lt 300) {
                         return
                     }
+                    $lastFailure = "HTTP $statusCode"
                 }
                 finally {
                     $response.Dispose()
                 }
             }
             catch {
-                if ($attempt -eq $Attempts) {
-                    throw "Website endpoint did not become ready: $Url"
-                }
+                $lastFailure = $_.Exception.Message
             }
-            Start-Sleep -Milliseconds 500
+            if ($attempt -lt $Attempts) { Start-Sleep -Milliseconds 500 }
         }
+        throw "Website endpoint did not become ready: $Url ($lastFailure)"
     }
     finally {
         $client.Dispose()
@@ -143,15 +146,42 @@ if (-not (Test-TcpPort -HostName '127.0.0.1' -Port $BackendPort)) {
 }
 
 if (-not (Test-TcpPort -HostName '127.0.0.1' -Port $FrontendPort)) {
-    $frontendProcess = Start-Process `
-        -FilePath $nodeExecutable `
-        -ArgumentList @($nextEntrypoint, 'dev', '-H', '0.0.0.0', '-p', [string]$FrontendPort) `
-        -WorkingDirectory $frontendRoot `
-        -WindowStyle Hidden `
-        -RedirectStandardOutput (Join-Path $runtimeLogDirectory "frontend_${timestamp}.stdout.log") `
-        -RedirectStandardError (Join-Path $runtimeLogDirectory "frontend_${timestamp}.stderr.log") `
-        -PassThru
-    $startedProcesses += [pscustomobject]@{ Service = 'frontend'; ProcessId = $frontendProcess.Id }
+    $previousBackendOrigin = $env:BACKEND_INTERNAL_ORIGIN
+    $previousHostname = $env:HOSTNAME
+    $previousPort = $env:PORT
+    try {
+        $env:BACKEND_INTERNAL_ORIGIN = "http://127.0.0.1:${BackendPort}"
+        $env:HOSTNAME = '0.0.0.0'
+        $env:PORT = [string]$FrontendPort
+        if ($Dev) {
+            $frontendArguments = @("`"$nextEntrypoint`"", 'dev', '-H', '0.0.0.0', '-p', [string]$FrontendPort)
+        }
+        else {
+            Push-Location $frontendRoot
+            try {
+                & $nodeExecutable (Join-Path $frontendRoot 'scripts\validate_routes.mjs')
+                if ($LASTEXITCODE -ne 0) { throw 'Frontend route validation failed.' }
+                & $nodeExecutable $nextEntrypoint build
+                if ($LASTEXITCODE -ne 0) { throw 'Frontend production build failed. See the build output above.' }
+            }
+            finally { Pop-Location }
+            $frontendArguments = @("`"$(Join-Path $frontendRoot 'scripts\start_standalone.mjs')`"")
+        }
+        $frontendProcess = Start-Process `
+            -FilePath $nodeExecutable `
+            -ArgumentList $frontendArguments `
+            -WorkingDirectory $frontendRoot `
+            -WindowStyle Hidden `
+            -RedirectStandardOutput (Join-Path $runtimeLogDirectory "frontend_${timestamp}.stdout.log") `
+            -RedirectStandardError (Join-Path $runtimeLogDirectory "frontend_${timestamp}.stderr.log") `
+            -PassThru
+        $startedProcesses += [pscustomobject]@{ Service = 'frontend'; ProcessId = $frontendProcess.Id }
+    }
+    finally {
+        $env:BACKEND_INTERNAL_ORIGIN = $previousBackendOrigin
+        $env:HOSTNAME = $previousHostname
+        $env:PORT = $previousPort
+    }
 }
 
 Wait-HttpReady -Url "http://127.0.0.1:${BackendPort}/health"
@@ -166,6 +196,7 @@ $result = [ordered]@{
     website_url = "http://127.0.0.1:${FrontendPort}/"
     backend_health_url = "http://127.0.0.1:${BackendPort}/health"
     services_started = $startedProcesses
+    requested_frontend_mode = $(if ($Dev) { 'development' } else { 'production' })
     startup_incremental_update = $startupUpdateStatus
     startup_update_exit_code = $startupUpdateExitCode
     startup_news_refresh_requested = [bool]$FetchNews

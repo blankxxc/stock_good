@@ -91,21 +91,42 @@ def _latest_real_data_status() -> dict[str, Any]:
         "rows": int(len(daily)),
         "symbol_count": int(daily["symbol"].nunique()) if "symbol" in daily.columns else 0,
         "latest_trade_date": latest_trade_date,
+        "earliest_trade_date": None if daily.empty else str(daily["trade_date"].min()),
         "latest_stock_count": latest_stock_count,
+        "raw_price_rows": int(daily["raw_close"].notna().sum()) if "raw_close" in daily else 0,
+        "st_known_rows": int(daily["st_flag"].notna().sum()) if "st_flag" in daily else 0,
+        "st_unknown_rows": int(daily["st_flag"].isna().sum()) if "st_flag" in daily else int(len(daily)),
         "fingerprint": _sha256(path),
     }
 
 
 DERIVED_STEPS = [
     "materialize_factor_store",
+    "build_model_feature_matrix",
     "build_labels",
     "train_cograsp_current",
     "build_latest_live_scores",
     "refresh_sentiment_event_data",
     "train_sentiment_event_fusion",
     "build_sentiment_event_scores",
-    "train_finmamba_official",
 ]
+
+
+def _refresh_benchmark_inputs(raw_status: dict[str, Any], skip_fetch: bool) -> dict[str, Any]:
+    from data.adapters.benchmark_daily import BENCHMARK_PATH, update_benchmark_daily
+
+    result: dict[str, Any] = {"status": "skipped", "data_changed": False}
+    if not skip_fetch and raw_status.get("earliest_trade_date") and raw_status.get("latest_trade_date"):
+        try:
+            result = update_benchmark_daily(raw_status["earliest_trade_date"], raw_status["latest_trade_date"])
+        except Exception as exc:
+            result = {"status": "partial", "data_changed": False, "error": f"{type(exc).__name__}: {exc}"}
+    result["fingerprint"] = _sha256(BENCHMARK_PATH) if BENCHMARK_PATH.exists() else "missing_benchmark"
+    return result
+
+
+def _factor_input_fingerprint(raw_fingerprint: str, benchmark_fingerprint: str) -> str:
+    return hashlib.sha256(f"{raw_fingerprint}:{benchmark_fingerprint}:abnormal_movement_v1:vwap_raw_close_v1".encode()).hexdigest()
 
 
 def run_daily_update(
@@ -124,7 +145,8 @@ def run_daily_update(
         state = _read_json(STATE)
         if not isinstance(state.get("steps"), dict):
             state["steps"] = {}
-        state_steps = state["steps"]
+        state_steps = {name: checkpoint for name, checkpoint in state["steps"].items() if name in DERIVED_STEPS}
+        state["steps"] = state_steps
 
         if skip_fetch:
             steps.append({"step": "fetch_real_csi300_daily", "status": "skipped", "reason": "--skip-fetch"})
@@ -159,9 +181,17 @@ def run_daily_update(
         if not raw_status.get("exists") or not raw_fingerprint:
             upstream_blocked = True
 
+        benchmark_report: dict[str, Any] = {"status": "skipped", "data_changed": False}
+        factor_fingerprint = raw_fingerprint
+        if not upstream_blocked:
+            benchmark_report = _refresh_benchmark_inputs(raw_status, skip_fetch)
+            steps.append({"step": "refresh_benchmark_daily", **benchmark_report})
+            factor_fingerprint = _factor_input_fingerprint(raw_fingerprint, benchmark_report["fingerprint"])
+
         step_runners: dict[str, Any] = {}
         if not upstream_blocked:
             from factors.offline.polars_factor_engine import materialize_factor_store
+            from feature_store.point_in_time_join.build_model_feature_matrix import build_model_feature_matrix
             from models.cograsp_current import CURRENT_DAILY, train_current_cograsp
             from models.sentiment_event_fusion import (
                 build_sentiment_event_scores,
@@ -169,11 +199,11 @@ def run_daily_update(
             )
             from models.research_loop_research_loop import build_labels
             from scripts.build_latest_live_scores import build_latest_live_scores
-            from scripts.train_finmamba_official import train_official_finmamba
             from data.adapters.sentiment_event_data import update_sentiment_event_data
 
             step_runners = {
                 "materialize_factor_store": lambda: materialize_factor_store(write_outputs=True),
+                "build_model_feature_matrix": lambda: build_model_feature_matrix(validate_existing=True),
                 "build_labels": lambda: build_labels(write_outputs=True)[1],
                 "train_cograsp_current": lambda: train_current_cograsp(
                     pd.read_parquet(CURRENT_DAILY)
@@ -186,19 +216,17 @@ def run_daily_update(
                     pd.read_parquet(CURRENT_DAILY)
                 ),
                 "build_sentiment_event_scores": build_sentiment_event_scores,
-                "train_finmamba_official": lambda: train_official_finmamba(
-                    device="auto", epochs=5
-                ),
             }
 
         dependency_failed = upstream_blocked
         ran_derived_step = False
         sentiment_data_refreshed = False
         for step_name in DERIVED_STEPS:
+            input_fingerprint = factor_fingerprint if step_name in {"materialize_factor_store", "build_model_feature_matrix"} else raw_fingerprint
             checkpoint = state_steps.get(step_name, {}) if isinstance(state_steps, dict) else {}
             checkpoint_current = bool(
-                checkpoint.get("status") in {"ok", "blocked_runtime"}
-                and checkpoint.get("input_fingerprint") == raw_fingerprint
+                checkpoint.get("status") == "ok"
+                and checkpoint.get("input_fingerprint") == input_fingerprint
             )
             needs_run = bool(
                 skip_fetch
@@ -226,7 +254,7 @@ def run_daily_update(
                 step_entry = {
                     "step": step_name,
                     "status": step_status,
-                    "input_fingerprint": raw_fingerprint,
+                    "input_fingerprint": input_fingerprint,
                     "duration_seconds": round((datetime.now(timezone.utc) - started_at).total_seconds(), 3),
                 }
                 for field in (
@@ -240,10 +268,10 @@ def run_daily_update(
                 steps.append(step_entry)
                 state_steps[step_name] = {
                     "status": step_status,
-                    "input_fingerprint": raw_fingerprint,
+                    "input_fingerprint": input_fingerprint,
                     "completed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 }
-                if step_status not in {"ok", "blocked_runtime"}:
+                if step_status != "ok":
                     dependency_failed = True
                 elif step_name == "refresh_sentiment_event_data":
                     sentiment_data_refreshed = True
@@ -253,12 +281,12 @@ def run_daily_update(
                     "step": step_name,
                     "status": "failed",
                     "error": f"{type(exc).__name__}: {exc}",
-                    "input_fingerprint": raw_fingerprint,
+                    "input_fingerprint": input_fingerprint,
                     "duration_seconds": round((datetime.now(timezone.utc) - started_at).total_seconds(), 3),
                 })
                 state_steps[step_name] = {
                     "status": "failed",
-                    "input_fingerprint": raw_fingerprint,
+                    "input_fingerprint": input_fingerprint,
                     "error": f"{type(exc).__name__}: {exc}",
                     "completed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 }
@@ -296,7 +324,7 @@ def run_daily_update(
             "real_data": raw_status,
             "raw_fingerprint": raw_fingerprint,
             "published_raw_fingerprint": state.get("published_raw_fingerprint"),
-            "data_changed": bool(fetch_report.get("data_changed", False)),
+            "data_changed": bool(fetch_report.get("data_changed", False) or benchmark_report.get("data_changed", False)),
             "resumed_from_checkpoint": bool(ran_derived_step and not fetch_report.get("data_changed", False)),
             "steps": steps,
             "research_boundary": "research_signals_only_not_investment_advice",

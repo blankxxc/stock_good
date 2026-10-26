@@ -14,9 +14,9 @@ stock_good 是一个本地全栈智能选股研究平台样例，目标不是直
 
 先采用“沪深300近三年日频数据”作为主线数据范围：
 
-- 股票池：沪深300，使用点时间成分历史，避免未来成分股和幸存者偏差。
+- 股票池：沪深300；当前本地真实行情使用当前成员的历史数据，历史回溯存在幸存者偏差。点时间成分历史仍需补齐。
 - 时间范围：滚动近三年，以最新可用交易日为结束点。
-- 频率：日频为主，只处理 daily OHLCV、成交额、复权因子、指数成分历史、行业/参考维表等。
+- 频率：仅日频，只处理 daily OHLCV、成交额、复权因子、指数成分历史、行业/参考维表等。
 - 暂不处理：分钟、tick、盘口等高频数据。原因是本地存储优先保证日频闭环，高频数据量更大且通常需要额外供应商授权。
 - 配置入口：
   - `configs/universe/csi300.yaml`
@@ -46,7 +46,7 @@ reports/    验收、模型、回测、RAG、导出 manifest 和运维报告
 - 本地以 Parquet/DuckDB/Spark/Polars 组合完成轻量湖仓 PoC。
 - 支持 ODS/Bronze、DWD/Silver、DWS/Gold、ADS/报告层的分层设计。
 - 支持 snapshot manifest、数据版本、回填 dry-run 和不可变正式报告快照。
-- 当前主线聚焦日频行情；分钟/实时流只保留 PoC 与接口边界，不作为默认数据路径。
+- 行情链路仅保留日频批处理，分钟/实时模块及其部署依赖已移除。
 
 ### 3. 数据质量、防泄漏与血缘
 
@@ -65,8 +65,9 @@ reports/    验收、模型、回测、RAG、导出 manifest 和运维报告
 
 - 预测任务采用横截面选股：在某个交易时点对股票池打分/排序，而不是预测单只股票绝对价格。
 - 默认标签方向：5d/10d 未来收益、超额收益、行业中性收益或横截面分位标签。
-- baseline 包含 LightGBM 与 Qlib-compatible recorder；高级模型 adapter 覆盖 MASTER、StockMixer、HIST、TRSR 的本地研究候选形态。
+- 当前预测模型仅保留 COGRASP 与情绪融合 LightGBM；标签、历史回测和文件实验记录模块供研究复核使用。
 - 回测输出包含 IC/RankIC、分位组合、TopK、long-short、换手、交易成本、最大回撤、Sharpe/Calmar、容量和风险暴露。
+- 「策略实验」支持动量、反转、低波动、均线趋势策略的参数对比，以及净值、持仓和成交的逐日回放，详见 [使用说明](docs/strategy_lab.md)。
 
 ### 6. 事件、关系图与高级研究特征
 
@@ -96,7 +97,6 @@ reports/    验收、模型、回测、RAG、导出 manifest 和运维报告
 /capabilities             能力说明
 /methodology              方法论
 /data-security            数据与安全边界
-/backtest-risk            回测与风险
 /rag-evidence             RAG 证据说明
 /architecture-roadmap     架构路线
 /login                    登录入口占位
@@ -105,15 +105,11 @@ reports/    验收、模型、回测、RAG、导出 manifest 和运维报告
 /lineage                  血缘
 /lakehouse                湖仓与 snapshot
 /spark-jobs               Spark/批处理任务
-/factors                  因子库
-/features                 Feature Store
 /scores                   模型分数与排序
-/backtests                回测与风险
+/strategy-lab             策略实验与历史回放
+/visualization            股票与因子可视化看板
 /experiments              实验记录
-/realtime                 实时/分钟 PoC 状态，默认不作为主线数据
-/flink-jobs               Flink-style PoC 状态
 /graph                    股票关系图
-/models                   模型与高级 adapter
 /rag                      研究证据
 /simulation               模拟盘研究账户
 /reports                  报告状态机与导出
@@ -127,13 +123,13 @@ reports/    验收、模型、回测、RAG、导出 manifest 和运维报告
 
 ```text
 backend/                         FastAPI 后端与 API 路由
-configs/                         项目、环境、股票池、数据、因子、标签、模型、回测、流式和 Spark 配置
+configs/                         项目、环境、股票池、数据、因子、标签、模型、回测和 Spark 配置
 data/                            本地数据、样例数据、湖仓分层和生成结果
 data_contracts/                  数据契约 schema
-deploy/                          Docker Compose、代理、监控、备份恢复和 K8s 草案
+deploy/                          服务器代理、监控和备份恢复配置
 docs/                            架构、验收、演示脚本、ADR 和风险登记
 frontend/                        Next.js Research Console
-models/                          研究闭环、baseline、高级模型 adapter 和实验输出
+models/                          COGRASP、情绪融合 LightGBM、共用回测和实验输出
 ops/                             配置解析、DAG、回填、可观测性、部署与最终验收 payload
 quality/                         数据质量、防泄漏、血缘和可信度逻辑
 rag/                             claim 级 RAG schema、检索、评测和引用卡片
@@ -169,6 +165,8 @@ npm install
 
 推荐统一使用下面的启动器。它会先检查最新已完成交易日并执行幂等增量回流，确认行情、因子和页面预测产物一致后才启动缺失的前后端服务；行情指纹没有变化时不会重复写数据或重训模型，避免页面先展示旧数据。
 
+日常使用默认构建并启动生产版本，避免访问页面时临时编译。每次启动缺失的前端服务时会重新构建，确保代码和内部 API 地址生效；开发时加 `-Dev`。已经运行的服务会复用，修改代码后需重启相应服务。
+
 ```powershell
 .\scripts\start_website.ps1
 ```
@@ -188,6 +186,9 @@ npm install
 
 # 启动后打开系统默认浏览器
 .\scripts\start_website.ps1 -OpenBrowser
+
+# 修改前端代码时启用开发模式
+.\scripts\start_website.ps1 -Dev
 ```
 
 也可以单独安装定时任务；重复运行会更新同名任务，不会创建多个副本：
@@ -197,6 +198,8 @@ npm install
 ```
 
 启动时增量任务会在前后端对外提供页面之前完成，结果写入 `reports/daily_update/`；若检查或回流失败，启动器会失败并指向日志，不会静默启动旧数据页面。前后端运行日志写入 `reports/runtime/website/`。数据有新增或修订时，流水线依次更新因子、标签、COGRASP checkpoint、情绪/事件融合 LightGBM 和两套页面评分；无变化时按数据指纹跳过。直接运行 `npm run dev` 只启动前端，不属于完整的网站启动入口。
+
+公开行情、选股、个股与因子接口只缓存有限数量的展示结果和最近两个日期的因子截面；底层日线、指数、预测或报告文件更新后，下次请求自动重算，无需重启后端。完整历史模型特征表不再用于页面选股。策略实验、登录和个人自选不进入这层缓存。
 
 ### 3. 手动启动后端 API
 
@@ -225,8 +228,6 @@ GET /api/features
 GET /api/scores
 GET /api/backtests
 GET /api/experiments
-GET /api/realtime
-GET /api/flink-jobs
 GET /api/graph
 GET /api/models
 GET /api/rag
@@ -316,7 +317,7 @@ uv run --extra cograsp python scripts\train_cograsp_current.py
 uv run --extra cograsp python scripts\build_latest_live_scores.py
 ```
 
-COGRASP 当前重训版不使用文本情绪：静态关系图由历史日收益绝对相关性 Top8 构建。停牌/缺行日沿用前收盘价，并把成交量、成交额和换手率置零，以保持日频序列连续。模型先做时间顺序训练/验证/测试，再按验证最佳轮次用全部已知样本重训；页面会展示最新输入日期、预测目标日期、训练样本数和样本外指标。作者固定股票池的 `2024-06-28` 复现流程仍保留在 `scripts\update_cograsp_market_data.py` 与 `models\cograsp_official_adapter.py`，但不再作为网站默认评分源。
+COGRASP 当前重训版不使用文本情绪：静态关系图由历史日收益绝对相关性 Top8 构建。停牌/缺行日沿用前收盘价，并把成交量、成交额和换手率置零，以保持日频序列连续。模型先做时间顺序训练/验证/测试，再按验证最佳轮次用全部已知样本重训；页面会展示最新输入日期、预测目标日期、训练样本数和样本外指标。当前只保留使用最新沪深300股票池的训练和推理入口。
 
 评分页还提供第二个可切换模型：`Sentiment Event Fusion LightGBM`。它是参考 KDD 2025 CAMEF 与 EACL 2026 CARAG 的可运行日频实现，不是论文原模型的完整复现：股票时序与市场情绪代理始终启用，真实新闻情绪按覆盖情况作为可选模态；新闻严格按 `available_time <= 下一交易日 09:25` 对齐，避免把盘后才知道的信息泄漏到更早预测中。事件交互特征属于 causal-inspired proxy，不宣称识别了真实因果效应。
 
@@ -398,12 +399,7 @@ npm run validate:routes
 npm run build
 ```
 
-Docker Compose 配置检查：
-
-```bash
-cd /c/Users/blankxxc/Desktop/work_space/stock_good
-docker compose -f deploy/docker/docker-compose.yml config --services
-```
+服务器部署见 [部署说明](docs/deployment.md)，使用 Python 后端与 Node.js 前端直接运行。
 
 备份恢复 smoke：
 
@@ -435,14 +431,6 @@ industry_code, industry_name, available_time, source, license_id
 8. 跑防泄漏、质量、许可证和 snapshot manifest 检查。
 9. 只在通过门禁后进入模型训练、回测、RAG 解释和报告导出。
 
-分钟频率后续再处理时，需要单独扩展：
-
-- 存储容量预算和分区策略；
-- 供应商授权与展示/导出限制；
-- Kafka/Flink 或离线分钟批处理路径；
-- online/offline feature consistency 检查；
-- 更严格的交易成本、滑点、延迟和容量评估。
-
 ## 运维与配置
 
 - 主配置：`configs/base.yaml`
@@ -468,5 +456,4 @@ industry_code, industry_name, available_time, source, license_id
 1. 用授权数据源替换 synthetic adapter，先只跑沪深300近三年日频。
 2. 为真实数据新增数据导入脚本或 adapter，并保持现有 schema 与 license gate。
 3. 把 Web Console 的数据口径文案统一改成“沪深300近三年日频”。
-4. 完成日频闭环后，再评估分钟数据的存储、授权、流式架构和运维成本。
-5. 在真实数据上重新跑全量防泄漏、质量、回测、RAG 引用和导出门禁。
+4. 在真实数据上重新跑全量防泄漏、质量、回测、RAG 引用和导出门禁。

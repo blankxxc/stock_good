@@ -7,6 +7,9 @@ from typing import Any
 import pandas as pd
 import yaml
 
+from factors.offline.abnormal_movement import FLAG_LABELS, FLAG_NAMES, compute_abnormal_movement_factors
+from backend.app.services.file_payload_cache import file_payload_cache
+
 
 def project_root() -> Path:
     return Path(__file__).resolve().parents[3]
@@ -38,8 +41,25 @@ def _real_csi300_daily() -> pd.DataFrame:
     return _read_parquet(project_root() / "data" / "real" / "csi300_daily" / "part-000.parquet")
 
 
-def _model_feature_matrix_wide() -> pd.DataFrame:
-    return _read_parquet(project_root() / "data" / "gold" / "model_feature_matrix_wide" / "part-000.parquet")
+def _daily_inputs() -> list[Path]:
+    return [project_root() / "data/real/csi300_daily/part-000.parquet"]
+
+
+def _factor_inputs() -> list[Path]:
+    return [project_root() / "data/gold/factor_daily_panel_long"]
+
+
+def _prediction_inputs() -> list[Path]:
+    return [project_root() / "reports/research_loop" / name for name in (
+        "live_predictions.parquet", "live_predictions_report.json",
+        "sentiment_event_predictions.parquet", "sentiment_event_predictions_report.json",
+    )]
+
+
+def _screening_inputs() -> list[Path]:
+    from data.adapters.benchmark_daily import BENCHMARK_PATH
+
+    return [*_daily_inputs(), *_factor_inputs(), BENCHMARK_PATH]
 
 
 def _json_records(frame: pd.DataFrame) -> list[dict[str, Any]]:
@@ -55,6 +75,18 @@ def _safe_float(value: Any) -> float | None:
         return float(value)
     except (TypeError, ValueError):
         return None
+
+
+def _price_basis(frame: pd.DataFrame) -> dict[str, str]:
+    modes = frame["adjustment_mode"].dropna().astype(str).unique().tolist() if "adjustment_mode" in frame else []
+    mode = modes[0] if len(modes) == 1 else "mixed" if modes else "unknown"
+    descriptions = {
+        "hfq": ("后复权收盘价", "价格和均线使用后复权序列，用于比较历史走势；数值不是当日实际成交报价。成交额、成交量保留原始口径。"),
+        "qfq": ("前复权收盘价", "价格和均线使用前复权序列，用于比较历史走势；成交额、成交量保留原始口径。"),
+        "none": ("未复权收盘价", "价格使用未复权的日频收盘数据。"),
+    }
+    label, description = descriptions.get(mode, ("收盘价（复权口径待确认）", "当前数据未提供统一的复权口径，价格仅作研究序列展示。"))
+    return {"mode": mode, "label": label, "description": description}
 
 
 def _safe_json_value(value: Any, fallback: Any) -> Any:
@@ -160,20 +192,15 @@ SCREENING_WINDOWS = [5, 10, 20, 30, 60, 250]
 SCREENING_BOOLEAN_COLUMNS = [
     "non_st", "ma_bullish", "return_10d_gt_15", "close_above_ma10", "market_cap_gt_100b",
     "all_conditions_met", "ma_bullish_order", "ma_all_up",
+    *FLAG_NAMES,
 ]
 CONDITION_TEXT_COLUMNS = {"stock_name", "symbol"}
 CONDITION_CATEGORY_COLUMNS = {"industry_name", "trade_date"}
 CONDITION_NUMERIC_OPERATORS = ["gt", "gte", "lt", "lte", "eq", "between"]
 CONDITION_TEXT_OPERATORS = ["contains"]
 CONDITION_DISCRETE_OPERATORS = ["eq"]
-MODEL_FEATURE_COLUMNS = [
-    "momentum_20d", "volatility_20d", "reversal_5d", "amount_percentile_20d", "amihud_20d",
-    "volume_shock_20d", "price_volume_corr_20d", "vwap_deviation", "ma20_gap", "ma60_gap",
-    "market_cap_proxy", "float_market_cap_proxy", "beta_20d", "beta_60d", "value_proxy", "quality_proxy",
-    "growth_proxy_20d", "low_volatility_proxy", "liquidity_proxy", "industry_neutral_return_20d", "cs_rank_return_20d",
-]
 CONDITION_SCREEN_CRITERIA = {
-    "non_st": {"label": "非ST", "description": "没有退市风险：当前数据用 st_flag=false、delist_flag=false 且股票名称不含 ST/*ST 作为可执行代理；净利、营收、审计意见、分红、违法等正式触发项需接入财报/公告治理数据后严格判断。"},
+    "non_st": {"label": "非ST", "description": "历史日线明确标记 st_flag=false、delist_flag=false 且股票名称不含 ST/*ST 时通过；ST 状态缺失时为未知，不通过非ST过滤。净利、营收、审计意见、分红、违法等正式触发项需接入财报/公告治理数据后严格判断。"},
     "ma_bullish": {"label": "均线多头排列", "description": "MA5 > MA10 > MA20 > MA30 > MA60 > MA250，且这些均线相对上一交易日向上；任何均线缺失都按“否”展示。"},
     "return_10d_gt_15": {"label": "10个交易日内涨幅大于15%", "description": "close / close.shift(10) - 1 > 15%；历史不足或涨幅未达标都按“否”展示。"},
     "close_above_ma10": {"label": "股价在10日均线上", "description": "当天收盘价 close > MA10；MA10 缺失时按“否”展示。"},
@@ -185,6 +212,7 @@ CONDITION_BASE_COLUMNS = [
     "close_above_ma10", "market_cap_gt_100b", "all_conditions_met",
 ]
 CONDITION_FACTOR_COLUMN_CATALOG = {
+    **FLAG_LABELS,
     "close": "最近交易日收盘价", "pct_change": "最近交易日涨跌幅", "return_10d": "近10个交易日涨跌幅",
     "estimated_market_cap_billion": "估算流通市值（亿元，行情代理）", "ma5": "5日均线", "ma10": "10日均线",
     "ma20": "20日均线", "ma30": "30日均线", "ma60": "60日均线", "ma250": "250日均线",
@@ -218,7 +246,7 @@ PREDICTION_COLUMNS = [
     "information_source", "sentiment_polarity_used",
 ]
 MARKET_NOTES = [
-    {"title": "当前沪深300重训", "body": "保留 IJCAI 2025 COGRASP 作者网络结构，使用当前 300 只股票和截至 2026-07-24 的本地日频数据重新训练。"},
+    {"title": "当前沪深300重训", "body": "保留 IJCAI 2025 COGRASP 作者网络结构，使用当前 300 只股票和最新已收盘的本地日频数据重新训练。"},
     {"title": "原始回归输出", "body": "页面展示本地重训 checkpoint 的下一交易日相对涨跌回归值和横截面排名，不进行概率校准。"},
     {"title": "关系图口径", "body": "当前新闻缓存不足以覆盖 300 只股票，因此关系图使用历史日收益绝对相关性 Top8；不包含正负文本情绪。"},
     {"title": "样本外表现", "body": "当前测试集 RankIC 为负且样本量较小，只能作为研究候选排序，不能视为已验证的交易信号。"},
@@ -226,52 +254,12 @@ MARKET_NOTES = [
 ]
 
 def _score_model_catalog(root: Path) -> list[dict[str, Any]]:
-    definitions = [
-        {
-            "id": "cograsp",
-            "label": "COGRASP 当前沪深300重训",
-            "description": "基于价格序列与收益相关性图的 COGRASP 1d 回归模型。",
-            "report": root / "reports" / "research_loop" / "live_predictions_report.json",
-            "predictions": root / "reports" / "research_loop" / "live_predictions.parquet",
-        },
-        {
-            "id": "sentiment_event",
-            "label": "情绪/事件融合 LightGBM",
-            "description": "融合市场情绪代理和按可用时间对齐的可选真实新闻情绪。",
-            "report": root / "reports" / "research_loop" / "sentiment_event_predictions_report.json",
-            "predictions": root / "reports" / "research_loop" / "sentiment_event_predictions.parquet",
-        },
-        {
-            "id": "finmamba",
-            "label": "FinMamba 官方模型",
-            "description": "市场引导动态图 GAT + 多层级 Mamba；直接使用作者原版模型结构。",
-            "report": root / "reports" / "research_loop" / "finmamba_predictions_report.json",
-            "predictions": root / "reports" / "research_loop" / "finmamba_predictions.parquet",
-        },
-    ]
-    catalog: list[dict[str, Any]] = []
-    for definition in definitions:
-        report = _read_json(definition["report"])
-        available = bool(
-            definition["predictions"].exists() and report.get("status") == "ok"
-        )
-        status = "ready" if available else str(report.get("status") or "pending")
-        catalog.append(
-            {
-                "id": definition["id"],
-                "label": definition["label"],
-                "description": definition["description"],
-                "status": status,
-                "latest_trade_date": report.get("latest_trade_date"),
-                "model_version": report.get("model_version"),
-                "integration_status": report.get("integration_status"),
-                "runtime_requirements": report.get("runtime_requirements"),
-                "runtime_blockers": report.get("runtime_blockers"),
-            }
-        )
-    return catalog
+    from backend.app.services.models_catalog import models_payload
+
+    return models_payload("research_signals_only_not_investment_advice", root=root)["models"]
 
 
+@file_payload_cache(lambda: [*_daily_inputs(), *_prediction_inputs()], maxsize=4)
 def scores_payload(research_boundary: str, model: str = "cograsp") -> dict[str, Any]:
     root = project_root()
     aliases = {
@@ -280,26 +268,10 @@ def scores_payload(research_boundary: str, model: str = "cograsp") -> dict[str, 
         "sentiment": "sentiment_event",
         "sentiment_event": "sentiment_event",
         "event": "sentiment_event",
-        "finmamba": "finmamba",
-        "mamba": "finmamba",
     }
     selected_model = aliases.get(str(model or "cograsp").strip().lower(), "cograsp")
     available_models = _score_model_catalog(root)
-    legacy_report = research_loop_report()
-    backtest_predictions = _read_parquet(root / "reports" / "research_loop" / "predictions.parquet")
-    if selected_model == "finmamba":
-        live_report = _read_json(
-            root / "reports" / "research_loop" / "finmamba_predictions_report.json"
-        )
-        live_predictions = _read_parquet(
-            root / "reports" / "research_loop" / "finmamba_predictions.parquet"
-        )
-        score_source = "official_finmamba_current_csi300_checkpoint"
-        maturity = "L2-finmamba-official-current-csi300"
-        model_description = "作者原版 FinMamba：市场引导动态图 GAT + 多层级 Mamba，使用日频量价和行业衰减关系。"
-        candidate_reason = "作者原版 FinMamba 的下一日回归值排名靠前；需结合样本外指标和交易成本人工复核。"
-        pool_definition = "取作者原版 FinMamba 下一日收益回归值排名靠前的 Top20；本站只做沪深300数据格式适配，不改模型结构与算法。"
-    elif selected_model == "sentiment_event":
+    if selected_model == "sentiment_event":
         live_report = _read_json(
             root / "reports" / "research_loop" / "sentiment_event_predictions_report.json"
         )
@@ -319,16 +291,8 @@ def scores_payload(research_boundary: str, model: str = "cograsp") -> dict[str, 
         model_description = "保留 COGRASP 作者网络结构，以当前沪深300日频和收益相关性图重训。"
         candidate_reason = "当前沪深300重训版 COGRASP 的下一日相对涨跌回归值排名靠前；样本外表现较弱，需人工复核。"
         pool_definition = "取当前沪深300重训版 COGRASP 下一日相对涨跌回归值排名靠前的 Top20；没有二次概率校准，且样本外效果尚弱。"
-    if not live_predictions.empty and live_report.get("status") == "ok":
-        predictions = live_predictions
-        report = live_report
-    elif selected_model == "cograsp":
-        predictions = backtest_predictions
-        report = legacy_report
-        score_source = "walk_forward_backtest_predictions"
-    else:
-        predictions = pd.DataFrame()
-        report = live_report
+    predictions = live_predictions
+    report = live_report
     if report.get("status") != "ok" or predictions.empty:
         return {
             "module": "scores",
@@ -342,10 +306,6 @@ def scores_payload(research_boundary: str, model: str = "cograsp") -> dict[str, 
             "latest_trade_date": live_report.get("latest_trade_date"),
             "latest_training_label_date": live_report.get("latest_training_label_date"),
             "training_sample_count": live_report.get("training_sample_count"),
-            "integration_status": live_report.get("integration_status") or "training_pending",
-            "runtime_requirements": live_report.get("runtime_requirements"),
-            "runtime_blockers": live_report.get("runtime_blockers") or [],
-            "training_command": live_report.get("training_command"),
             "upstream_source": live_report.get("upstream_source"),
             "model_methodology": live_report.get("model_methodology"),
             "paper_references": live_report.get("paper_references"),
@@ -354,9 +314,10 @@ def scores_payload(research_boundary: str, model: str = "cograsp") -> dict[str, 
             "data_pipeline_adapted": live_report.get("data_pipeline_adapted"),
             "research_boundary": research_boundary,
         }
-    name_map = _stock_name_map()
-    if not name_map.empty and "stock_name" not in predictions.columns:
-        predictions = predictions.merge(name_map, on="symbol", how="left")
+    if "stock_name" not in predictions.columns:
+        name_map = _stock_name_map()
+        if not name_map.empty:
+            predictions = predictions.merge(name_map, on="symbol", how="left")
     predictions = _with_display_industry(predictions)
     latest_date = str(predictions["trade_date"].max())
     base_cols = [
@@ -405,10 +366,6 @@ def scores_payload(research_boundary: str, model: str = "cograsp") -> dict[str, 
         "model_version": report.get("model_version"),
         "model_family": report.get("model_family") or (rows[0].get("model_family") if rows else None),
         "model_methodology": report.get("model_methodology"),
-        "integration_status": report.get("integration_status"),
-        "runtime_requirements": report.get("runtime_requirements"),
-        "runtime_blockers": report.get("runtime_blockers"),
-        "training_command": report.get("training_command"),
         "upstream_source": report.get("upstream_source"),
         "prediction_target_date": report.get("prediction_target_date"),
         "prediction_target_date_is_estimated": report.get("prediction_target_date_is_estimated"),
@@ -457,10 +414,13 @@ def _daily_with_screening_factors() -> pd.DataFrame:
         frame[f"ma{window}"] = grouped["close"].rolling(window).mean().reset_index(level=0, drop=True)
         frame[f"ma{window}_slope_up"] = frame[f"ma{window}"] > grouped[f"ma{window}"].shift(1)
     frame["return_10d"] = grouped["close"].pct_change(10)
+    frame[FLAG_NAMES] = compute_abnormal_movement_factors(frame)
     turnover = pd.to_numeric(frame.get("turnover_rate"), errors="coerce")
     frame["estimated_market_cap_billion"] = (frame["amount"] / (turnover / 100) / 100_000_000).replace([float("inf"), -float("inf")], pd.NA)
     stock_name_upper = frame["stock_name"].astype(str).str.upper()
-    frame["non_st"] = (~frame["st_flag"].astype(bool)) & (~frame["delist_flag"].astype(bool)) & (~stock_name_upper.str.contains("ST", regex=False))
+    st_values = pd.to_numeric(frame.get("st_flag", pd.Series(pd.NA, index=frame.index, dtype="boolean")), errors="coerce")
+    st_status = st_values.where(st_values.isin([0, 1])).astype("boolean")
+    frame["non_st"] = st_status.eq(False) & (~frame["delist_flag"].astype(bool)) & (~stock_name_upper.str.contains("ST", regex=False))
     frame["ma_bullish_order"] = (
         (frame["ma5"] > frame["ma10"])
         & (frame["ma10"] > frame["ma20"])
@@ -482,11 +442,6 @@ def _daily_with_screening_factors() -> pd.DataFrame:
         & frame["close_above_ma10"]
         & frame["market_cap_gt_100b"]
     )
-    wide = _model_feature_matrix_wide()
-    available_feature_columns = [col for col in ["symbol", "trade_date", *MODEL_FEATURE_COLUMNS] if col in wide.columns]
-    if len(available_feature_columns) > 2:
-        feature_frame = wide[available_feature_columns].drop_duplicates(["symbol", "trade_date"], keep="last")
-        frame = frame.merge(feature_frame, on=["symbol", "trade_date"], how="left")
     return frame
 
 
@@ -539,19 +494,9 @@ def _data_refresh_policy() -> dict[str, Any]:
     }
 
 
-def _latest_symbol_universe(frame: pd.DataFrame) -> pd.DataFrame:
-    latest = frame.sort_values(["symbol", "trade_date"]).drop_duplicates("symbol", keep="last").copy()
-    latest = _with_display_industry(latest).sort_values("symbol")
-    for column in SCREENING_BOOLEAN_COLUMNS:
-        if column in latest.columns:
-            latest[column] = latest[column].fillna(False).astype(bool)
-    return latest
-
-
 def _latest_complete_signal_universe(frame: pd.DataFrame) -> tuple[pd.DataFrame, str, str, int, int]:
     raw_latest_trade_date = str(frame["trade_date"].max())
-    latest_by_symbol = _latest_symbol_universe(frame)
-    expected_symbol_count = int(len(latest_by_symbol))
+    expected_symbol_count = int(frame["symbol"].nunique())
     date_counts = frame.groupby("trade_date")["symbol"].nunique().sort_index()
     complete_dates = date_counts[date_counts >= expected_symbol_count]
     latest_complete_trade_date = str(complete_dates.index[-1]) if not complete_dates.empty else raw_latest_trade_date
@@ -560,14 +505,15 @@ def _latest_complete_signal_universe(frame: pd.DataFrame) -> tuple[pd.DataFrame,
     signal_universe = _with_display_industry(signal_universe).sort_values("symbol")
     for column in SCREENING_BOOLEAN_COLUMNS:
         if column in signal_universe.columns:
-            signal_universe[column] = signal_universe[column].fillna(False).astype(bool)
+            signal_universe[column] = signal_universe[column].astype("boolean") if column in [*FLAG_NAMES, "non_st"] else signal_universe[column].fillna(False).astype(bool)
     return signal_universe, latest_complete_trade_date, raw_latest_trade_date, raw_latest_count, expected_symbol_count
 
 
-def _factor_daily_panel_wide(trade_date: str) -> tuple[pd.DataFrame, list[str], dict[str, str]]:
+@file_payload_cache(_factor_inputs)
+def _factor_daily_panel(trade_date: str) -> pd.DataFrame:
     factor_path = project_root() / "data" / "gold" / "factor_daily_panel_long"
     if not factor_path.exists():
-        return pd.DataFrame(), [], {}
+        return pd.DataFrame()
     try:
         frame = pd.read_parquet(
             factor_path,
@@ -578,6 +524,11 @@ def _factor_daily_panel_wide(trade_date: str) -> tuple[pd.DataFrame, list[str], 
         frame = _read_parquet(factor_path)
         if not frame.empty:
             frame = frame[frame["trade_date"].astype(str).eq(trade_date)].copy()
+    return frame
+
+
+def _factor_daily_panel_wide(trade_date: str) -> tuple[pd.DataFrame, list[str], dict[str, str]]:
+    frame = _factor_daily_panel(trade_date)
     if frame.empty:
         return pd.DataFrame(), [], {}
     frame = frame.dropna(subset=["symbol", "factor_name"]).copy()
@@ -599,6 +550,7 @@ def _factor_daily_panel_wide(trade_date: str) -> tuple[pd.DataFrame, list[str], 
     return wide, factor_columns, catalog
 
 
+@file_payload_cache(_screening_inputs)
 def condition_screen_payload(research_boundary: str) -> dict[str, Any]:
     frame = _daily_with_screening_factors()
     if frame.empty:
@@ -620,11 +572,15 @@ def condition_screen_payload(research_boundary: str) -> dict[str, Any]:
     frame["amount_billion"] = frame["amount"] / 100_000_000
     latest_universe, latest_trade_date, raw_latest_trade_date, raw_latest_count, expected_symbol_count = _latest_complete_signal_universe(frame)
     factor_wide, factor_columns, factor_catalog = _factor_daily_panel_wide(latest_trade_date)
+    # Keep these two flags computed from current daily/index inputs, even if an
+    # older materialized panel is still present while a refresh is pending.
+    factor_columns = [column for column in factor_columns if column not in FLAG_NAMES]
+    factor_wide = factor_wide.drop(columns=FLAG_NAMES, errors="ignore")
     if not factor_wide.empty and factor_columns:
         latest_universe = latest_universe.drop(columns=[column for column in factor_columns if column in latest_universe.columns], errors="ignore")
         latest_universe = latest_universe.merge(factor_wide, on=["symbol", "trade_date"], how="left")
     displayed_trade_dates = sorted(latest_universe["trade_date"].astype(str).unique().tolist())
-    available_factor_columns = _existing_columns(latest_universe, factor_columns or CONDITION_FACTOR_COLUMNS)
+    available_factor_columns = _existing_columns(latest_universe, list(dict.fromkeys([*(factor_columns or CONDITION_FACTOR_COLUMNS), *FLAG_NAMES])))
     factor_column_catalog = {column: CONDITION_FACTOR_COLUMN_CATALOG.get(column, factor_catalog.get(column, column)) for column in available_factor_columns}
     output_columns = _existing_columns(latest_universe, [*CONDITION_BASE_COLUMNS, *available_factor_columns])
     column_schema = _condition_column_schema(latest_universe, output_columns)
@@ -661,10 +617,11 @@ def condition_screen_payload(research_boundary: str) -> dict[str, Any]:
             "universe_rows": int(len(frame)),
             "latest_universe_rows": int(len(latest_universe)),
         },
-        "api_note": "展示最新完整沪深300股票截面的最近可用行情/因子；如果当日公共数据源只返回部分股票，则自动回退到最近一个完整截面。条件不满足或必要特征缺失均显示为否。页面仅保留研究因子列供人工判断，不构成投资建议。",
+        "api_note": "展示最新完整沪深300股票截面的最近可用行情/因子；如果当日公共数据源只返回部分股票，则自动回退到最近一个完整截面。非ST、十日涨幅及异动因子的数据不足时显示为未知，其余基础条件缺失时显示为否。页面仅保留研究因子列供人工判断，不构成投资建议。",
     }
 
 
+@file_payload_cache(_daily_inputs)
 def market_overview_payload(research_boundary: str) -> dict[str, Any]:
     daily = _real_csi300_daily()
     if daily.empty:
@@ -702,6 +659,7 @@ def market_overview_payload(research_boundary: str) -> dict[str, Any]:
         "research_boundary": research_boundary,
         "stock_count": int(latest["symbol"].nunique()),
         "latest_trade_date": str(latest["trade_date"].max()),
+        "price_basis": _price_basis(daily),
         "data_source": "data/real/csi300_daily/part-000.parquet",
         "breadth_summary": {
             "up_count": up_count,
@@ -717,28 +675,13 @@ def market_overview_payload(research_boundary: str) -> dict[str, Any]:
 
 
 def _stock_factor_values(symbol: str, trade_date: str, factor_names: list[str] | None = None) -> dict[str, dict[str, Any]]:
-    factor_path = project_root() / "data" / "gold" / "factor_daily_panel_long"
-    if not factor_path.exists():
-        return {}
-    filters: list[tuple[str, str, Any]] = [("symbol", "=", symbol), ("trade_date", "=", trade_date)]
-    if factor_names:
-        filters.append(("factor_name", "in", factor_names))
-    try:
-        frame = pd.read_parquet(
-            factor_path,
-            columns=["trade_date", "symbol", "factor_name", "factor_value", "category"],
-            filters=filters,
-        )
-    except Exception:
-        frame = _read_parquet(factor_path)
-        if frame.empty:
-            return {}
-        mask = (frame["symbol"].astype(str).str.upper() == symbol) & (frame["trade_date"].astype(str) == trade_date)
-        if factor_names:
-            mask = mask & frame["factor_name"].astype(str).isin(factor_names)
-        frame = frame[mask].copy()
+    frame = _factor_daily_panel(trade_date)
     if frame.empty:
         return {}
+    mask = frame["symbol"].astype(str).str.upper().eq(symbol)
+    if factor_names:
+        mask &= frame["factor_name"].astype(str).isin(factor_names)
+    frame = frame[mask].copy()
     frame = frame.sort_values(["category", "factor_name", "trade_date"]).drop_duplicates("factor_name", keep="last")
     return {str(row["factor_name"]): row.to_dict() for _, row in frame.iterrows()}
 
@@ -763,10 +706,17 @@ def _factor_value_interpretation(factor_name: str | None, factor_value: Any) -> 
     return f"该股取值 {value:.4f}。"
 
 
+@file_payload_cache(lambda: [*_daily_inputs(), *_factor_inputs(), *_prediction_inputs(),
+    project_root() / "reports/research_loop/predictions.parquet",
+    project_root() / "reports/factor_store/factor_store_factor_report.json"], maxsize=16)
 def stock_detail_payload(symbol: str, research_boundary: str) -> dict[str, Any]:
     normalized_symbol = symbol.upper().replace("-", ".")
-    daily = _real_csi300_daily()
-    stock_frame = daily[daily["symbol"].astype(str).str.upper() == normalized_symbol].sort_values("trade_date").copy()
+    daily_path = _daily_inputs()[0]
+    # Daily ingestion normalizes symbols to uppercase exchange-qualified codes.
+    # Push this predicate into Parquet so a new stock doesn't decode the entire market.
+    stock_frame = pd.read_parquet(daily_path, filters=[("symbol", "=", normalized_symbol)]) if daily_path.exists() else pd.DataFrame()
+    if not stock_frame.empty:
+        stock_frame = stock_frame.sort_values("trade_date").copy()
     if stock_frame.empty:
         return {
             "module": "stock_detail",
@@ -827,6 +777,7 @@ def stock_detail_payload(symbol: str, research_boundary: str) -> dict[str, Any]:
         "stock_name": latest_row.get("stock_name"),
         "industry_name": latest_row.get("industry_name"),
         "latest_trade_date": str(latest_row.get("trade_date")),
+        "price_basis": _price_basis(stock_frame),
         "latest_quote": _json_records(pd.DataFrame([latest_row]))[0],
         "price_series": price_series,
         "predictions": prediction_rows,
@@ -947,28 +898,17 @@ def experiments_payload(research_boundary: str) -> dict[str, Any]:
     report = research_loop_report()
     manifest = _read_json(root / "reports" / "research_loop" / "experiment_recorder" / str(report.get("run_id", "")) / "artifact_manifest.json")
     config = _read_yaml(root / "reports" / "research_loop" / "experiment_recorder" / str(report.get("run_id", "")) / "resolved_config.yaml")
-    advanced = _read_json(root / "reports" / "advanced_models" / "advanced_model_integration_report.json")
     if report.get("status") != "ok":
         return {
             "module": "experiments",
             "status": "research_loop_experiment_pending",
             "maturity": "L1-route-stub",
             "research_boundary": research_boundary,
-            "advanced_models": {
-                "status": "advanced_models_advanced_models_ready" if advanced.get("status") == "ok" else "advanced_models_advanced_models_pending",
-                "maturity": advanced.get("maturity"),
-                "run_id": advanced.get("run_id"),
-                "experiment_id": advanced.get("experiment_id"),
-                "model_count": len(advanced.get("models", {})),
-                "approval_status": advanced.get("approval_status"),
-                "leakage_check_status": advanced.get("leakage_check_status"),
-                "artifacts": advanced.get("artifacts", {}),
-            },
         }
     return {
         "module": "experiments",
         "status": "research_loop_experiment_recorder_ready",
-        "maturity": "L2-file-based-mlflow-qlib-compatible-recorder",
+        "maturity": "L2-file-based-recorder",
         "research_boundary": research_boundary,
         "run_id": report.get("run_id"),
         "experiment_id": report.get("experiment_id"),
@@ -980,19 +920,9 @@ def experiments_payload(research_boundary: str) -> dict[str, Any]:
         "feature_count": report.get("feature_count"),
         "split_count": report.get("split_count"),
         "lightgbm_status": report.get("lightgbm_status"),
-        "qlib_status": report.get("qlib_status"),
+        "recorder_status": report.get("recorder_status"),
         "resolved_config": config,
         "artifact_manifest": manifest,
-        "advanced_models": {
-            "status": "advanced_models_advanced_models_ready" if advanced.get("status") == "ok" else "advanced_models_advanced_models_pending",
-            "maturity": advanced.get("maturity"),
-            "run_id": advanced.get("run_id"),
-            "experiment_id": advanced.get("experiment_id"),
-            "model_count": len(advanced.get("models", {})),
-            "approval_status": advanced.get("approval_status"),
-            "leakage_check_status": advanced.get("leakage_check_status"),
-            "artifacts": advanced.get("artifacts", {}),
-        },
     }
 
 

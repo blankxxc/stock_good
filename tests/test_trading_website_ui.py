@@ -30,7 +30,8 @@ def test_homepage_market_board_keeps_stock_universe_without_redundant_intro_copy
     assert "类似同花顺" not in combined
     assert "首页直接展示所有股票" not in combined
     assert "股票代码" in combined and "股票名称" in combined
-    assert "最新价" in combined and "涨跌幅" in combined and "成交额" in combined
+    assert "price_basis?.label" in combined and "收盘价" in combined
+    assert "涨跌幅" in combined and "成交额" in combined
     assert "平盘/无变化" in combined and "未定价/停牌" in combined
     assert "breadth_summary" in component and "data_refresh_policy" in component
     assert "每日更新" not in combined and "update_daily_market_data.py" not in combined
@@ -38,7 +39,8 @@ def test_homepage_market_board_keeps_stock_universe_without_redundant_intro_copy
     assert "console-nav-section" not in layout
     assert "股票预测选股" in layout
     assert "股票全景" in layout
-    assert "因子库" in layout and "模型表现" in layout
+    assert "策略实验" in layout and "数据可视化" in layout
+    assert all(label not in layout for label in ("因子库", "模型表现", "回测风险"))
 
 
 def test_scores_page_renders_top10_multi_horizon_with_names_probabilities_and_detail_links() -> None:
@@ -86,14 +88,14 @@ def test_scores_page_renders_top10_multi_horizon_with_names_probabilities_and_de
     assert "可追溯字段" not in scores_page
     assert "data_mode" not in scores_page
     assert "multi-horizon probability" not in combined
-    assert "看回测风险" in component
+    assert 'href="/backtests"' not in component
     assert "predicted_relative_change_pct" in component
     assert "<tr><th>排名</th><th>股票代码</th><th>股票名称</th><th>预测相对涨跌</th>" in component
     assert "<tr><th>排名</th><th>股票代码</th><th>股票名称</th><th>上涨概率</th><th>下跌概率</th><th>score</th></tr>" not in component
     assert "可切换模型回归输出" in component
     assert "selectedModel" in component
-    assert "FinMamba 官方模型" in component
-    assert "环境待就绪" in component
+    assert "FinMamba" not in component
+    assert "环境待就绪" not in component
     assert "model-selector" in component
     assert "sentiment_event" in component
     assert "情绪/事件融合 LightGBM" in component
@@ -335,65 +337,15 @@ def test_market_and_stock_detail_api_payloads_are_real_data_backed() -> None:
     assert detail_payload["research_boundary"] == "research_signals_only_not_investment_advice"
 
 
-def test_scores_candidate_pool_and_backtest_risk_dashboard_are_integrated() -> None:
+def test_scores_candidate_pool_and_shared_research_data_remain_available() -> None:
     from backend.app.main import app
 
     layout = _read(APP / "layout.tsx") + _read(COMPONENTS / "ApplicationShell.tsx")
-    scores_page = _read(APP / "scores" / "page.tsx")
     candidates_page = _read(APP / "candidates" / "page.tsx")
-    backtests_page = _read(APP / "backtests" / "page.tsx")
-    risk_component = _read(COMPONENTS / "BacktestRiskDashboard.tsx")
-    combined = layout + scores_page + candidates_page + backtests_page + risk_component
-
     assert "股票预测选股" in layout
     assert "['候选池', '/candidates']" not in layout
     assert "候选池已放入“股票预测选股”页面" in candidates_page
     assert "/scores#candidate-pool" in candidates_page
-    assert "BacktestRiskDashboard" in backtests_page
-    assert "backtests-heading" not in backtests_page
-    assert "策略回测、风险指标、容量曲线和风险归因" not in backtests_page
-    assert "聚焦回答：历史怎么亏" not in backtests_page
-    assert "risk_summary" in risk_component
-    assert "risk_flags" in risk_component
-    assert "capacity_curve" in risk_component
-    assert "最近30个回测点" in risk_component
-    assert "策略回测与风险评估" not in risk_component
-    assert "risk command center" not in risk_component
-    assert "run_id <b>" not in risk_component
-    assert "portfolio <b>" not in risk_component
-    assert "benchmark <b>" not in risk_component
-    assert "latest <b>" not in risk_component
-    assert "data-api-fields" not in risk_component
-    assert "客户端暂时无法读取 /api/backtests" not in risk_component
-    assert "数据覆盖" not in risk_component
-    assert "equity_curve_rows" not in risk_component
-    assert "risk_report_rows" not in risk_component
-    assert "风险看板" in risk_component
-    assert "历史表现、回撤压力和当前风控状态" in risk_component
-    assert "risk-help-panel" not in risk_component
-    assert "净值看收益路径，回撤看历史最大亏损压力。" in risk_component
-    assert "主动风险衡量策略相对基准多赚/少赚，以及偏离基准的波动。" in risk_component
-    assert "相对收益" in risk_component
-    assert "策略比基准多赚或少赚了多少。" in risk_component
-    assert "跟踪误差" in risk_component
-    assert "策略相对基准偏离得有多剧烈。" in risk_component
-    assert "信息比率" in risk_component
-    assert "每承担一份主动风险换来多少超额收益。" in risk_component
-    assert "对基准 Beta" in risk_component
-    assert "策略跟随基准涨跌的敏感程度。" in risk_component
-    assert "主动最大回撤" in risk_component
-    assert "相对基准时，历史最深亏损压力。" in risk_component
-    assert "执行损耗" in risk_component
-    assert "交易执行和成本拖累了多少收益。" in risk_component
-    for raw_risk_label in ["active_return", "tracking_error", "information_ratio", "beta_to_benchmark", "active_max_drawdown", "implementation_shortfall"]:
-        assert f"<dt>{raw_risk_label}</dt>" not in risk_component
-    assert "容量曲线估算不同参与率下，策略大概能承载多少资金。" in risk_component
-    assert "Baseline 是用简单基准策略对照当前策略，避免只看单一结果。" in risk_component
-    assert "风格暴露看收益更像哪类因子，行业归因看收益主要来自哪些行业。" in risk_component
-    assert "risk-attribution-section" in risk_component
-    assert "风格暴露 Top8" in risk_component
-    assert "行业归因 Top8" in risk_component
-    assert "回测风险" in combined
 
     client = TestClient(app)
     scores = client.get("/api/scores")

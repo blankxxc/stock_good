@@ -65,7 +65,7 @@ def run_with_pyspark() -> dict:
                     f"PySpark read succeeded, but Parquet write failed: "
                     f"{write_exc.__class__.__name__}: {message}"
                 ),
-                "next_fix": "Install/configure winutils.exe and HADOOP_HOME on Windows, or run Spark through Docker/WSL/Linux.",
+                "next_fix": "Install/configure winutils.exe and HADOOP_HOME on Windows, or run Spark through WSL/Linux.",
             }
             result.update(write_fallback_placeholder())
             return result

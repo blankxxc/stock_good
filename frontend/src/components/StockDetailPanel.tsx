@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useMemo, useState } from 'react';
 import { compactDate, formatNumber, formatPercent } from '../lib/formatters';
 import { useApiPayload } from '../lib/useApiPayload';
@@ -61,6 +63,7 @@ export type StockDetailPayload = {
   stock_name?: string;
   industry_name?: string;
   latest_trade_date?: string;
+  price_basis?: { mode: string; label: string; description: string };
   research_boundary?: string;
   price_series?: PricePoint[];
   predictions?: PredictionRow[];
@@ -241,8 +244,8 @@ export function StockDetailPanel({
           <h1>{payload?.stock_name ?? symbol} <span>{payload?.symbol ?? symbol}</span></h1>
         </div>
         <div className="stock-detail__actions">
-          <a className="button button--secondary" href={returnTo}>{returnLabel}</a>
-          <a className="button" href="/backtests">查看整体回测风险</a>
+          <Link prefetch={false} className="button button--secondary" href={returnTo}>{returnLabel}</Link>
+          <Link prefetch={false} className="button" href="/strategy-lab">历史策略实验</Link>
         </div>
       </div>
       {error ? (
@@ -254,7 +257,7 @@ export function StockDetailPanel({
       {loading && !payload ? <p className="data-state" role="status" aria-live="polite">正在加载个股行情与研究数据…</p> : null}
       <div className="market-ticker-row">
         <div><strong>{payload?.latest_trade_date ?? '加载中'}</strong><span>最新交易日</span></div>
-        <div><strong>{formatNumber(latest?.close)}</strong><span>最新价</span></div>
+        <div><strong>{formatNumber(latest?.close)}</strong><span>{payload?.price_basis?.label ?? '收盘价'}</span></div>
         <div><strong className={(latest?.pct_change ?? 0) >= 0 ? 'positive' : 'negative'}>{formatPercent(latest?.pct_change)}</strong><span>涨跌幅</span></div>
         <div><strong>{typeof latest?.amount === 'number' ? `${formatNumber(latest.amount / 100000000, 2)}亿` : '—'}</strong><span>成交额</span></div>
         <div><strong>{payload?.industry_name ?? '—'}</strong><span>行业</span></div>
@@ -264,6 +267,7 @@ export function StockDetailPanel({
         <div className="card chart-card security-chart-card security-chart-card--full">
           <div className="artifact-card__topline">
             <strong>价格走势 / K线</strong>
+            {payload?.price_basis ? <p className="muted">{payload.price_basis.description}</p> : null}
             <span className="muted">移动到蜡烛或折线点查看开高低收、均线和成交量</span>
           </div>
           <div className="chart-legend securities-legend" aria-label="行情图例">
@@ -381,7 +385,7 @@ export function StockDetailPanel({
       <div className="card factor-explain-card">
         <div className="artifact-card__topline">
           <strong>最近因子结果</strong>
-          <a className="button table-button" href="/factors">查看因子库说明</a>
+          <Link prefetch={false} className="button table-button" href="/visualization">查看因子走势</Link>
         </div>
         <p className="muted factor-compact-note">
           显示当前股票的最新因子取值；IC / RankIC 仅作因子质量参考。

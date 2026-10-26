@@ -9,7 +9,3 @@
 ## Point-in-time join
 
 Feature join 必须使用 available_time 和 prediction_time，禁止使用未来成分股、未来复权因子或全样本 scaler。
-
-## Online store PoC
-
-realtime streaming/ops deployment 输出 online_feature_snapshot，Redis/Feast adapter 保留为后续生产化路线。

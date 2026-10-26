@@ -10,5 +10,5 @@
 4. 展示 `/factors`、`/features`、`/event-regime`、`/graph`、`/models`。
 5. 展示 `/rag` 的 claim citation 和无引用拒答边界。
 6. 展示 `/simulation`、`/reports`、`/settings/users`、`/settings/licenses`、`/settings/audit`。
-7. 展示 `/ops`、CI gates、Compose config、backup/restore smoke。
+7. 展示 `/ops`、CI gates、服务器部署说明、backup/restore smoke。
 8. 结束于 `docs/final_acceptance_report.md` 和 coverage matrix。

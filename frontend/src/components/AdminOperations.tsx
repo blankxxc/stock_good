@@ -83,7 +83,7 @@ export function AdminDataGovernance({ overview }: { overview: AdminOverview | nu
   const snapshotAvailable = overview !== null;
   const modules = Object.entries(overview?.module_statuses ?? {});
   const dataModules = modules.filter(([name]) => moduleMatches(name, [
-    'data', 'lakehouse', 'lineage', 'spark', 'flink', 'realtime', 'stream', 'warehouse', 'feature',
+    'data', 'lakehouse', 'lineage', 'spark', 'warehouse', 'feature',
   ]));
   const readyCount = dataModules.filter(([, status]) => statusReady(status)).length;
   const routes = overview?.data_fabric.internal_routes ?? [];

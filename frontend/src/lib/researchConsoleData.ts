@@ -19,8 +19,8 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     artifact: 'reports/research_loop/live_predictions_report.json',
     dataMode: 'artifact-backed research run',
     status: 'latest_run_quality_ready',
-    description: '股票池、数据截止时间、最新 run、质量状态、Spark/Flink/Kafka 状态和风险提示集中展示。',
-    fields: ['run_id', 'data_cutoff_time', 'quality_status', 'spark_status', 'flink_status', 'kafka_topic_status']
+    description: '股票池、数据截止时间、最新 run、质量状态、Spark 状态和风险提示集中展示。',
+    fields: ['run_id', 'data_cutoff_time', 'quality_status', 'spark_status']
   },
   scores: {
     route: '/scores',
@@ -42,29 +42,7 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     dataMode: 'artifact-backed topk holdings',
     status: 'topk_candidate_pool_ready',
     description: '候选池功能已合并到 /scores：按当前沪深300重训版 COGRASP 1d 原始回归值生成 Top20 研究候选。',
-    fields: ['candidate_pool', 'candidate_summary', 'predicted_relative_change_pct', 'rank', 'score', 'backtest_risk_entry']
-  },
-  backtests: {
-    route: '/backtests',
-    title: 'Backtests 回测与风控',
-    eyebrow: 'artifact-backed · risk capacity',
-    apiPath: '/api/backtests',
-    artifact: 'reports/research_loop/risk_report.parquet',
-    dataMode: 'artifact-backed backtest report',
-    status: 'tradable_backtest_ready',
-    description: '净值、回撤、baseline 对比、成本敏感性、风险旗标、主动风险、风格/行业归因和 capacity curve。',
-    fields: ['nav', 'drawdown', 'risk_summary', 'risk_flags', 'active_risk', 'cost_sensitivity', 'risk_attribution', 'capacity_curve']
-  },
-  factors: {
-    route: '/factors',
-    title: 'Factors 因子库',
-    eyebrow: 'artifact-backed · factor_store',
-    apiPath: '/api/factors',
-    artifact: 'feature_store/feature_registry.yaml',
-    dataMode: 'artifact-backed factor registry',
-    status: 'offline_factor_store_ready',
-    description: '因子库、单因子报告、覆盖率、IC、RankIC、Newey-West t-stat 和版本。',
-    fields: ['factor_name', 'coverage', 'ic', 'rank_ic', 'newey_west_t_stat', 'factor_version']
+    fields: ['candidate_pool', 'candidate_summary', 'predicted_relative_change_pct', 'rank', 'score']
   },
   experiments: {
     route: '/experiments',
@@ -107,7 +85,7 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     artifact: 'reports/data_trust/lineage_report.json',
     dataMode: 'artifact-backed lineage report',
     status: 'source_job_snapshot_lineage_ready',
-    description: 'ODS/DWD/DWS/ADS、Spark/Flink job 到结果快照的可追溯链路。',
+    description: 'ODS/DWD/DWS/ADS、Spark job 到结果快照的可追溯链路。',
     fields: ['source_id', 'job_id', 'snapshot_id', 'upstream_snapshot_ids', 'downstream_artifacts']
   },
   lakehouse: {
@@ -132,28 +110,6 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     description: 'spark_job_run、作业耗时、输入输出行数、失败日志和输出 snapshot。',
     fields: ['spark_job_run', 'duration_sec', 'input_rows', 'output_rows', 'error_log', 'snapshot_id']
   },
-  realtime: {
-    route: '/realtime',
-    title: 'Realtime 实时研究链路',
-    eyebrow: 'artifact-backed · replay PoC',
-    apiPath: '/api/realtime',
-    artifact: 'reports/realtime_streaming/online_feature_snapshot.json',
-    dataMode: 'artifact-backed replay_simulated_not_live_market_data',
-    status: 'realtime_online_feature_ready',
-    description: 'topic lag、实时因子、Flink job 状态和 Redis-compatible online feature。',
-    fields: ['topic_lag', 'realtime_factor', 'flink_job_status', 'online_feature_rows', 'replay_marker']
-  },
-  'flink-jobs': {
-    route: '/flink-jobs',
-    title: 'Flink Jobs 事件时间作业',
-    eyebrow: 'artifact-backed · event-time PoC',
-    apiPath: '/api/flink-jobs',
-    artifact: 'streaming/flink/realtime_streaming_realtime_pipeline.py',
-    dataMode: 'artifact-backed flink semantic poc',
-    status: 'flink_event_time_jobs_ready',
-    description: 'Flink event-time、watermark、window、late-data job 状态。',
-    fields: ['job_name', 'watermark', 'window', 'late_data_policy', 'checkpoint_status']
-  },
   graph: {
     route: '/graph',
     title: 'Graph 股票关系图',
@@ -164,17 +120,6 @@ export const consolePages: Record<string, ConsolePageConfig> = {
     status: 'relation_graph_ready',
     description: '股票关系图、传播因子、as_of_date 和边权重。',
     fields: ['source_symbol', 'target_symbol', 'relation_type', 'edge_weight', 'as_of_date']
-  },
-  models: {
-    route: '/models',
-    title: 'Models 模型对比',
-    eyebrow: 'artifact-backed · candidate adapters',
-    apiPath: '/api/models',
-    artifact: 'reports/advanced_models/model_comparison_report.json',
-    dataMode: 'artifact-backed model comparison',
-    status: 'advanced_model_candidates_ready',
-    description: '当前站点保留 COGRASP（IJCAI 2025）作者网络结构并在当前沪深300日频数据上重训；同时保留 Qlib/MASTER/StockMixer/HIST/TRSR 候选资料。',
-    fields: ['model_name', 'maturity', 'metric', 'run_id', 'approval_status']
   },
   simulation: {
     route: '/simulation',

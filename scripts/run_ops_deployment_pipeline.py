@@ -18,7 +18,6 @@ def main() -> int:
     parser.add_argument("--data-version")
     parser.add_argument("--run-id")
     parser.add_argument("--trade-date")
-    parser.add_argument("--replay-offset")
     parser.add_argument("--model-version")
     parser.add_argument("--rag-index-version")
     args = parser.parse_args()

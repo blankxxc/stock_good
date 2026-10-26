@@ -130,7 +130,7 @@ def run_acceptance() -> dict[str, Any]:
     check("holdings_have_tradeability_cost_capacity", not holdings.empty and {"weight", "transaction_cost_bp", "slippage_model", "capacity_at_1pct_adv"}.issubset(holdings.columns))
     check("risk_report_required_columns", not risk_report.empty and expected_risk_columns.issubset(risk_report.columns))
     check("required_metrics_available", all(_metric_ok(metrics.get(name)) for name in ["IC", "RankIC", "ICIR", "IC_t_stat", "RankIC_t_stat", "TopK_return", "Quantile_spread", "LongShort_spread_research_only", "Turnover", "Cost_adjusted_return", "MaxDrawdown", "Sharpe", "Calmar", "HitRate", "Capacity"]))
-    check("qlib_status_or_blocked_reason_recorded", report.get("qlib_status") in {"minimal_qlib_recorder_available", "qlib_workflow_blocked_minimal_recorder_used"} and ((recorder_dir / "qlib_blocked_reason.md").is_file() or report.get("qlib_status") == "minimal_qlib_recorder_available"))
+    check("file_recorder_ready", report.get("recorder_status") == "file_based_recorder")
 
     api_dashboard = client.get("/api/dashboard")
     api_scores = client.get("/api/scores")
@@ -141,12 +141,12 @@ def run_acceptance() -> dict[str, Any]:
 
     dashboard_page = (ROOT / "frontend" / "src" / "app" / "dashboard" / "page.tsx").read_text(encoding="utf-8")
     scores_page = (ROOT / "frontend" / "src" / "app" / "scores" / "page.tsx").read_text(encoding="utf-8")
-    backtests_page = (ROOT / "frontend" / "src" / "app" / "backtests" / "page.tsx").read_text(encoding="utf-8")
+    strategy_component = (ROOT / "frontend/src/components/StrategyLab.tsx").read_text(encoding="utf-8")
     check(
-        "frontend_dashboard_scores_backtests_research_loop_ready",
+        "frontend_dashboard_scores_strategy_lab_ready",
         "/api/" in dashboard_page
         and "/api/scores" in scores_page
-        and "/api/backtests" in backtests_page,
+        and "/api/strategy-lab/run" in strategy_component,
     )
 
     result = {
@@ -162,7 +162,7 @@ def run_acceptance() -> dict[str, Any]:
         "split_count": report.get("split_count"),
         "feature_count": report.get("feature_count"),
         "lightgbm_status": report.get("lightgbm_status"),
-        "qlib_status": report.get("qlib_status"),
+        "recorder_status": report.get("recorder_status"),
         "leakage_check_status": report.get("leakage_check_status"),
         "config_hash": report.get("config_hash"),
         "artifacts": report.get("artifacts", {}),

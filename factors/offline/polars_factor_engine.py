@@ -13,6 +13,10 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from factors.offline.abnormal_movement import (
+    FLAG_LABELS, FLAG_NAMES, MOVEMENT_FLAG, RETURN_FLAG, compute_abnormal_movement_factors,
+)
+
 try:  # The factor_store local research path is Polars-first, with pandas used for mature rolling stats.
     import polars as pl  # type: ignore
 
@@ -23,9 +27,8 @@ except Exception:  # pragma: no cover - verified by acceptance report, not unit 
 
 ROOT = Path(__file__).resolve().parents[2]
 factor_store_VERSION = "factor_store_v001"
-SOURCE_VERSION = "synthetic_mini_market_v001"
 SCHEMA_VERSION = "v0.4.0"
-FACTOR_VERSION = "factor_v004"
+FACTOR_VERSION = "factor_v005"
 FEATURE_SET_VERSION = "feature_set_factor_store_v001"
 RUN_ID = "factor_store_offline_factor_store_v001"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
@@ -90,7 +93,11 @@ def _factor_defs() -> list[FactorDef]:
         add(f"zero_trade_ratio_{w}d", f"liquidity", f"rolling_mean(volume<=0, {w})", "Zero-volume days flag illiquidity and stale prices.", f"{w}d", "low")
         add(f"amount_percentile_{w}d", "liquidity", f"rolling_percentile_rank(amount, {w})", "Amount percentile normalizes liquidity relative to own recent history.", f"{w}d")
     add("liquidity_zscore_20d", "liquidity", "cross_sectional_zscore(log1p(amount_mean_20d))", "Cross-sectional liquidity helps identify capacity-friendly candidates.", "20d", "low")
-    add("vwap_deviation", "price_volume_structure", "close / (amount/volume) - 1", "Close vs daily VWAP proxy captures intraday pressure.", "1d")
+    defs.append(FactorDef(
+        "vwap_deviation", "price_volume_structure", "raw_close / (amount/volume) - 1",
+        "Unadjusted close vs daily VWAP captures intraday pressure on the same price basis.", "1d",
+        missing_value_rule="leave_null_when_raw_close_is_missing_for_adjusted_prices_or_amount_or_volume_is_invalid",
+    ))
     add("close_to_high", "price_volume_structure", "(high-close)/(high-low)", "Close near high indicates buying pressure; near low indicates weakness.", "1d")
     add("close_to_low", "price_volume_structure", "(close-low)/(high-low)", "Close position in range captures intraday strength.", "1d")
     add("intraday_return", "price_volume_structure", "close/open - 1", "Open-to-close return proxies same-day demand.", "1d")
@@ -120,6 +127,17 @@ def _factor_defs() -> list[FactorDef]:
     add("cs_rank_return_20d", "cross_sectional", "rank_pct(return_20d) within trade_date", "Rank transformation is robust to outliers.", "20d")
     add("cs_zscore_liquidity", "cross_sectional", "zscore(log1p(amount_mean_20d)) within trade_date", "Liquidity z-score supports risk/capacity screens.", "20d", "low")
     add("industry_zscore_liquidity", "industry_neutral", "zscore(log1p(amount_mean_20d)) within industry and date", "Industry-neutral liquidity compares peers rather than sectors.", "20d", "low")
+    for name, formula, description in [
+        (RETURN_FLAG, "int(close / close.shift(10) - 1 > 1.00)", "十日涨幅大于100%；不扣指数涨幅，等于100%不触发。"),
+        (MOVEMENT_FLAG, "int(count(non_overlapping_excess_return_events_gt_20pct, last_10_sessions) >= 4)",
+         "十日内至少四次异动；1至3个交易日的累计涨幅减去同期沪指或深指涨幅大于20个百分点，触发后从当日收盘重新计数。"),
+    ]:
+        defs.append(FactorDef(
+            name, "abnormal_movement", formula, description, "10d", "low",
+            ("leave_null_for_insufficient_history; never_fill_as_false" if name == RETURN_FLAG
+             else "leave_null_for_insufficient_history_or_missing_benchmark; never_fill_as_false"),
+            "none_binary_indicator", "none", "none_binary_indicator",
+        ))
     return defs
 
 
@@ -136,6 +154,7 @@ FOCUS_FACTORS = [
     "ma20_gap",
     "beta_20d",
     "size_log_amount",
+    *FLAG_NAMES,
 ]
 RISK_STYLE_FACTORS = [
     "size",
@@ -160,6 +179,20 @@ def _min_periods(window: int) -> int:
 
 def _safe_divide(left: pd.Series, right: pd.Series, eps: float = 1e-12) -> pd.Series:
     return left / right.replace(0, np.nan).add(eps)
+
+
+def _unadjusted_close(df: pd.DataFrame) -> pd.Series:
+    """Use the cash-market price basis of amount/volume, never adjusted close."""
+    raw_close = pd.to_numeric(df.get("raw_close", pd.Series(np.nan, index=df.index)), errors="coerce")
+    raw_close = raw_close.where(np.isfinite(raw_close) & raw_close.gt(0))
+    if "adjustment_mode" not in df:
+        # Legacy synthetic fixtures have no adjustment metadata and use raw prices.
+        unadjusted = pd.Series(True, index=df.index)
+    else:
+        mode = df["adjustment_mode"].astype("string").str.strip().str.lower()
+        unadjusted = mode.isin(["none", "raw", "unadjusted", "bfq", "3"])
+    close = pd.to_numeric(df["close"], errors="coerce")
+    return raw_close.fillna(close.where(unadjusted & np.isfinite(close) & close.gt(0)))
 
 
 def _zscore(series: pd.Series) -> pd.Series:
@@ -242,7 +275,7 @@ def _clean_source(raw: pd.DataFrame) -> pd.DataFrame:
     bool_cols = ["eligible_universe", "tradable_flag", "delist_flag", "paused", "st_flag"]
     for col in bool_cols:
         if col not in df.columns:
-            df[col] = False if col == "delist_flag" else True
+            df[col] = pd.Series(pd.NA, index=df.index, dtype="boolean") if col == "st_flag" else (False if col == "delist_flag" else True)
     clean = df[
         df["trap_reason"].isna()
         & df["close"].gt(0)
@@ -260,7 +293,9 @@ def _clean_source(raw: pd.DataFrame) -> pd.DataFrame:
     return clean
 
 
-def compute_factor_wide(source: pd.DataFrame | None = None) -> tuple[pd.DataFrame, dict[str, Any]]:
+def compute_factor_wide(
+    source: pd.DataFrame | None = None, benchmark_daily: pd.DataFrame | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
     raw, engine_runtime = _read_source() if source is None else (source, "provided_dataframe")
     df = _clean_source(raw)
     df = df.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
@@ -328,7 +363,8 @@ def compute_factor_wide(source: pd.DataFrame | None = None) -> tuple[pd.DataFram
         df[f"turnover_proxy_{w}d"] = _safe_divide(df["volume"], mean_volume)
     df["liquidity_zscore_20d"] = df.groupby("trade_date", sort=False)["amount_mean_20d"].transform(lambda s: _zscore(np.log1p(s)))
 
-    df["vwap_deviation"] = _safe_divide(df["close"], df["vwap"]) - 1.0
+    valid_vwap = df["vwap"].where(np.isfinite(df["vwap"]) & df["vwap"].gt(0))
+    df["vwap_deviation"] = _safe_divide(_unadjusted_close(df), valid_vwap) - 1.0
     df["close_to_high"] = _safe_divide(df["high"] - df["close"], df["range_width"])
     df["close_to_low"] = _safe_divide(df["close"] - df["low"], df["range_width"])
     df["intraday_return"] = _safe_divide(df["close"], df["open"]) - 1.0
@@ -361,6 +397,12 @@ def compute_factor_wide(source: pd.DataFrame | None = None) -> tuple[pd.DataFram
     df["cs_zscore_liquidity"] = df.groupby("trade_date", sort=False)["size_log_amount"].transform(_zscore_values)
     df["industry_zscore_liquidity"] = df.groupby(["trade_date", "industry_name"], sort=False)["size_log_amount"].transform(_zscore_values)
 
+    # Explicit sample inputs must not silently mix with the local real index cache.
+    if source is not None and benchmark_daily is None:
+        benchmark_daily = pd.DataFrame()
+    flags = compute_abnormal_movement_factors(df, benchmark_daily)
+    df[FLAG_NAMES] = flags
+
     # Point-in-time label used only for factor validation reports, never as a feature.
     df["label_5d_forward_return"] = df.groupby("symbol", sort=False)["close"].shift(-5) / df["close"] - 1.0
 
@@ -369,7 +411,16 @@ def compute_factor_wide(source: pd.DataFrame | None = None) -> tuple[pd.DataFram
             raise KeyError(f"Factor was defined but not computed: {name}")
     df[FACTOR_NAMES] = df[FACTOR_NAMES].replace([np.inf, -np.inf], np.nan)
 
+    source_versions = sorted(raw["source_version"].dropna().astype(str).unique().tolist()) if "source_version" in raw.columns else []
+    source_path = (
+        "provided_dataframe" if source is not None
+        else str((REAL_CSI300_SOURCE_DIR if engine_runtime == "real_csi300_recent_3y_daily_parquet" else SOURCE_DIR).relative_to(ROOT)).replace("\\", "/")
+    )
     metadata = {
+        "source": source_path,
+        "source_version": ",".join(source_versions) or None,
+        "source_versions": source_versions,
+        "latest_trade_date": None if df.empty else df["trade_date"].max().strftime("%Y-%m-%d"),
         "source_row_count": int(len(raw)),
         "clean_row_count": int(len(df)),
         "stock_count": int(df["symbol"].nunique()),
@@ -386,7 +437,8 @@ def _write_parquet(df: pd.DataFrame, path: Path) -> None:
     df.to_parquet(path / "part-000.parquet", index=False)
 
 
-def _build_factor_long(wide: pd.DataFrame) -> pd.DataFrame:
+def _build_factor_long(wide: pd.DataFrame, factor_names: list[str] | None = None) -> pd.DataFrame:
+    names = FACTOR_NAMES if factor_names is None else factor_names
     source_id_cols = [
         "trade_date_str",
         "symbol",
@@ -399,8 +451,8 @@ def _build_factor_long(wide: pd.DataFrame) -> pd.DataFrame:
         "trace_id",
     ]
     id_cols = ["trade_date"] + source_id_cols[1:]
-    panel = wide[source_id_cols + FACTOR_NAMES].rename(columns={"trade_date_str": "trade_date"})
-    long = panel.melt(id_vars=id_cols, value_vars=FACTOR_NAMES, var_name="factor_name", value_name="factor_value")
+    panel = wide[source_id_cols + names].rename(columns={"trade_date_str": "trade_date"})
+    long = panel.melt(id_vars=id_cols, value_vars=names, var_name="factor_name", value_name="factor_value")
     definitions = {item.name: item for item in FACTOR_DEFS}
     long["factor_version"] = FACTOR_VERSION
     long["feature_set_version"] = FEATURE_SET_VERSION
@@ -467,6 +519,28 @@ def _factor_spec_yaml() -> dict[str, Any]:
             "owner": "research-platform",
             "version": FACTOR_VERSION,
         }
+        if item.name == "vwap_deviation":
+            spec = specs["factors"][item.name]
+            spec["input_tables"] = ["data/real/csi300_daily", "data/samples/synthetic_mini_market"]
+            spec["required_fields"].extend(["raw_close", "adjustment_mode"])
+            spec["price_basis"] = "amount in currency and volume in shares; raw_close is unadjusted"
+            spec["compatibility_rule"] = "close fallback only for explicitly unadjusted rows or legacy sources without adjustment_mode; never for hfq/qfq or unknown modes"
+            spec["prediction_time"] = "daily_after_close; all input available_time <= prediction_time"
+            spec["universe"] = "eligible_universe and non-delist clean daily stock rows"
+            spec["known_risks"] = ["missing_unadjusted_close_returns_null", "amount_and_volume_units_must_match", "not_investment_advice"]
+        if item.name in FLAG_NAMES:
+            spec = specs["factors"][item.name]
+            spec["display_name"] = FLAG_LABELS[item.name]
+            spec["input_tables"] = ["data/real/csi300_daily"]
+            spec["prediction_time"] = "daily_after_close; all input available_time <= prediction_time"
+            spec["universe"] = "clean daily stock rows; SH/SZ benchmark mapping for abnormal moves"
+            spec["known_risks"] = ["user_defined_rule_not_exchange_announcement", "missing_history_returns_null"]
+            if item.name == MOVEMENT_FLAG:
+                spec["input_tables"].append("data/real/benchmark_daily")
+                spec["required_fields"].extend(["index_symbol", "index_close", "index_available_time"])
+                spec["benchmark_mapping"] = {"SH": "000001.SH", "SZ": "399001.SZ"}
+                spec["event_rule"] = "compound stock return minus compound index return > 0.20 over 1-3 sessions; reset after trigger"
+                spec["count_rule"] = "at least 4 event end dates in [t-9, t]; missing input restarts 10-return warmup"
     return specs
 
 
@@ -486,7 +560,10 @@ def _feature_registry_yaml() -> dict[str, Any]:
                 "description": item.economic_hypothesis,
                 "grain": "symbol + trade_date + prediction_time",
                 "formula_ref": f"configs/factor/factor_spec.yaml#/factors/{item.name}",
-                "input_datasets": ["data/samples/synthetic_mini_market"],
+                "input_datasets": (["data/real/csi300_daily", "data/real/benchmark_daily"] if item.name == MOVEMENT_FLAG
+                                   else ["data/real/csi300_daily"] if item.name == RETURN_FLAG
+                                   else ["data/real/csi300_daily", "data/samples/synthetic_mini_market"] if item.name == "vwap_deviation"
+                                   else ["data/samples/synthetic_mini_market"]),
                 "available_time_rule": "available_time <= prediction_time; future rows are excluded by data_trust leakage checks",
                 "lookback_window": item.lookback_window,
                 "fill_policy": item.missing_value_rule,
@@ -495,7 +572,9 @@ def _feature_registry_yaml() -> dict[str, Any]:
                 "neutralize_policy": item.neutralization,
                 "factor_version": FACTOR_VERSION,
                 "leakage_risk_level": item.leakage_risk_level,
-                "unit_tests": ["tests/test_factor_store_factor_store.py"],
+                "unit_tests": (["tests/test_abnormal_movement_factors.py"] if item.name in FLAG_NAMES
+                               else ["tests/test_vwap_factor.py"] if item.name == "vwap_deviation"
+                               else ["tests/test_factor_store_factor_store.py"]),
                 "data_quality_checks": ["non_null_when_lookback_available", "finite_values", "available_time_not_after_prediction_time"],
             }
             for item in FACTOR_DEFS
@@ -532,7 +611,7 @@ def _write_yaml_files() -> None:
             {
                 "job_name": "factor_store_materialize_feature_matrix",
                 "runtime": "local_polars_pandas_then_spark_materialization",
-                "inputs": ["data/samples/synthetic_mini_market", "configs/factor/factor_spec.yaml", "feature_store/feature_registry.yaml"],
+                "inputs": ["data/real/csi300_daily", "data/real/benchmark_daily", "data/samples/synthetic_mini_market", "configs/factor/factor_spec.yaml", "feature_store/feature_registry.yaml"],
                 "outputs": ["data/gold/factor_daily_panel_long", "data/gold/model_feature_matrix_wide"],
                 "feature_set_version": FEATURE_SET_VERSION,
                 "research_boundary": RESEARCH_BOUNDARY,
@@ -586,12 +665,12 @@ def _quantile_spread(frame: pd.DataFrame, factor: str, label: str) -> tuple[floa
     return spread, monotonic
 
 
-def _factor_reports(wide: pd.DataFrame) -> tuple[list[dict[str, Any]], list[Path]]:
+def _factor_reports(wide: pd.DataFrame, factor_names: list[str] | None = None) -> tuple[list[dict[str, Any]], list[Path]]:
     FACTOR_REPORT_DIR.mkdir(parents=True, exist_ok=True)
     report_rows: list[dict[str, Any]] = []
     html_paths: list[Path] = []
     factor_defs = {item.name: item for item in FACTOR_DEFS}
-    focus = [name for name in FOCUS_FACTORS if name in wide.columns]
+    focus = [name for name in (FOCUS_FACTORS if factor_names is None else factor_names) if name in wide.columns]
     for factor_name in focus:
         series = wide[factor_name]
         ic = _ic_by_date(wide, factor_name, "label_5d_forward_return", rank=False)
@@ -773,12 +852,14 @@ def materialize_factor_store(write_outputs: bool = True) -> dict[str, Any]:
         "day": 4,
         "maturity": "L2-offline-factor-store-local-artifacts",
         "data_version": factor_store_VERSION,
-        "source_version": SOURCE_VERSION,
+        "source_version": metadata["source_version"],
+        "source_versions": metadata["source_versions"],
         "schema_version": SCHEMA_VERSION,
         "factor_version": FACTOR_VERSION,
         "feature_set_version": FEATURE_SET_VERSION,
         "research_boundary": RESEARCH_BOUNDARY,
-        "source": "data/samples/synthetic_mini_market",
+        "source": metadata["source"],
+        "latest_trade_date": metadata["latest_trade_date"],
         "engine": "polars" if POLARS_AVAILABLE else "pandas_compat",
         "engine_runtime": metadata["engine_runtime"],
         "source_row_count": metadata["source_row_count"],

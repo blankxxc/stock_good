@@ -10,7 +10,7 @@ import duckdb
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-CLICKHOUSE_CONTAINER = os.environ.get("CLICKHOUSE_CONTAINER", "stock-good-foundation-clickhouse-1")
+CLICKHOUSE_CLIENT = os.environ.get("CLICKHOUSE_CLIENT", "clickhouse-client")
 REPORT = ROOT / "reports" / "lakehouse" / "clickhouse_load_report.json"
 
 TABLE_GLOBS = {
@@ -21,22 +21,8 @@ TABLE_GLOBS = {
 
 
 def _query(sql: str, data: bytes | None = None) -> str:
-    """Run ClickHouse SQL through docker exec.
-
-    The ClickHouse image used by the local Compose stack disables network access
-    for default when no explicit password is set. Using the in-container client
-    avoids creating or printing credentials while still exercising the live DB.
-    """
-    cmd = [
-        "docker",
-        "exec",
-        "-i" if data is not None else "",
-        CLICKHOUSE_CONTAINER,
-        "clickhouse-client",
-        "--query",
-        sql,
-    ]
-    cmd = [part for part in cmd if part]
+    """Run SQL with the server's native ClickHouse client and its local configuration."""
+    cmd = [CLICKHOUSE_CLIENT, "--query", sql]
     proc = subprocess.run(
         cmd,
         input=data,
@@ -87,7 +73,7 @@ def main() -> None:
         count = int(_query(f"SELECT count() FROM {table}").strip() or "0")
         inserted[table] = count
 
-    report = {"status": "ok", "clickhouse_container": CLICKHOUSE_CONTAINER, "inserted": inserted}
+    report = {"status": "ok", "clickhouse_client": CLICKHOUSE_CLIENT, "inserted": inserted}
     REPORT.parent.mkdir(parents=True, exist_ok=True)
     REPORT.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     print(json.dumps(report, ensure_ascii=False, indent=2))

@@ -1,8 +1,8 @@
+import { loadInitialApiPayload } from '../../lib/serverApi';
 import { RelationNetwork, StockRelationNetwork } from '../../components/StockRelationNetwork';
 
 export const dynamic = 'force-dynamic';
 
-const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
 type AblationItem = { rank_ic_smoke?: number | null };
 type GraphPayload = {
   relation_types?: string[];
@@ -14,13 +14,7 @@ type GraphPayload = {
 };
 
 async function loadGraphPayload(): Promise<GraphPayload | null> {
-  try {
-    const response = await fetch(`${apiBase}/api/graph`, { cache: 'no-store' });
-    if (!response.ok) return null;
-    return (await response.json()) as GraphPayload;
-  } catch {
-    return null;
-  }
+  return loadInitialApiPayload<GraphPayload>(`/api/graph`);
 }
 
 function formatRankIc(value: number | null | undefined, signed = false) {

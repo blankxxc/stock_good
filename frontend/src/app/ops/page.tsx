@@ -9,7 +9,7 @@ const mvpDag = [
   'run_backtest', 'generate_risk_report', 'build_rag_index', 'publish_to_research_console'
 ];
 
-const ciGates = ['pytest', 'schema_validation', 'leakage_tests', 'spark_job_smoke', 'flink_job_smoke', 'frontend_build', 'api_smoke', 'docker_build'];
+const ciGates = ['pytest', 'schema_validation', 'leakage_tests', 'spark_job_smoke', 'frontend_build', 'api_smoke'];
 
 export default function OpsPage() {
   return (
@@ -18,14 +18,14 @@ export default function OpsPage() {
       <div className="hero-card">
         <p className="eyebrow">ops_deployment · Ops readiness</p>
         <h1>配置、编排、回填、监控、部署与备份恢复</h1>
-        <p>统一落地 ops_deployment 运维闭环：prefect-local 单一编排器、resolved_config.yaml、config_hash、backfill dry-run、dataset_snapshot_manifest、CI/CD gates、Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis 可观测性和 backup/restore smoke。</p>
+        <p>统一落地 ops_deployment 运维闭环：prefect-local 单一编排器、resolved_config.yaml、config_hash、backfill dry-run、dataset_snapshot_manifest、CI/CD gates、Spark/ClickHouse/PostgreSQL 可观测性和 backup/restore smoke。</p>
       </div>
       <div className="card-grid">
-        <div className="card"><strong>配置与 config_hash</strong><p>base/env/universe/data/factor/label/model/backtest/streaming/spark 配置统一解析，生成 resolved_config.yaml 与 sha256 config_hash。</p></div>
+        <div className="card"><strong>配置与 config_hash</strong><p>base/env/universe/data/factor/label/model/backtest/spark 配置统一解析，生成 resolved_config.yaml 与 sha256 config_hash。</p></div>
         <div className="card"><strong>prefect-local DAG</strong><p>MVP DAG 覆盖 ingest → validate → Spark → factor → label → leakage → train → backtest → RAG → publish。</p></div>
         <div className="card"><strong>backfill dry-run</strong><p>backfill_request 明确 partition、source_correction_id、affected_downstream、new_snapshot_id，不覆盖正式报告引用 snapshot。</p></div>
-        <div className="card"><strong>dataset_snapshot_manifest</strong><p>支持按 data_version、run_id、trade_date、kafka_offset、model_version、rag_index_version 恢复。</p></div>
-        <div className="card"><strong>Observability</strong><p>Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis 组件健康、data/task/model/system metrics 全部纳入接口。</p></div>
+        <div className="card"><strong>dataset_snapshot_manifest</strong><p>支持按 data_version、run_id、trade_date、model_version、rag_index_version 恢复。</p></div>
+        <div className="card"><strong>Observability</strong><p>Spark/ClickHouse/PostgreSQL 组件健康、data/task/model/system metrics 全部纳入接口。</p></div>
         <div className="card"><strong>backup/restore</strong><p>deploy/backup/backup_ops_deployment.sh --smoke 与 restore_ops_deployment.sh --smoke 生成 deterministic manifest。</p></div>
       </div>
       <div className="card"><strong>One-click dry-run</strong><p>命令：python scripts/run_ops_deployment_pipeline.py --dry-run；API：/api/ops、/api/orchestration、/api/backfill、/api/observability、/api/deployment。</p></div>

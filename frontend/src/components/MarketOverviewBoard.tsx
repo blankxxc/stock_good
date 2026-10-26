@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { formatAmount, formatNumber, formatPercent } from '../lib/formatters';
 import {
@@ -14,6 +16,7 @@ import {
 } from '../lib/auth';
 
 import { useApiPayload } from '../lib/useApiPayload';
+import { useAssistantContext } from './AssistantRoot';
 
 type MarketStock = {
   symbol: string;
@@ -37,6 +40,7 @@ type MarketPayload = {
   status?: string;
   stock_count?: number;
   latest_trade_date?: string;
+  price_basis?: { mode: string; label: string; description: string };
   breadth_summary?: {
     up_count?: number;
     down_count?: number;
@@ -272,6 +276,8 @@ export function MarketOverviewBoard() {
     if (!keyword) return stocks;
     return stocks.filter((stock) => `${stock.symbol} ${stock.stock_name ?? ''} ${stock.industry_name ?? ''}`.toLowerCase().includes(keyword));
   }, [query, stocks]);
+  useAssistantContext({ page_state: { market_filter: { query, matched_count: filteredStocks.length,
+    visible_symbols: filteredStocks.slice(0, 10).map(stock => stock.symbol) } } });
 
   const positiveCount = stocks.filter((stock) => typeof stock.pct_change === 'number' && stock.pct_change > 0).length;
   const negativeCount = stocks.filter((stock) => typeof stock.pct_change === 'number' && stock.pct_change < 0).length;
@@ -327,6 +333,7 @@ export function MarketOverviewBoard() {
         <div><strong>{marketLoading ? '—' : (breadth?.unknown_count ?? unknownCount)}</strong><span>未定价/停牌</span></div>
         <div><strong>{marketLoading ? '—' : formatAmount(totalAmount)}</strong><span>合计成交额</span></div>
       </div>
+      {payload?.price_basis ? <p className="muted">{payload.price_basis.description}</p> : null}
       <p id="market-scroll-hint" className="table-scroll-hint">表格内容较宽，可横向滚动查看全部列。</p>
       <div className="stock-table-shell" role="region" aria-label="沪深300股票行情表格，可横向滚动" aria-describedby="market-scroll-hint" tabIndex={0}>
         <table className="stock-table">
@@ -335,7 +342,7 @@ export function MarketOverviewBoard() {
             <tr>
               <th scope="col">股票代码</th>
               <th scope="col">股票名称</th>
-              <th scope="col">最新价</th>
+              <th scope="col">{payload?.price_basis?.label ?? '收盘价'}</th>
               <th scope="col">涨跌幅</th>
               <th scope="col">成交额</th>
               <th scope="col">换手率</th>
@@ -347,7 +354,7 @@ export function MarketOverviewBoard() {
           <tbody>
             {filteredStocks.map((stock) => (
               <tr key={stock.symbol}>
-                <td><a className="code-link" href={`/stocks/${stock.symbol}?from=market`}>{stock.symbol}</a></td>
+                <td><Link prefetch={false} className="code-link" href={`/stocks/${stock.symbol}?from=market`}>{stock.symbol}</Link></td>
                 <td>{stock.stock_name ?? '—'}</td>
                 <td>{formatNumber(stock.close)}</td>
                 <td className={typeof stock.pct_change === 'number' ? (stock.pct_change >= 0 ? 'positive' : 'negative') : 'muted'}>{formatPercent(stock.pct_change)}</td>
@@ -368,7 +375,7 @@ export function MarketOverviewBoard() {
                     {authenticated === null || favoritesLoading ? '检查账户' : pendingSymbol === stock.symbol ? '处理中' : favorites.has(stock.symbol) ? '已自选' : '加入自选'}
                   </button>
                 </td>
-                <td><a className="button table-button" href={`/stocks/${stock.symbol}?from=market`}>查看详情</a></td>
+                <td><Link prefetch={false} className="button table-button" href={`/stocks/${stock.symbol}?from=market`}>查看详情</Link></td>
               </tr>
             ))}
             {!filteredStocks.length ? (

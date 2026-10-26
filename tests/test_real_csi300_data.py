@@ -59,7 +59,7 @@ def test_real_csi300_adapter_normalizes_required_research_schema():
     assert required.issubset(out.columns)
     assert set(out["symbol"]) == {"000001.SZ", "600000.SH"}
     assert out["tradable_flag"].all()
-    assert out["data_version"].eq("real_csi300_recent_3y_daily_hfq_v002").all()
+    assert out["data_version"].eq("real_csi300_recent_3y_daily_hfq_v004").all()
     assert out["adjustment_mode"].eq("hfq").all()
     assert out["volume_unit"].eq("share").all()
 
@@ -115,6 +115,173 @@ def test_akshare_daily_contract_uses_hfq_and_normalizes_volume_to_shares(monkeyp
     assert calls[0]["timeout"] == 30
     assert out.iloc[0]["volume"] == 12300
     assert out.iloc[0]["source"] == "akshare_eastmoney_public_web"
+
+
+@pytest.mark.parametrize("batch", [False, True])
+def test_baostock_daily_queries_use_hfq_and_preserve_suspension_status(monkeypatch, batch):
+    import data.adapters.real_csi300_akshare as adapter
+
+    calls = []
+
+    class QueryResult:
+        error_code = "0"
+        error_msg = ""
+
+        def __init__(self, fields):
+            self.fields = fields.split(",")
+            self.remaining = 1
+
+        def next(self):
+            self.remaining -= 1
+            return self.remaining >= 0
+
+        def get_row_data(self):
+            values = {
+                "date": "2026-10-13", "code": "sh.601059",
+                "open": "15.7920774", "high": "15.7920774",
+                "low": "15.7920774", "close": "15.7920774",
+                "volume": "", "amount": "", "turn": "", "tradestatus": "0", "isST": "0",
+            }
+            return [values[field] for field in self.fields]
+
+    def query(symbol, fields, **kwargs):
+        calls.append({"symbol": symbol, "fields": fields, **kwargs})
+        return QueryResult(fields)
+
+    monkeypatch.setitem(sys.modules, "baostock", types.SimpleNamespace(
+        login=lambda: types.SimpleNamespace(error_code="0", error_msg=""),
+        logout=lambda: None,
+        query_history_k_data_plus=query,
+    ))
+    if batch:
+        frames, failures = adapter.fetch_many_symbol_daily_baostock(["601059.SH"], "20261013", "20261013")
+        assert failures == []
+        raw = pd.concat(frames, ignore_index=True)
+    else:
+        raw = adapter.fetch_symbol_daily_baostock("601059.SH", "20261013", "20261013")
+
+    assert calls[0]["adjustflag"] == "1"
+    assert calls[1]["adjustflag"] == "3"
+    assert "isST" in calls[0]["fields"].split(",")
+    assert calls[0]["frequency"] == "d"
+    assert "tradestatus" in calls[0]["fields"].split(",")
+    assert raw.iloc[0]["tradestatus"] == "0"
+    out = adapter.normalize_real_daily_frame(raw)
+    assert out["trade_date"].tolist() == ["2026-10-13"]
+    assert out.iloc[0]["close"] == 15.7920774
+    assert out[["volume", "amount", "turnover_rate"]].eq(0).all().all()
+    assert out["paused"].all()
+    assert not out[["tradable_flag", "can_buy", "can_sell"]].any().any()
+
+
+def test_normalization_only_retains_verified_suspensions_with_valid_prices():
+    import data.adapters.real_csi300_akshare as adapter
+
+    records = []
+    for index, overrides in enumerate([
+        {"tradestatus": "0"},
+        {"tradestatus": "1"},
+        {"tradestatus": None},
+        {"tradestatus": "0", "close": ""},
+        {"tradestatus": "0", "low": "-1"},
+        {"tradestatus": "0", "high": "inf"},
+        {"tradestatus": "0", "volume": "broken"},
+        {"tradestatus": "1", "volume": "100", "amount": "1000", "turnover_rate": "0.1"},
+        {"tradestatus": "0", "volume": "100", "amount": "1000", "turnover_rate": "0.1"},
+    ]):
+        records.append({
+            "trade_date": f"2026-09-{index + 1:02d}", "symbol": "601059.SH",
+            "open": "10", "high": "10", "low": "10", "close": "10",
+            "volume": "", "amount": "", "turnover_rate": "", **overrides,
+        })
+    out = adapter.normalize_real_daily_frame(pd.DataFrame(records))
+
+    assert out["trade_date"].tolist() == ["2026-09-01", "2026-09-08", "2026-09-09"]
+    assert out["close"].eq(10).all()
+    assert out["paused"].tolist() == [True, False, True]
+    assert out["tradable_flag"].tolist() == [False, True, False]
+    assert out["can_buy"].tolist() == [False, True, False]
+    assert out["can_sell"].tolist() == [False, True, False]
+
+
+@pytest.mark.parametrize("batch", [False, True])
+def test_baostock_rejects_response_interrupted_after_partial_rows(monkeypatch, batch):
+    import data.adapters.real_csi300_akshare as adapter
+
+    class InterruptedResult:
+        error_code = "0"
+        error_msg = ""
+        calls = 0
+
+        def next(self):
+            self.calls += 1
+            if self.calls == 1:
+                return True
+            self.error_code = "10001001"
+            self.error_msg = "session expired during pagination"
+            return False
+
+        def get_row_data(self):
+            return ["2025-10-15", "sh.600233"]
+
+    monkeypatch.setitem(sys.modules, "baostock", types.SimpleNamespace(
+        login=lambda: types.SimpleNamespace(error_code="0", error_msg=""),
+        logout=lambda: None,
+        query_history_k_data_plus=lambda *args, **kwargs: InterruptedResult(),
+    ))
+    if batch:
+        frames, failures = adapter.fetch_many_symbol_daily_baostock(["600233.SH"], "20231015", "20261015")
+        assert frames == []
+        assert len(failures) == 1
+        assert failures[0]["symbol"] == "600233.SH"
+        assert "interrupted" in failures[0]["error"]
+    else:
+        with pytest.raises(RuntimeError, match="interrupted"):
+            adapter.fetch_symbol_daily_baostock("600233.SH", "20231015", "20261015")
+
+
+def test_v002_daily_data_migrates_with_full_refresh_even_when_prices_are_unchanged(monkeypatch, tmp_path):
+    import data.adapters.real_csi300_akshare as adapter
+
+    output_dir = tmp_path / "csi300_daily"
+    monkeypatch.setattr(adapter, "OUTPUT_DIR", output_dir)
+    monkeypatch.setattr(adapter, "REPORT_PATH", tmp_path / "report.json")
+    monkeypatch.setattr(adapter, "fetch_current_csi300_constituents", lambda: pd.DataFrame({
+        "symbol": ["000001.SZ"], "name": ["平安银行"],
+    }))
+    raw = pd.DataFrame({
+        "trade_date": ["2024-01-02", "2024-01-10"],
+        "symbol": ["000001.SZ", "000001.SZ"],
+        "open": [10.0, 10.0], "high": [10.5, 10.5],
+        "low": [9.8, 9.8], "close": [10.2, 10.2],
+        "volume": [1000, 1000], "amount": [10200, 10200],
+    })
+    existing = adapter.normalize_real_daily_frame(raw, {"000001.SZ": "平安银行"})
+    existing["data_version"] = "real_csi300_recent_3y_daily_hfq_v002"
+    output_dir.mkdir(parents=True)
+    path = output_dir / "part-000.parquet"
+    existing.to_parquet(path, index=False)
+    calls = []
+
+    def history(symbol, start_date, end_date):
+        calls.append((symbol, start_date, end_date))
+        return raw
+
+    monkeypatch.setattr(adapter, "fetch_symbol_daily", history)
+    report = adapter.write_real_csi300_daily(
+        start_date="20240101", end_date="20240110", overlap_days=1,
+        incremental=True, validate_freshness=False,
+    )
+    out = pd.read_parquet(path)
+
+    assert calls == [("000001.SZ", "20240101", "20240110")]
+    assert report["migration_required"] is True
+    assert report["incremental_update"] is False
+    assert report["status"] == "ok"
+    assert report["write_performed"] is True
+    assert report["data_source_mode"] == "real_csi300_daily_hfq_migration_full_refresh"
+    assert out["data_version"].eq(adapter.DATA_VERSION).all()
+    assert out["close"].tolist() == raw["close"].tolist()
 
 
 def test_real_csi300_writer_can_materialize_parquet_with_mocked_provider(monkeypatch, tmp_path):
@@ -406,6 +573,7 @@ def test_daily_update_lock_rejects_overlapping_runs(monkeypatch, tmp_path):
     import data.adapters.real_csi300_akshare as adapter
 
     monkeypatch.setattr(adapter, "OUTPUT_DIR", tmp_path / "csi300_daily")
+    monkeypatch.setattr(adapter, "REPORT_PATH", tmp_path / "report.json")
     with adapter._exclusive_update_lock():
         report = adapter.write_real_csi300_daily(incremental=True, validate_freshness=False)
 

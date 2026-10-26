@@ -130,7 +130,7 @@ def test_event_regime_market_regime_features_and_ablation_are_ready():
     assert ablation["leakage_check_status"] == "passed"
 
 
-def test_event_regime_backend_frontend_and_acceptance_are_ready():
+def test_event_regime_backend_and_acceptance_are_ready():
     result = _ensure_event_regime()
     from backend.app.main import app
 
@@ -143,16 +143,9 @@ def test_event_regime_backend_frontend_and_acceptance_are_ready():
     assert health.status_code == 200
     assert health.json()["modules"]["event_regime"] == "event_regime_event_market_regime_ablation_ready"
 
-    page = (PROJECT_ROOT / "frontend" / "src" / "app" / "factors" / "page.tsx").read_text(encoding="utf-8")
-    assert "event_regime" in page
-    assert "事件因子" in page
-    assert "market regime" in page
-    assert "publish_time / available_time" in page
-    assert "/api/factors" in page
-
     from scripts.check_event_regime_acceptance import run_acceptance
 
     acceptance = run_acceptance()
     assert acceptance["status"] == "ok"
-    assert acceptance["checks"] == 18
+    assert acceptance["checks"] == 17
     assert acceptance["failed"] == []

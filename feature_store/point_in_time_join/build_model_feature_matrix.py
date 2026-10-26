@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import pyarrow.parquet as pq
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -42,7 +43,58 @@ def _read_factor_long() -> pd.DataFrame:
     return pd.concat([pd.read_parquet(path) for path in files], ignore_index=True)
 
 
-def build_model_feature_matrix() -> dict[str, Any]:
+def _write_join_report(input_rows: int, wide: pd.DataFrame, feature_names: list[str], violations: int) -> dict[str, Any]:
+    report = {
+        "status": "ok",
+        "feature_set_version": FEATURE_SET_VERSION,
+        "input_rows": input_rows,
+        "output_rows": int(len(wide)),
+        "feature_count": int(len(feature_names)),
+        "point_in_time_violations": violations,
+        "latest_trade_date": None if wide.empty else str(wide["trade_date"].max()),
+        "output": str(FEATURE_WIDE_DIR.relative_to(ROOT)),
+        "research_boundary": RESEARCH_BOUNDARY,
+    }
+    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    REPORT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    return report
+
+
+def _validate_existing_feature_matrix() -> dict[str, Any]:
+    """Validate freshly materialized features without pivoting or rewriting them."""
+    files = sorted(FEATURE_WIDE_DIR.glob("**/*.parquet"))
+    long_files = sorted(FACTOR_LONG_DIR.glob("**/*.parquet"))
+    if not files or not long_files:
+        raise FileNotFoundError("Both materialized factor panels and feature matrices are required")
+    feature_names = _feature_names_from_registry(pd.DataFrame(columns=["factor_name"]))
+    if not feature_names:
+        raise AssertionError("Feature registry is empty")
+    id_cols = ["trade_date", "symbol", "prediction_time", "available_time"]
+    frames = []
+    for path in files:
+        with pq.ParquetFile(path) as parquet:
+            missing = sorted(set(id_cols + feature_names) - set(parquet.schema_arrow.names))
+            if missing:
+                raise AssertionError(f"model_feature_matrix_wide missing columns: {missing}")
+            frames.append(parquet.read(columns=id_cols).to_pandas())
+    wide = pd.concat(frames, ignore_index=True)
+    available = pd.to_datetime(wide["available_time"], errors="coerce", utc=True)
+    prediction = pd.to_datetime(wide["prediction_time"], errors="coerce", utc=True)
+    if wide.empty or available.isna().any() or prediction.isna().any():
+        raise AssertionError("Point-in-time validation requires nonempty features and valid availability/prediction times")
+    violations = int(available.gt(prediction).sum())
+    if violations:
+        raise AssertionError(f"Point-in-time join blocked {violations} future-available feature rows")
+    input_rows = 0
+    for path in long_files:
+        with pq.ParquetFile(path) as parquet:
+            input_rows += parquet.metadata.num_rows
+    return _write_join_report(input_rows, wide, feature_names, violations)
+
+
+def build_model_feature_matrix(*, validate_existing: bool = False) -> dict[str, Any]:
+    if validate_existing:
+        return _validate_existing_feature_matrix()
     long = _read_factor_long()
     required = {"trade_date", "symbol", "prediction_time", "available_time", "factor_name", "factor_value"}
     missing = sorted(required - set(long.columns))
@@ -68,19 +120,7 @@ def build_model_feature_matrix() -> dict[str, Any]:
     for old in FEATURE_WIDE_DIR.glob("**/*.parquet"):
         old.unlink()
     wide.to_parquet(FEATURE_WIDE_DIR / "part-000.parquet", index=False)
-    report = {
-        "status": "ok",
-        "feature_set_version": FEATURE_SET_VERSION,
-        "input_rows": int(len(long)),
-        "output_rows": int(len(wide)),
-        "feature_count": int(len(feature_names)),
-        "point_in_time_violations": int(len(violations)),
-        "output": str(FEATURE_WIDE_DIR.relative_to(ROOT)),
-        "research_boundary": RESEARCH_BOUNDARY,
-    }
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    REPORT_PATH.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-    return report
+    return _write_join_report(int(len(long)), wide, feature_names, int(len(violations)))
 
 
 def main() -> None:

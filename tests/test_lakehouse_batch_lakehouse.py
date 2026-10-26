@@ -27,10 +27,6 @@ PRIORITY_SOURCES = {
 
 ODS_TABLES = {
     "ods_market_daily_raw",
-    "ods_market_minute_raw",
-    "ods_market_tick_raw",
-    "ods_trade_raw",
-    "ods_orderbook_raw",
     "ods_financial_statement_raw",
     "ods_announcement_raw",
     "ods_news_raw",
@@ -160,7 +156,6 @@ def test_lakehouse_spark_and_lakehouse_poc_artifacts_exist():
         "spark/jobs/bronze_to_silver_reference.py",
         "spark/jobs/silver_to_gold_base_panels.py",
         "spark/jobs/write_iceberg_table_poc.py",
-        "spark/jobs/write_iceberg_or_delta_poc.py",
         "scripts/check_iceberg_acceptance.py",
     ]
     missing_jobs = [path for path in required_jobs if not (PROJECT_ROOT / path).is_file()]
@@ -195,7 +190,6 @@ def test_backend_license_api_exposes_lakehouse_source_statuses():
     sources = {item["dataset_name"]: item for item in payload["sources"]}
     assert PRIORITY_SOURCES.issubset(sources)
     assert sources["market_daily_ohlcv"]["license_status"] == "authorized"
-    assert sources["market_minute_rt"]["license_status"] == "restricted"
     assert sources["northbound_flow"]["license_status"] == "not_authorized"
     assert payload["summary"]["restricted_or_blocked"] >= 1
 

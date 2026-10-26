@@ -5,6 +5,6 @@ service_urls:
   prometheus: https://stock-good-metrics.example.invalid
   grafana: https://stock-good-grafana.example.invalid
 staging_runtime:
-  container_registry: ghcr.io/blankxxc/stock_good
+  deployment_mode: native_processes
   release_channel: staging-gated
   secret_source: external_secret_store_placeholder

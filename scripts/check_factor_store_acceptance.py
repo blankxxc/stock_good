@@ -19,7 +19,6 @@ def _read_json(path: Path) -> Any:
 
 def run_acceptance() -> dict[str, Any]:
     from backend.app.main import app
-    from fastapi.testclient import TestClient
     from scripts._authenticated_client import acceptance_admin_client
     from factors.offline.polars_factor_engine import FACTOR_NAMES, materialize_factor_store
     from feature_store.point_in_time_join.build_model_feature_matrix import build_model_feature_matrix
@@ -41,7 +40,7 @@ def run_acceptance() -> dict[str, Any]:
     factor_long_dir = ROOT / "data" / "gold" / "factor_daily_panel_long"
     feature_matrix_dir = ROOT / "data" / "gold" / "model_feature_matrix_wide"
     risk_exposure_dir = ROOT / "data" / "gold" / "risk_factor_exposure"
-    factor_page = ROOT / "frontend" / "src" / "app" / "factors" / "page.tsx"
+    visualization_page = ROOT / "frontend" / "src" / "app" / "visualization" / "page.tsx"
     spark_panel_dir = ROOT / "data" / "gold" / "factor_daily_panel_spark_check"
     expected_factor_store_paths = [
         ROOT / "spark" / "jobs" / "materialize_factor_daily.py",
@@ -74,8 +73,9 @@ def run_acceptance() -> dict[str, Any]:
     check("backend_factors_api_ready", api_factors.status_code == 200 and api_factors.json().get("status") == "factor_store_factor_store_ready")
     check("backend_features_api_ready", api_features.status_code == 200 and api_features.json().get("status") == "factor_store_feature_registry_ready")
     check("backend_spark_api_ready", api_spark.status_code == 200 and api_spark.json().get("status") == "factor_store_spark_factor_materialization_ready")
-    page_text = factor_page.read_text(encoding="utf-8")
-    check("frontend_factor_page_factor_store_ready", "factor_store" in page_text and "74 个离线因子" in page_text and "/api/factors" in page_text)
+    page_text = visualization_page.read_text(encoding="utf-8")
+    component_text = (ROOT / "frontend/src/components/VisualizationWorkbench.tsx").read_text(encoding="utf-8")
+    check("frontend_factor_visualization_ready", "VisualizationWorkbench" in page_text and "/api/visualization" in component_text)
 
     result = {
         "status": "ok" if not failed else "failed",

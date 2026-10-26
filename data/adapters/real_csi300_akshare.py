@@ -24,9 +24,9 @@ MEMBERSHIP_HISTORY_PATH = ROOT / "data" / "real" / "csi300_membership" / "histor
 SNAPSHOT_PATH = ROOT / "data" / "real" / "csi300_intraday_snapshot" / "latest.parquet"
 CALENDAR_PATH = ROOT / "data" / "real" / "trading_calendar" / "sse_szse.parquet"
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
-SCHEMA_VERSION = "real_csi300_daily_v002"
+SCHEMA_VERSION = "real_csi300_daily_v003"
 SOURCE_VERSION = "baostock_akshare_current_csi300_constituents_v002"
-DATA_VERSION = "real_csi300_recent_3y_daily_hfq_v002"
+DATA_VERSION = "real_csi300_recent_3y_daily_hfq_v004"
 PRICE_ADJUSTMENT_MODE = "hfq"
 EXPECTED_UNIVERSE_SIZE = 300
 MIN_LATEST_COVERAGE_RATIO = 0.95
@@ -42,11 +42,25 @@ MARKET_VALUE_COLUMNS = [
     "high",
     "low",
     "close",
+    "raw_open",
+    "raw_high",
+    "raw_low",
+    "raw_close",
+    "raw_price_source",
+    "adj_factor",
+    "st_flag",
+    "st_status_source",
     "volume",
     "amount",
     "turnover_rate",
     "source",
     "source_version",
+    "data_version",
+    "adjustment_mode",
+    "paused",
+    "tradable_flag",
+    "can_buy",
+    "can_sell",
 ]
 
 
@@ -285,52 +299,74 @@ def fetch_current_csi300_constituents() -> pd.DataFrame:
     raise RuntimeError("Unable to fetch CSI300 constituents; " + " | ".join(errors))
 
 
+def _query_baostock_history(symbol: str, start_date: str, end_date: str, adjustflag: str) -> pd.DataFrame:
+    """Read a complete daily response inside an already authenticated session."""
+    import baostock as bs
+
+    rs = bs.query_history_k_data_plus(
+        _symbol_for_baostock(symbol),
+        "date,code,open,high,low,close,volume,amount,turn,tradestatus,isST",
+        start_date=pd.Timestamp(start_date).strftime("%Y-%m-%d"),
+        end_date=pd.Timestamp(end_date).strftime("%Y-%m-%d"),
+        frequency="d", adjustflag=adjustflag,
+    )
+    if rs.error_code != "0":
+        raise RuntimeError(f"baostock history query failed: {rs.error_code} {rs.error_msg}")
+    rows = []
+    while rs.next():
+        rows.append(rs.get_row_data())
+    if rs.error_code != "0":
+        raise RuntimeError(f"baostock history response interrupted: {rs.error_code} {rs.error_msg}")
+    raw = pd.DataFrame(rows, columns=rs.fields)
+    if raw.empty:
+        return raw
+    raw = raw.rename(columns={"date": "trade_date", "turn": "turnover_rate"})
+    raw["symbol"] = _symbol_with_suffix(symbol)
+    return raw
+
+
+def _attach_raw_prices(adjusted: pd.DataFrame, unadjusted: pd.DataFrame, source: str) -> pd.DataFrame:
+    """Join actual prices by trading day; never substitute VWAP or forward-fill gaps."""
+    keys = ["symbol", "trade_date"]
+    fields = ["open", "high", "low", "close"]
+    if unadjusted.empty:
+        raise RuntimeError("Unadjusted daily history is empty")
+    left, right = adjusted.copy(), unadjusted.copy()
+    for frame in (left, right):
+        frame["trade_date"] = pd.to_datetime(frame["trade_date"]).dt.strftime("%Y-%m-%d")
+    right = right[keys + fields].rename(columns={field: f"raw_{field}" for field in fields})
+    result = left.merge(right, on=keys, how="left", validate="one_to_one")
+    numeric = result[[f"raw_{field}" for field in fields]].apply(pd.to_numeric, errors="coerce")
+    valid = (numeric.gt(0) & ~numeric.isin([float("inf"), float("-inf")])).all(axis=1)
+    valid &= numeric.raw_high.ge(numeric[["raw_open", "raw_close"]].max(axis=1))
+    valid &= numeric.raw_low.le(numeric[["raw_open", "raw_close"]].min(axis=1))
+    if not valid.all():
+        raise RuntimeError(f"Missing or invalid unadjusted OHLC for {int((~valid).sum())} daily rows")
+    result[numeric.columns] = numeric
+    result["raw_price_source"] = source
+    return result
+
+
+def _fetch_baostock_daily_in_session(symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
+    adjusted = _query_baostock_history(symbol, start_date, end_date, "1")
+    if adjusted.empty:
+        return adjusted
+    raw = _query_baostock_history(symbol, start_date, end_date, "3")
+    df = _attach_raw_prices(adjusted, raw, "baostock_unadjusted_daily")
+    df["source"] = "baostock_public_web"
+    df["source_version"] = "baostock_history_k_daily_hfq_raw_st_v002"
+    df["license_id"] = "public_web_baostock_research_only"
+    return df
+
+
 def fetch_symbol_daily_baostock(symbol: str, start_date: str, end_date: str) -> pd.DataFrame:
     import baostock as bs
 
-    start = f"{start_date[:4]}-{start_date[4:6]}-{start_date[6:8]}"
-    end = f"{end_date[:4]}-{end_date[4:6]}-{end_date[6:8]}"
     lg = bs.login()
     try:
         if lg.error_code != "0":
             raise RuntimeError(f"baostock login failed: {lg.error_code} {lg.error_msg}")
-        rs = bs.query_history_k_data_plus(
-            _symbol_for_baostock(symbol),
-            "date,code,open,high,low,close,volume,amount,turn",
-            start_date=start,
-            end_date=end,
-            frequency="d",
-            adjustflag="1",
-        )
-        if rs.error_code != "0":
-            raise RuntimeError(f"baostock query_history_k_data_plus failed: {rs.error_code} {rs.error_msg}")
-        rows: list[list[str]] = []
-        while rs.next():
-            rows.append(rs.get_row_data())
-        if not rows:
-            return pd.DataFrame()
-        raw = pd.DataFrame(rows, columns=rs.fields)
-        df = raw.rename(columns={"date": "trade_date", "turn": "turnover_rate"}).copy()
-        df["symbol"] = _symbol_with_suffix(symbol)
-        df["source"] = "baostock_public_web"
-        df["source_version"] = "baostock_history_k_daily_hfq_v001"
-        df["license_id"] = "public_web_baostock_research_only"
-        return df[
-            [
-                "trade_date",
-                "open",
-                "high",
-                "low",
-                "close",
-                "volume",
-                "amount",
-                "turnover_rate",
-                "symbol",
-                "source",
-                "source_version",
-                "license_id",
-            ]
-        ]
+        return _fetch_baostock_daily_in_session(symbol, start_date, end_date)
     finally:
         bs.logout()
 
@@ -367,8 +403,14 @@ def fetch_symbol_daily_akshare(symbol: str, start_date: str, end_date: str) -> p
     # Eastmoney/AkShare daily volume is expressed in lots; the canonical contract uses shares.
     df["volume"] = pd.to_numeric(df["volume"], errors="coerce") * 100
     df["symbol"] = _symbol_with_suffix(symbol)
+    unadjusted = ak.stock_zh_a_hist(
+        symbol=_symbol_for_akshare(symbol), period="daily", start_date=start_date,
+        end_date=end_date, adjust="", timeout=30,
+    ).rename(columns=rename)
+    unadjusted["symbol"] = _symbol_with_suffix(symbol)
+    df = _attach_raw_prices(df, unadjusted, "akshare_eastmoney_unadjusted_daily")
     df["source"] = "akshare_eastmoney_public_web"
-    df["source_version"] = "akshare_stock_zh_a_hist_daily_hfq_v001"
+    df["source_version"] = "akshare_stock_zh_a_hist_daily_hfq_raw_v002"
     df["license_id"] = "public_web_akshare_research_only"
     return df
 
@@ -467,8 +509,6 @@ def fetch_many_symbol_daily_baostock(symbols: list[str], start_date: str, end_da
 
     frames: list[pd.DataFrame] = []
     failures: list[dict[str, str]] = []
-    start = f"{start_date[:4]}-{start_date[4:6]}-{start_date[6:8]}"
-    end = f"{end_date[:4]}-{end_date[4:6]}-{end_date[6:8]}"
     chunk_size = 75
     for offset in range(0, len(symbols), chunk_size):
         chunk = symbols[offset : offset + chunk_size]
@@ -478,28 +518,9 @@ def fetch_many_symbol_daily_baostock(symbols: list[str], start_date: str, end_da
                 raise RuntimeError(f"baostock login failed: {lg.error_code} {lg.error_msg}")
             for symbol in chunk:
                 try:
-                    rs = bs.query_history_k_data_plus(
-                        _symbol_for_baostock(symbol),
-                        "date,code,open,high,low,close,volume,amount,turn",
-                        start_date=start,
-                        end_date=end,
-                        frequency="d",
-                        adjustflag="2",
-                    )
-                    if rs.error_code != "0":
-                        raise RuntimeError(f"{rs.error_code} {rs.error_msg}")
-                    rows: list[list[str]] = []
-                    while rs.next():
-                        rows.append(rs.get_row_data())
-                    if not rows:
-                        continue
-                    raw = pd.DataFrame(rows, columns=rs.fields)
-                    df = raw.rename(columns={"date": "trade_date", "turn": "turnover_rate"}).copy()
-                    df["symbol"] = _symbol_with_suffix(symbol)
-                    df["source"] = "baostock_public_web"
-                    df["source_version"] = "baostock_history_k_daily_hfq_v001"
-                    df["license_id"] = "public_web_baostock_research_only"
-                    frames.append(df)
+                    df = _fetch_baostock_daily_in_session(symbol, start_date, end_date)
+                    if not df.empty:
+                        frames.append(df)
                 except Exception as exc:
                     failures.append({"symbol": symbol, "error": f"{type(exc).__name__}: {exc}"})
         finally:
@@ -507,28 +528,58 @@ def fetch_many_symbol_daily_baostock(symbols: list[str], start_date: str, end_da
     return frames, failures
 
 
+def normalize_daily_supplements(frame: pd.DataFrame) -> pd.DataFrame:
+    """Preserve unknown raw prices/ST as null, with explicit field provenance."""
+    df = frame.copy()
+    columns = [f"raw_{field}" for field in ("open", "high", "low", "close")]
+    for column in columns:
+        value = pd.to_numeric(df.get(column, pd.Series(float("nan"), index=df.index)), errors="coerce")
+        df[column] = value.where(value.gt(0) & ~value.isin([float("inf"), float("-inf")]))
+    valid = df[columns].notna().all(axis=1)
+    valid &= df.raw_high.ge(df[["raw_open", "raw_close"]].max(axis=1))
+    valid &= df.raw_low.le(df[["raw_open", "raw_close"]].min(axis=1))
+    df.loc[~valid, columns] = float("nan")
+    df["adj_factor"] = pd.to_numeric(df["close"], errors="coerce") / df.raw_close
+    source = df.get("raw_price_source", pd.Series("unknown", index=df.index))
+    df["raw_price_source"] = source.fillna("unknown").where(valid, "unknown")
+    status = pd.to_numeric(df.get("isST", pd.Series(float("nan"), index=df.index)), errors="coerce")
+    df["st_flag"] = status.map({0: False, 1: True}).astype("boolean")
+    df["st_status_source"] = "unknown"
+    df.loc[df.st_flag.notna(), "st_status_source"] = "baostock_daily_isST"
+    return df
+
+
 def normalize_real_daily_frame(frame: pd.DataFrame, constituent_names: dict[str, str] | None = None) -> pd.DataFrame:
     df = frame.copy()
     df["trade_date"] = pd.to_datetime(df["trade_date"]).dt.strftime("%Y-%m-%d")
     df["symbol"] = df["symbol"].astype(str).map(_symbol_with_suffix)
+    suspended = pd.to_numeric(df.get("tradestatus", pd.Series(index=df.index, dtype=float)), errors="coerce").eq(0)
     for col in ["open", "high", "low", "close", "volume", "amount", "turnover_rate"]:
+        if col == "turnover_rate" and col not in df.columns and suspended.any():
+            df[col] = float("nan")
         if col in df.columns:
+            # BaoStock supplies prices but blank activity fields on verified suspension days.
+            # Only absent values may become zero; malformed values and missing prices stay invalid.
+            missing = df[col].isna() | df[col].astype(str).str.strip().eq("")
             df[col] = pd.to_numeric(df[col], errors="coerce")
+            if col in {"volume", "amount", "turnover_rate"}:
+                df.loc[suspended & missing, col] = 0
     df = df.dropna(subset=["trade_date", "symbol", "open", "high", "low", "close", "volume", "amount"])
-    df = df[df["close"].gt(0) & df["open"].gt(0) & df["high"].ge(df[["open", "close"]].max(axis=1)) & df["low"].le(df[["open", "close"]].min(axis=1))]
+    finite_prices = ~df[["open", "high", "low", "close"]].isin([float("inf"), float("-inf")]).any(axis=1)
+    df = df[finite_prices & df["close"].gt(0) & df["open"].gt(0) & df["low"].gt(0) & df["high"].ge(df[["open", "close"]].max(axis=1)) & df["low"].le(df[["open", "close"]].min(axis=1))]
     df = df.sort_values(["symbol", "trade_date"]).drop_duplicates(["symbol", "trade_date"], keep="last").reset_index(drop=True)
     names = constituent_names or {}
     df["stock_name"] = df["symbol"].map(names).fillna(df["symbol"])
     df["industry_name"] = "unknown_real_csi300"
-    df["adj_factor"] = 1.0
+    df = normalize_daily_supplements(df)
     df["adjustment_mode"] = PRICE_ADJUSTMENT_MODE
     df["volume_unit"] = "share"
     df["amount_unit"] = "CNY"
     df["eligible_universe"] = True
-    df["tradable_flag"] = df["volume"].fillna(0).gt(0)
+    suspended = pd.to_numeric(df.get("tradestatus", pd.Series(index=df.index, dtype=float)), errors="coerce").eq(0)
+    df["tradable_flag"] = df["volume"].fillna(0).gt(0) & ~suspended
     df["delist_flag"] = False
     df["paused"] = ~df["tradable_flag"]
-    df["st_flag"] = False
     df["limit_up_flag"] = False
     df["limit_down_flag"] = False
     df["can_buy"] = df["tradable_flag"]
@@ -655,6 +706,16 @@ def _merge_incremental_daily(existing: pd.DataFrame, refreshed: pd.DataFrame) ->
         return refreshed.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
     if refreshed.empty:
         return existing.sort_values(["symbol", "trade_date"]).reset_index(drop=True)
+    refreshed = refreshed.copy()
+    # A provider fallback without historical ST coverage must not erase verified values.
+    if {"st_flag", "st_status_source"}.issubset(existing.columns) and "st_flag" in refreshed:
+        old = existing.drop_duplicates(KEY_COLUMNS, keep="last").set_index(KEY_COLUMNS)
+        keys = pd.MultiIndex.from_frame(refreshed[KEY_COLUMNS])
+        previous = old.reindex(keys)
+        retain = refreshed.st_flag.isna().to_numpy() & previous.st_flag.notna().to_numpy()
+        retain &= previous.st_status_source.fillna("unknown").ne("unknown").to_numpy()
+        for column in ("st_flag", "st_status_source"):
+            refreshed.loc[retain, column] = previous.loc[retain, column].to_numpy()
     merged = pd.concat([existing, refreshed], ignore_index=True, sort=False)
     merged["trade_date"] = pd.to_datetime(merged["trade_date"]).dt.strftime("%Y-%m-%d")
     merged["symbol"] = merged["symbol"].astype(str).map(_symbol_with_suffix)
@@ -684,12 +745,12 @@ def _dataset_change_summary(existing: pd.DataFrame, candidate: pd.DataFrame) -> 
     new_keys = right.index.difference(left.index)
     deleted_keys = left.index.difference(right.index)
     common_keys = right.index.intersection(left.index)
-    comparable = [column for column in MARKET_VALUE_COLUMNS if column in left.columns and column in right.columns]
+    comparable = [column for column in MARKET_VALUE_COLUMNS if column in left.columns or column in right.columns]
     revised_count = 0
     if len(common_keys) and comparable:
-        old_values = left.loc[common_keys, comparable]
-        new_values = right.loc[common_keys, comparable]
-        equal_cells = old_values.eq(new_values) | (old_values.isna() & new_values.isna())
+        old_values = left.reindex(index=common_keys, columns=comparable)
+        new_values = right.reindex(index=common_keys, columns=comparable)
+        equal_cells = old_values.eq(new_values).fillna(False) | (old_values.isna() & new_values.isna())
         revised_count = int((~equal_cells.all(axis=1)).sum())
     new_count = int(len(new_keys))
     return {
@@ -1086,6 +1147,9 @@ def _write_real_csi300_daily_unlocked(
             "candidate_deleted_row_count": int(candidate_summary["deleted_row_count"]),
             "write_performed": write_performed,
             "row_count": int(len(output)),
+            "raw_price_rows": int(output["raw_close"].notna().sum()) if "raw_close" in output else 0,
+            "st_known_rows": int(output["st_flag"].notna().sum()) if "st_flag" in output else 0,
+            "st_unknown_rows": int(output["st_flag"].isna().sum()) if "st_flag" in output else int(len(output)),
             "stock_count": int(output["symbol"].nunique()) if "symbol" in output.columns else 0,
             "latest_stock_count": latest_stock_count,
             "candidate_row_count": int(len(candidate)),

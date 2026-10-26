@@ -10,10 +10,10 @@ final acceptance 不新增核心功能，目标是把 foundation-ops deployment 
 
 ## Decision
 
-最终 release gate 必须同时检查：pytest、final acceptance acceptance、frontend route/build、Docker Compose config、backup/restore smoke、no broker integration、license gate、RAG citation gate、point-in-time gate、manual review before real use。
+最终 release gate 必须同时检查：pytest、final acceptance acceptance、frontend route/build、backup/restore smoke、no broker integration、license gate、RAG citation gate、point-in-time gate、manual review before real use。
 
 ## Consequences
 
 - 允许 local PoC / partial 模块存在，但必须写明 maturity 和 blocked reason。
-- 不允许把 replay realtime、advanced model adapter 或 simulation 输出宣传为正式交易能力。
+- 不允许把 advanced model adapter 或 simulation 输出宣传为正式交易能力。
 - 报告导出必须保留 export_manifest、license result、redaction、watermark、audit_id。

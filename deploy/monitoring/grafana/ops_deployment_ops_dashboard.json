@@ -28,7 +28,7 @@
     },
     {
       "type": "timeseries",
-      "title": "Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis health",
+      "title": "Spark/ClickHouse/PostgreSQL health",
       "targets": [
         {
           "expr": "stock_good_component_health"

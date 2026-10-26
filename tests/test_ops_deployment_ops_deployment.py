@@ -23,7 +23,6 @@ REQUIRED_CONFIGS = [
     "configs/label/label_5d_10d_v001.yaml",
     "configs/model/lightgbm_baseline.yaml",
     "configs/backtest/top50_weekly_vwap.yaml",
-    "configs/streaming/flink_realtime_poc.yaml",
     "configs/spark/spark_local.yaml",
 ]
 MVP_DAG = [
@@ -44,13 +43,7 @@ MVP_DAG = [
     "publish_to_research_console",
 ]
 EXTENDED_DAG = [
-    "replay_minute_data",
-    "kafka_produce_raw_topics",
-    "flink_realtime_factor_jobs",
-    "compare_realtime_offline_factors",
-    "update_online_features",
     "update_graph",
-    "run_advanced_model_small_sample",
     "run_simulation",
     "export_reports",
 ]
@@ -62,14 +55,12 @@ CI_GATES = [
     "leakage_tests",
     "synthetic_mini_market_tests",
     "spark_job_smoke",
-    "flink_job_smoke",
-    "small_sample_training_smoke",
+    "daily_model_catalog_smoke",
     "small_sample_backtest_smoke",
     "rag_citation_rule_test",
     "frontend_lint",
     "frontend_build",
     "api_smoke",
-    "docker_build",
     "database_migration_dry_run",
 ]
 BACKUP_ASSETS = [
@@ -131,25 +122,25 @@ def test_ops_deployment_config_hash_orchestration_backfill_and_observability_con
     snapshot_manifest = payload["dataset_snapshot_manifest"]
     assert snapshot_manifest["status"] == "recoverable_snapshot_manifest_ready"
     assert snapshot_manifest["data_version"].startswith("data_v")
-    assert {item["restore_key"] for item in snapshot_manifest["snapshots"]} >= {"data_version", "run_id", "trade_date", "kafka_offset", "model_version", "rag_index_version"}
+    assert {item["restore_key"] for item in snapshot_manifest["snapshots"]} >= {"data_version", "run_id", "trade_date", "model_version", "rag_index_version"}
 
     observability = payload["observability"]
     for section in ["data_metrics", "task_metrics", "model_metrics", "system_metrics"]:
         assert section in observability and observability[section], section
-    assert {component["component"] for component in observability["component_health"]} >= {"spark", "flink", "kafka", "clickhouse", "postgresql", "redis"}
+    assert {component["component"] for component in observability["component_health"]} >= {"spark", "clickhouse", "postgresql"}
     assert observability["component_health"][0]["observable"] is True
 
 
 def test_ops_deployment_deployment_ci_backup_assets_and_api_are_ready():
     from backend.app.main import app
+    from ops.ops_deployment_ops import build_deployment
     from scripts.check_ops_deployment_acceptance import run_acceptance
 
     required_files = [
         ".github/workflows/ci.yml",
-        "deploy/docker/docker-compose.yml",
-        "deploy/docker/.env.example",
+        "docs/deployment.md",
+        ".env.example",
         "deploy/proxy/Caddyfile",
-        "deploy/k8s/ops_deployment-platform.yaml",
         "deploy/backup/backup_ops_deployment.sh",
         "deploy/backup/restore_ops_deployment.sh",
         "deploy/monitoring/prometheus.yml",
@@ -169,23 +160,12 @@ def test_ops_deployment_deployment_ci_backup_assets_and_api_are_ready():
     ci = (PROJECT_ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     for gate in CI_GATES:
         assert gate in ci, gate
-    assert "pytest" in ci and "npm run build" in ci and "docker compose" in ci
+    assert "pytest" in ci and "npm run build" in ci
 
-    env_example = (PROJECT_ROOT / "deploy" / "docker" / ".env.example").read_text(encoding="utf-8")
-    assert "CHANGE_ME_LOCAL_ONLY" in env_example
-    assert "POSTGRES_PASSWORD" in env_example
-    assert "SECRET" not in env_example
-
-    compose_config = subprocess.run(
-        ["docker", "compose", "-f", "deploy/docker/docker-compose.yml", "config", "--services"],
-        cwd=PROJECT_ROOT,
-        text=True,
-        capture_output=True,
-        timeout=120,
-    )
-    assert compose_config.returncode == 0, compose_config.stderr + compose_config.stdout
-    services = set(compose_config.stdout.splitlines())
-    assert {"postgres", "redis", "redpanda", "flink-jobmanager", "spark-master", "clickhouse", "backend", "frontend", "prometheus", "grafana", "backup"}.issubset(services)
+    deployment = build_deployment()
+    assert deployment["deployment_mode"] == "native_processes"
+    assert (PROJECT_ROOT / deployment["deployment_guide"]).is_file()
+    assert (PROJECT_ROOT / deployment["env_example"]).is_file()
 
     backup_smoke = subprocess.run(
         ["sh", "deploy/backup/backup_ops_deployment.sh", "--smoke"],
@@ -224,7 +204,7 @@ def test_ops_deployment_deployment_ci_backup_assets_and_api_are_ready():
 
     acceptance = run_acceptance()
     assert acceptance["status"] == "ok"
-    assert acceptance["checks"] >= 28
+    assert acceptance["checks"] >= 27
     assert acceptance["failed"] == []
 
 
@@ -236,7 +216,7 @@ def test_ops_deployment_research_console_ops_page_and_route_validation_are_ready
     assert "/api/ops" in page
     assert "prefect-local" in page
     assert "backfill dry-run" in page
-    assert "Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis" in page
+    assert "Spark/ClickHouse/PostgreSQL" in page
     assert "backup/restore" in page
     assert "research_signals_only_not_investment_advice" in page
 

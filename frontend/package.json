@@ -5,7 +5,8 @@
   "scripts": {
     "validate:routes": "node scripts/validate_routes.mjs",
     "test:auth-runtime": "node --import tsx --test tests/auth-runtime.test.tsx",
-    "verify:models": "node scripts/verify_models_source.mjs",
+    "test:api-runtime": "node --import tsx --test tests/api-runtime.test.tsx",
+    "test:runtime": "node --import tsx --test tests/auth-runtime.test.tsx tests/api-runtime.test.tsx tests/review-runtime.test.tsx tests/assistant-runtime.test.tsx tests/visualization-runtime.test.tsx tests/ai-planner-runtime.test.tsx tests/ai-prediction-runtime.test.tsx tests/resize-runtime.test.tsx tests/assistant-skills-runtime.test.tsx",
     "dev": "next dev -H 0.0.0.0 -p 3000",
     "prebuild": "npm run validate:routes",
     "build": "next build",

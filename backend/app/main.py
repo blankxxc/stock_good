@@ -11,13 +11,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.routers.auth import get_auth_service, optional_principal, require_admin, router as auth_router
 from backend.app.services.auth_service import configured_allowed_origins
+from backend.app.routers.strategy_lab import router as strategy_lab_router
+from backend.app.routers.assistant import router as assistant_router
+from backend.app.routers.visualization import router as visualization_router
 from backend.app.services.lakehouse_catalog import data_quality_payload, lakehouse_payload, lineage_payload
 from backend.app.services.factor_store_catalog import factor_payload, feature_payload, spark_jobs_payload
 from backend.app.services.research_loop_catalog import backtests_payload, condition_screen_payload, dashboard_research_loop_payload, experiments_payload, market_overview_payload, scores_payload, stock_detail_payload
-from backend.app.services.realtime_streaming_catalog import flink_jobs_payload, realtime_payload
 from backend.app.services.event_regime_catalog import event_regime_payload
 from backend.app.services.relation_graph_catalog import relation_graph_payload
-from backend.app.services.advanced_models_catalog import advanced_models_payload
+from backend.app.services.models_catalog import models_payload
 from backend.app.services.rag_evidence_catalog import rag_payload
 from backend.app.services.research_site_catalog import site_payload
 from backend.app.services.governance_simulation_catalog import admin_payload, audit_payload, licenses_governance_simulation_payload, reports_payload, simulation_payload
@@ -60,10 +62,13 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(strategy_lab_router)
+app.include_router(assistant_router)
+app.include_router(visualization_router)
 
 
 def _requires_no_store(path: str) -> bool:
-    if path == "/admin" or path.startswith(("/api/auth", "/api/watchlist", "/api/admin")):
+    if path == "/admin" or path.startswith(("/api/auth", "/api/watchlist", "/api/admin", "/api/assistant")):
         return True
     if not path.startswith("/api/"):
         return False
@@ -102,16 +107,12 @@ def health() -> dict[str, Any]:
             "condition_screen": "research_loop_condition_screen_ready",
             "backtests": "research_loop_tradable_backtest_risk_capacity_ready",
             "experiments": "research_loop_experiment_recorder_ready",
-            "realtime": "realtime_streaming_replay_kafka_online_feature_ready",
-            "flink": "realtime_streaming_event_time_factor_jobs_ready",
-            "redpanda_kafka": "realtime_streaming_standard_topics_replay_ready",
-            "clickhouse": "realtime_streaming_clickhouse_adapter_reserved_sqlite_sink_ready",
+            "clickhouse": "lakehouse_ads_loader_ready",
             "event_regime": "event_regime_event_market_regime_ablation_ready",
             "financial_text": "event_regime_finbert_compatible_lexicon_baseline_ready",
             "relation_graph": "relation_graph_stock_relation_graph_ready",
             "graph_factors": "relation_graph_relation_spillover_factor_ready",
-            "hist_trsr_adapter": "relation_graph_hist_trsr_relation_inputs_ready",
-            "advanced_models": "advanced_models_research_candidate_adapters_ready",
+            "daily_models": "daily_csi300_models_ready",
             "rag": "rag_evidence_claim_evidence_rag_ready",
             "simulation": "governance_simulation_paper_simulation_governance_ready",
             "rbac": "governance_simulation_rbac_duties_ready",
@@ -124,7 +125,7 @@ def health() -> dict[str, Any]:
             "dataset_snapshots": "ops_deployment_recoverable_snapshot_manifest_ready",
             "observability": "ops_deployment_ops_metrics_ready",
             "ci_cd": "ops_deployment_quality_gates_ready",
-            "deployment": "ops_deployment_compose_proxy_k8s_ready",
+            "deployment": "ops_deployment_native_server_ready",
             "backup_restore": "ops_deployment_backup_restore_smoke_ready",
             "final_acceptance": "final_acceptance_final_acceptance_ready",
             "documentation": "final_acceptance_docs_demo_coverage_ready",
@@ -138,20 +139,18 @@ ROUTE_MODULES = {
     "dashboard": "研究平台 dashboard、最新 run、模型版本、质量状态和核心指标",
     "overview": "研究平台总览、数据 cutoff、模型版本和质量状态",
     "data-quality": "数据质量、缺失、异常、quarantine 与延迟摘要",
-    "lineage": "ODS/DWD/DWS/ADS、Spark/Flink job 到结果快照的血缘",
+    "lineage": "ODS/DWD/DWS/ADS、Spark job 到结果快照的血缘",
     "lakehouse": "Bronze/Silver/Gold/ADS 与 Iceberg/Hudi/Delta PoC 状态",
     "spark-jobs": "Spark 离线 ETL、批量因子、标签和训练样本 job 状态",
-    "realtime": "Kafka topic、实时数据延迟、在线特征和实时评分状态",
-    "flink-jobs": "Flink event-time、watermark、window、late-data job 状态",
-    "factors": "离线/实时/事件/市场环境/关系因子库",
+    "factors": "日频/事件/市场环境/关系因子库",
     "event-regime": "新闻/公告/事件因子、金融文本 baseline、market regime 与 ablation 状态",
     "features": "Feature Store、feature view、point-in-time join 和 materialization job",
     "graph": "行业/概念/供应链/共现/价格相关关系图",
-    "models": "Qlib、LightGBM、MASTER、StockMixer、HIST、TRSR 适配器",
+    "models": "COGRASP 与情绪融合 LightGBM 日频模型",
     "scores": "横截面模型分数、rank、percentile、置信度和研究边界",
     "condition-screen": "自定义条件选股测试：沪深300全量最新截面、条件是/否判断、可扩展技术与金融因子列",
     "market": "沪深300股票全景、最新行情、涨跌幅、成交额和个股详情入口",
-    "experiments": "MLflow/Qlib Recorder 实验记录",
+    "experiments": "本地文件实验记录",
     "backtests": "TopK、long-short、risk/cost/capacity 回测报告",
     "rag": "claim 级证据、as-of 检索、引用和评测",
     "reports": "报告状态机、license gate、export_manifest 与 file_hash",
@@ -161,8 +160,8 @@ ROUTE_MODULES = {
     "ops": "ops_deployment 任务编排、配置哈希、回填、可观测性、CI/CD、部署和备份恢复",
     "orchestration": "Prefect local DAG、MVP pipeline 和扩展 DAG dry-run",
     "backfill": "backfill_request、dry-run 影响范围和新 snapshot",
-    "observability": "数据/任务/模型/系统指标和 Spark/Flink/Kafka/ClickHouse/PostgreSQL/Redis 状态",
-    "deployment": "Docker Compose、反向代理、K8s 草案、CI/CD 和 backup/restore smoke",
+    "observability": "数据/任务/模型/系统指标和 Spark/ClickHouse/PostgreSQL 状态",
+    "deployment": "服务器直接运行、反向代理、CI/CD 和 backup/restore smoke",
     "final-acceptance": "final_acceptance 全量联调、最终验收、覆盖矩阵、文档和演示资产",
     "licenses": "数据许可证、可展示范围和 license_gate",
 }
@@ -210,14 +209,12 @@ ROUTE_PAYLOAD_FACTORIES: dict[str, Callable[[], dict[str, Any]]] = {
     "graph": lambda: relation_graph_payload(RESEARCH_BOUNDARY),
     "features": lambda: feature_payload(RESEARCH_BOUNDARY),
     "spark-jobs": lambda: spark_jobs_payload(RESEARCH_BOUNDARY),
-    "realtime": lambda: realtime_payload(RESEARCH_BOUNDARY),
-    "flink-jobs": lambda: flink_jobs_payload(RESEARCH_BOUNDARY),
     "scores": lambda: scores_payload(RESEARCH_BOUNDARY),
     "condition-screen": lambda: condition_screen_payload(RESEARCH_BOUNDARY),
     "market": lambda: market_overview_payload(RESEARCH_BOUNDARY),
     "backtests": lambda: backtests_payload(RESEARCH_BOUNDARY),
     "experiments": lambda: experiments_payload(RESEARCH_BOUNDARY),
-    "models": lambda: advanced_models_payload(RESEARCH_BOUNDARY),
+    "models": lambda: models_payload(RESEARCH_BOUNDARY),
     "rag": lambda: rag_payload(RESEARCH_BOUNDARY),
 }
 
@@ -256,8 +253,6 @@ def admin_overview_payload() -> dict[str, Any]:
         {"path": "/api/lineage", "label": "数据血缘", "method": "GET"},
         {"path": "/api/lakehouse", "label": "Lakehouse", "method": "GET"},
         {"path": "/api/spark-jobs", "label": "Spark Jobs", "method": "GET"},
-        {"path": "/api/realtime", "label": "Realtime", "method": "GET"},
-        {"path": "/api/flink-jobs", "label": "Flink Jobs", "method": "GET"},
         {"path": "/api/ops", "label": "Ops / 运行维护", "method": "GET"},
     ]
     return {
@@ -290,7 +285,7 @@ def admin_overview_payload() -> dict[str, Any]:
         "critical_routes": critical_routes,
         "data_fabric": {
             "visibility": "backend_admin_only",
-            "policy": "Data Fabric、数据质量、数据血缘、湖仓、Spark/Flink/Realtime 和运维信息只在后端管理界面展示，不进入用户选股导航。",
+            "policy": "Data Fabric、数据质量、数据血缘、湖仓、Spark 和运维信息只在后端管理界面展示，不进入用户选股导航。",
             "internal_routes": data_fabric_routes,
         },
         "frontend_policy": {

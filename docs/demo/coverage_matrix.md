@@ -7,11 +7,7 @@
 | Lakehouse Iceberg/Hudi/Delta | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 lakehouse_format |
 | 湖仓分层 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 lakehouse_layers |
 | ClickHouse/OLAP | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 clickhouse_olap |
-| Kafka/Redpanda | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 kafka_redpanda |
-| Flink 实时链路 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 flink_realtime |
-| 在线特征 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 online_feature_store |
 | 离线因子 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 offline_factors |
-| 实时因子 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 realtime_factors |
 | 事件因子 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 event_factors |
 | 市场环境 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 market_regime |
 | 关系图 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 relation_graph |
@@ -19,7 +15,7 @@
 | 标签 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 labels |
 | 防泄漏 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 leakage_check |
 | baseline | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 baseline_model |
-| 高级模型 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 advanced_models |
+| 日频模型 | 已复核 | COGRASP 与情绪融合 LightGBM | 见 /api/models 与 reports/research_loop 中两套预测报告 |
 | 回测 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 backtest |
 | 风险归因 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 risk_attribution |
 | RAG 证据 | 已复核 | L1-L2/L2/partial 按 final payload | 见 reports/final_acceptance/final_acceptance_final_acceptance.json 中 rag_evidence |

@@ -1,1 +1,0 @@
-Official production repo integration was intentionally not cloned for advanced_models L1. The local adapter ran on the unified relation_graph feature matrix; promotion requires dependency review, official demo reproduction, and review gates before staging/approved.

@@ -1,7 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
+
+import { useEffect, useState } from 'react';
 import { useApiPayload } from '../lib/useApiPayload';
+import { useAssistantContext } from './AssistantRoot';
+import { useAssistantPreferences } from './AssistantPreferences';
 
 type ScoreRow = {
   trade_date: string;
@@ -42,9 +48,6 @@ type ScoreModelOption = {
   status?: 'ready' | 'pending' | string;
   latest_trade_date?: string;
   model_version?: string;
-  integration_status?: string;
-  runtime_requirements?: string;
-  runtime_blockers?: string[];
 };
 
 export type ScoresPayload = {
@@ -77,10 +80,6 @@ export type ScoresPayload = {
   market_sentiment_proxy?: number;
   risk_appetite_proxy?: number;
   implementation_scope?: string;
-  integration_status?: string;
-  runtime_requirements?: string;
-  runtime_blockers?: string[];
-  training_command?: string;
   upstream_source?: {
     repository?: string;
     paper?: string;
@@ -112,30 +111,53 @@ function displayIndustry(value: string | undefined) {
   return value;
 }
 
+const APIPredictionPanel = dynamic(() => import('./APIPredictionPanel'), {
+  ssr: false, loading: () => <div className="card" role="status">正在打开 API 概率预测…</div>,
+});
+
+function selectPredictionModel(modelId: string) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('model', modelId);
+  window.history.pushState(null, '', url);
+}
+
 export function HorizonProbabilityTable({ initialPayload = null }: { initialPayload?: ScoresPayload | null }) {
-  const [selectedModel, setSelectedModel] = useState(initialPayload?.selected_model ?? 'cograsp');
+  const searchParams = useSearchParams();
+  const { rememberPage } = useAssistantPreferences();
+  const search = searchParams.toString();
+  useEffect(() => { rememberPage('/scores', search); }, [rememberPage, search]);
+  if (searchParams.get('model') === 'api_llm') {
+    const symbol = searchParams.get('symbol') ?? '';
+    return <APIPredictionPanel key={symbol} initialSymbol={symbol} onSelectModel={selectPredictionModel} />;
+  }
+  return <LocalScoresTable initialPayload={initialPayload} />;
+}
+
+function LocalScoresTable({ initialPayload = null }: { initialPayload?: ScoresPayload | null }) {
+  const searchParams = useSearchParams();
+  const selectedModel = searchParams.get('model') === 'sentiment_event' ? 'sentiment_event' : 'cograsp';
+  useAssistantContext({ score_model: selectedModel });
   const scoresApiUrl = `/api/scores?model=${encodeURIComponent(selectedModel)}`;
-  const { payload, error, loading, reload } = useApiPayload<ScoresPayload>(scoresApiUrl, initialPayload);
+  const initialScoresApiUrl = `/api/scores?model=${encodeURIComponent(initialPayload?.selected_model ?? 'cograsp')}`;
+  const { payload, error, loading, reload } = useApiPayload<ScoresPayload>(scoresApiUrl, initialPayload, initialScoresApiUrl);
   const [selectedCandidateHorizon, setSelectedCandidateHorizon] = useState('1d');
   const [selectedCandidateLimit, setSelectedCandidateLimit] = useState(20);
 
-  const modelOptions = payload?.available_models?.length
-    ? payload.available_models
+  const availableModels = payload?.available_models ?? initialPayload?.available_models;
+  const localModelOptions = availableModels?.length
+    ? availableModels
     : [
       { id: 'cograsp', label: 'COGRASP 当前沪深300重训', status: 'ready' },
       { id: 'sentiment_event', label: '情绪/事件融合 LightGBM', status: 'pending' },
-      { id: 'finmamba', label: 'FinMamba 官方模型', status: 'blocked_runtime' },
     ];
+  const modelOptions = [...localModelOptions, { id: 'api_llm', label: 'API 大模型 · 因子概率估计', status: 'ready' }];
   const selectedModelOption = modelOptions.find((option) => option.id === selectedModel);
   const usesSentiment = selectedModel === 'sentiment_event';
-  const usesFinMamba = selectedModel === 'finmamba';
   const modelIsReady = payload?.status === 'research_loop_scores_ready';
 
   function selectModel(modelId: string) {
-    setSelectedModel(modelId);
-    const url = new URL(window.location.href);
-    url.searchParams.set('model', modelId);
-    window.history.pushState(null, '', url);
+    if (modelId === selectedModel) return;
+    selectPredictionModel(modelId);
   }
 
   const horizons = payload?.available_horizons?.filter((h) => fallbackHorizons.includes(h)) ?? fallbackHorizons;
@@ -167,7 +189,7 @@ export function HorizonProbabilityTable({ initialPayload = null }: { initialPayl
           >
             {modelOptions.map((option) => (
               <option key={option.id} value={option.id}>
-                {option.label}{option.status === 'ready' ? '' : option.status === 'blocked_runtime' ? '（环境待就绪）' : '（尚未训练）'}
+                {option.label}{option.status === 'ready' ? '' : '（尚未训练）'}
               </option>
             ))}
           </select>
@@ -190,10 +212,7 @@ export function HorizonProbabilityTable({ initialPayload = null }: { initialPayl
           : null}
       {payload && !modelIsReady ? (
         <div className="data-state" role="status" aria-live="polite">
-          <strong>{usesFinMamba ? 'FinMamba 已接入，当前运行环境尚未就绪。' : '该模型尚未生成可展示的预测结果。'}</strong>
-          {payload.runtime_requirements ? <span>需要：{payload.runtime_requirements}</span> : null}
-          {payload.runtime_blockers?.length ? <span>当前阻塞：{payload.runtime_blockers.join('；')}</span> : null}
-          {payload.training_command ? <code>{payload.training_command}</code> : null}
+          <strong>该模型尚未生成可展示的预测结果。</strong>
         </div>
       ) : null}
       {payload ? (
@@ -203,9 +222,7 @@ export function HorizonProbabilityTable({ initialPayload = null }: { initialPayl
             {payload.training_sample_count ?? '—'} 个训练样本
             {usesSentiment
               ? ' · 市场情绪代理始终启用，真实新闻按覆盖情况融合。'
-              : usesFinMamba
-                ? ' · 20日 Spearman 动态关系图 × 行业衰减；作者原版结构。'
-                : ' · 收益相关性 Top8 关系图，不含文本情绪。'}
+              : ' · 收益相关性 Top8 关系图，不含文本情绪。'}
           </span>
         </div>
       ) : null}
@@ -244,7 +261,7 @@ export function HorizonProbabilityTable({ initialPayload = null }: { initialPayl
                     {rows.length ? rows.map((row) => (
                       <tr key={`${horizon}-${row.trade_date}-${row.symbol}`}>
                         <td>#{row.rank ?? '—'}</td>
-                        <td><a className="code-link" href={`/stocks/${row.symbol}?from=scores`}>{row.symbol}</a></td>
+                        <td><Link prefetch={false} className="code-link" href={`/stocks/${row.symbol}?from=scores`}>{row.symbol}</Link></td>
                         <td>{row.stock_name ?? '—'}</td>
                         <td className={typeof row.predicted_relative_change_pct === 'number' && row.predicted_relative_change_pct < 0 ? 'negative' : 'positive'}>{formatRelativeChange(row.predicted_relative_change_pct)}</td>
                         {usesSentiment ? <td>{formatScore(row.sentiment_score)}</td> : null}
@@ -298,12 +315,12 @@ export function HorizonProbabilityTable({ initialPayload = null }: { initialPayl
                 return (
                 <tr key={`candidate-${row.trade_date}-${row.symbol}`}>
                   <td>#{row.rank ?? '—'}</td>
-                  <td><a className="candidate-stock-link" href={`/stocks/${row.symbol}?from=scores`}><strong>{row.stock_name ?? row.symbol}</strong><span>{row.symbol}</span></a></td>
+                  <td><Link prefetch={false} className="candidate-stock-link" href={`/stocks/${row.symbol}?from=scores`}><strong>{row.stock_name ?? row.symbol}</strong><span>{row.symbol}</span></Link></td>
                   <td>{displayIndustry(row.industry_name)}</td>
                   <td>{formatRelativeChange(row.predicted_relative_change_pct)}</td>
                   <td>{formatScore(row.score)}</td>
                   <td className="candidate-reason"><span>{row.candidate_reason ?? metadata?.candidate_reason ?? '模型排名靠前，等待人工复核。'}</span><small>{row.review_action ?? metadata?.review_action ?? '查看个股详情并复核整体回测风险。'}</small></td>
-                  <td><span className="candidate-actions"><a className="button table-button" href={`/stocks/${row.symbol}?from=scores`}>查看个股</a><a className="button table-button button--secondary" href="/backtests">看回测风险（整体）</a></span></td>
+                  <td><Link prefetch={false} className="button table-button" href={`/stocks/${row.symbol}?from=scores`}>查看个股</Link></td>
                 </tr>
               );}) : <tr><td colSpan={7}>等待候选池数据</td></tr>}
             </tbody>

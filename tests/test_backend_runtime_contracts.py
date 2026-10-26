@@ -9,7 +9,6 @@ from types import SimpleNamespace
 
 import pandas as pd
 import pytest
-import yaml
 
 
 def _write_daily_snapshot(path: Path, end_date: str, symbol_count: int = 20) -> None:
@@ -237,48 +236,6 @@ def test_relation_network_handles_empty_and_small_universes(tmp_path: Path, symb
         else ([1] if symbol_count == 1 else [])
     )
     assert all(node["community_id"] >= 0 for node in payload["nodes"])
-
-
-def test_backend_container_manifest_is_complete_and_secret_safe() -> None:
-    project_root = Path(__file__).resolve().parents[1]
-    dockerfile = (project_root / "deploy" / "docker" / "Dockerfile.backend").read_text(encoding="utf-8")
-    requirements = (project_root / "deploy" / "docker" / "requirements.backend.txt").read_text(encoding="utf-8")
-    dockerignore = (project_root / ".dockerignore").read_text(encoding="utf-8")
-    compose = yaml.safe_load(
-        (project_root / "deploy" / "docker" / "docker-compose.yml").read_text(encoding="utf-8")
-    )
-
-    copy_sources = [
-        line.split()[1]
-        for line in dockerfile.splitlines()
-        if line.startswith("COPY ")
-    ]
-    assert copy_sources
-    assert all((project_root / source).exists() for source in copy_sources)
-
-    for dependency in (
-        "fastapi",
-        "uvicorn",
-        "duckdb",
-        "numpy",
-        "pandas",
-        "pyarrow",
-        "networkx",
-        "sqlalchemy",
-        "alembic",
-    ):
-        assert dependency in requirements.lower()
-    for runtime_source in ("COPY ops ./ops", "COPY simulation ./simulation", "COPY frontend/src ./frontend/src"):
-        assert runtime_source in dockerfile
-    assert "USER appuser" in dockerfile
-    assert "HEALTHCHECK" in dockerfile
-
-    backend = compose["services"]["backend"]
-    assert "auth-secrets:/app/.secrets" in backend["volumes"]
-    assert "auth-secrets" in compose["volumes"]
-
-    for secret_pattern in (".secrets/**", ".env.*", "*.pem", "*.key", ".venv/**"):
-        assert secret_pattern in dockerignore
 
 
 def test_rag_records_keep_nested_values_and_normalize_missing_values() -> None:

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import {
   getSessionStatus,
   invalidateSessionStatus,
@@ -91,12 +92,12 @@ export function AuthNav() {
       </span>
     );
   }
-  if (!user) return <a className="auth-nav-login" href="/login">登录 / 注册</a>;
+  if (!user) return <><Link prefetch={false} href="/account">个人设置</Link><Link prefetch={false} className="auth-nav-login" href="/login">登录 / 注册</Link></>;
 
   return (
     <span className="auth-nav-session">
       {user.role === 'admin' ? <a className="auth-nav-admin" href="/admin-console">后台管理</a> : null}
-      <a className="auth-nav-user" href="/watchlist" aria-label={`打开 ${user.display_name} 的自选股票`} title={`账号：${user.username}`}>{user.display_name}</a>
+      <Link prefetch={false} className="auth-nav-user" href="/account" aria-label={`打开 ${user.display_name} 的个人设置`} title={`账号：${user.username}`}>{user.display_name} · 个人设置</Link>
       <button type="button" onClick={logout} disabled={loggingOut} aria-busy={loggingOut}>
         {loggingOut ? '正在退出…' : '退出'}
       </button>

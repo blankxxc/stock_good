@@ -14,8 +14,8 @@ import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 RESEARCH_BOUNDARY = "research_signals_only_not_investment_advice"
-DATA_VERSION = "real_csi300_recent_3y_daily_hfq_v002"
-FACTOR_VERSION = "factor_v004"
+DATA_VERSION = "real_csi300_recent_3y_daily_hfq_v004"
+FACTOR_VERSION = "factor_v005"
 FEATURE_SET_VERSION = "feature_set_factor_store_v001"
 LABEL_VERSION = "label_v006_multi_horizon_probability"
 MODEL_VERSION = "lightgbm_research_loop_probability_v002"
@@ -145,7 +145,7 @@ def build_labels(write_outputs: bool = True) -> tuple[pd.DataFrame, dict[str, An
                 "quantile_label": df["quantile_label"],
                 "tradable_flag": df["tradable_flag"].astype(bool) & df["entry_tradable"] & df["exit_tradable"] & df["entry_can_buy"] & df["exit_can_sell"],
                 "pause_flag": df["paused"].astype(bool),
-                "st_flag": df["st_flag"].astype(bool),
+                "st_flag": df["st_flag"].astype("boolean"),
                 "limit_up_at_entry": df["limit_up_flag"].astype(bool) | ~df["entry_can_buy"],
                 "limit_down_at_exit": df["limit_down_flag"].astype(bool) | ~df["exit_can_sell"],
                 "delist_flag": df["delist_flag"].astype(bool),
@@ -171,6 +171,8 @@ def build_labels(write_outputs: bool = True) -> tuple[pd.DataFrame, dict[str, An
         "horizons": [f"{h}d" for h in HORIZONS],
         "row_count": int(len(labels)),
         "tradable_rows": int(labels["tradable_flag"].sum()),
+        "st_known_rows": int(labels["st_flag"].notna().sum()),
+        "st_unknown_rows": int(labels["st_flag"].isna().sum()),
         "leakage_check_status": "passed" if labels["leakage_check_status"].eq("passed").all() else "failed",
         "execution_price_type": "t_plus_1_open",
         "research_boundary": RESEARCH_BOUNDARY,
@@ -590,24 +592,11 @@ def _write_recorder(config: dict[str, Any], metrics: dict[str, Any], model_metad
     (RECORDER_DIR / "resolved_config.yaml").write_text(yaml.safe_dump(resolved, allow_unicode=True, sort_keys=False), encoding="utf-8")
     _write_json(RECORDER_DIR / "metrics.json", metrics)
     _write_json(RECORDER_DIR / "model_metadata.json", model_metadata)
-    blocked_reason_path = RECORDER_DIR / "qlib_blocked_reason.md"
-    try:
-        import qlib  # noqa: F401
-
-        qlib_status = "minimal_qlib_recorder_available"
-        blocked_reason = ""
-        if blocked_reason_path.exists():
-            blocked_reason_path.unlink()
-    except Exception as exc:
-        qlib_status = "qlib_workflow_blocked_minimal_recorder_used"
-        blocked_reason = f"Qlib package is not installed in the local venv: {type(exc).__name__}: {exc}. research_loop uses a file-based recorder with the same run_id/config_hash/version fields."
-        blocked_reason_path.write_text(blocked_reason, encoding="utf-8")
     manifest = {
         "run_id": RUN_ID,
         "experiment_id": EXPERIMENT_ID,
-        "recorder_type": "file_based_mlflow_qlib_compatible_minimal_recorder",
-        "qlib_status": qlib_status,
-        "blocked_reason": blocked_reason,
+        "recorder_type": "file_based_recorder",
+        "recorder_status": "file_based_recorder",
         "config_hash": config_hash,
         "artifacts": {
             "resolved_config": str((RECORDER_DIR / "resolved_config.yaml").relative_to(ROOT)),
@@ -727,7 +716,7 @@ def run_research_loop_research_loop(write_outputs: bool = True) -> dict[str, Any
         _write_report_html(metrics, curve, holdings, scored_metadata)
         recorder_manifest = _write_recorder(config, metrics, scored_metadata)
     else:
-        recorder_manifest = {"config_hash": _config_hash(config), "qlib_status": "not_written"}
+        recorder_manifest = {"config_hash": _config_hash(config), "recorder_status": "not_written"}
 
     acceptance = {
         "status": "ok",
@@ -751,7 +740,7 @@ def run_research_loop_research_loop(write_outputs: bool = True) -> dict[str, Any
         "available_label_horizons": [f"{h}d" for h in HORIZONS],
         "leakage_check_status": label_report["leakage_check_status"],
         "lightgbm_status": "trained" if any(meta.get("lightgbm_available") for meta in scored_metadata.values()) else "linear_fallback_used",
-        "qlib_status": recorder_manifest.get("qlib_status"),
+        "recorder_status": recorder_manifest.get("recorder_status"),
         "metrics": metrics,
         "artifacts": {
             "label_cross_sectional_return": str(LABEL_DIR.relative_to(ROOT)),

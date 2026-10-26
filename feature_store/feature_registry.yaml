@@ -3,7 +3,7 @@ registry_name: factor_store_offline_feature_registry
 feature_set_version: feature_set_factor_store_v001
 research_boundary: research_signals_only_not_investment_advice
 grain: symbol + trade_date + prediction_time
-generated_at: '2026-07-28T13:16:01+00:00'
+generated_at: '2026-10-19T14:42:16+00:00'
 features:
 - feature_name: return_1d
   feature_group: price_return
@@ -20,7 +20,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -43,7 +43,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -66,7 +66,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -89,7 +89,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -112,7 +112,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -135,7 +135,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -158,7 +158,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -181,7 +181,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -204,7 +204,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -228,7 +228,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -252,7 +252,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -276,7 +276,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -299,7 +299,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -322,7 +322,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -345,7 +345,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -368,7 +368,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -391,7 +391,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -414,7 +414,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -438,7 +438,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -461,7 +461,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -484,7 +484,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -507,7 +507,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -531,7 +531,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -554,7 +554,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -577,7 +577,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -600,7 +600,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -623,7 +623,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -646,7 +646,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -669,7 +669,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -692,7 +692,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -715,7 +715,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -738,7 +738,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -761,7 +761,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -784,7 +784,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -807,7 +807,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -830,7 +830,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -853,7 +853,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -876,7 +876,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -899,7 +899,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -922,7 +922,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -945,7 +945,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -956,22 +956,24 @@ features:
 - feature_name: vwap_deviation
   feature_group: price_volume_structure
   owner: research-platform
-  description: Close vs daily VWAP proxy captures intraday pressure.
+  description: Unadjusted close vs daily VWAP captures intraday pressure on the same
+    price basis.
   grain: symbol + trade_date + prediction_time
   formula_ref: configs/factor/factor_spec.yaml#/factors/vwap_deviation
   input_datasets:
+  - data/real/csi300_daily
   - data/samples/synthetic_mini_market
   available_time_rule: available_time <= prediction_time; future rows are excluded
     by data_trust leakage checks
   lookback_window: 1d
-  fill_policy: leave_null_for_insufficient_lookback_then_model_side_impute
+  fill_policy: leave_null_when_raw_close_is_missing_for_adjusted_prices_or_amount_or_volume_is_invalid
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
-  - tests/test_factor_store_factor_store.py
+  - tests/test_vwap_factor.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
@@ -991,7 +993,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1014,7 +1016,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1037,7 +1039,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1060,7 +1062,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1083,7 +1085,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1106,7 +1108,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1129,7 +1131,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1152,7 +1154,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1175,7 +1177,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1198,7 +1200,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1221,7 +1223,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1244,7 +1246,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1267,7 +1269,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1290,7 +1292,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1313,7 +1315,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1336,7 +1338,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1360,7 +1362,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1383,7 +1385,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1406,7 +1408,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1429,7 +1431,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1452,7 +1454,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: high
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1476,7 +1478,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: high
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1500,7 +1502,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: high
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1523,7 +1525,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1546,7 +1548,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1569,7 +1571,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1592,7 +1594,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1615,7 +1617,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1638,7 +1640,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1661,7 +1663,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: medium
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1684,7 +1686,7 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
@@ -1707,10 +1709,57 @@ features:
   winsorize_policy: median_abs_deviation_or_1pct_99pct_clip_before_model_training
   standardize_policy: cross_sectional_zscore_or_rank_at_trade_date_only
   neutralize_policy: industry_neutral_variant_when_available
-  factor_version: factor_v004
+  factor_version: factor_v005
   leakage_risk_level: low
   unit_tests:
   - tests/test_factor_store_factor_store.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: return_10d_gt_100pct
+  feature_group: abnormal_movement
+  owner: research-platform
+  description: 十日涨幅大于100%；不扣指数涨幅，等于100%不触发。
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/return_10d_gt_100pct
+  input_datasets:
+  - data/real/csi300_daily
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by data_trust leakage checks
+  lookback_window: 10d
+  fill_policy: leave_null_for_insufficient_history; never_fill_as_false
+  winsorize_policy: none_binary_indicator
+  standardize_policy: none_binary_indicator
+  neutralize_policy: none
+  factor_version: factor_v005
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_abnormal_movement_factors.py
+  data_quality_checks:
+  - non_null_when_lookback_available
+  - finite_values
+  - available_time_not_after_prediction_time
+- feature_name: abnormal_move_4_times_10d
+  feature_group: abnormal_movement
+  owner: research-platform
+  description: 十日内至少四次异动；1至3个交易日的累计涨幅减去同期沪指或深指涨幅大于20个百分点，触发后从当日收盘重新计数。
+  grain: symbol + trade_date + prediction_time
+  formula_ref: configs/factor/factor_spec.yaml#/factors/abnormal_move_4_times_10d
+  input_datasets:
+  - data/real/csi300_daily
+  - data/real/benchmark_daily
+  available_time_rule: available_time <= prediction_time; future rows are excluded
+    by data_trust leakage checks
+  lookback_window: 10d
+  fill_policy: leave_null_for_insufficient_history_or_missing_benchmark; never_fill_as_false
+  winsorize_policy: none_binary_indicator
+  standardize_policy: none_binary_indicator
+  neutralize_policy: none
+  factor_version: factor_v005
+  leakage_risk_level: low
+  unit_tests:
+  - tests/test_abnormal_movement_factors.py
   data_quality_checks:
   - non_null_when_lookback_available
   - finite_values
